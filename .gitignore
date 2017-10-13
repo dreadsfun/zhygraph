@@ -14,7 +14,8 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+# needed to VC shared dependencies
+# *.dll
 
 # Fortran module files
 *.mod
@@ -30,3 +31,13 @@
 *.exe
 *.out
 *.app
+
+# vs
+*.db
+*.opendb
+*.pdb
+*.ipdb
+*.iobj
+*.log
+*.tlog
+*.lastbuildstate
