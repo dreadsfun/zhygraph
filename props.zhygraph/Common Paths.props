@@ -8,6 +8,10 @@
     <OutDir>$(SolutionDir)target.zhygraph\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)obj.zhygraph\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup>
+    <Link>
+      <ImportLibrary>$(SolutionDir)dep.zhygraph\lib\$(Configuration)\$(Platform)\$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
