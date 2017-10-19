@@ -48,3 +48,9 @@
 # diaw
 *.autosave
 *.dia~
+
+# tex
+*.aux
+*.log
+*.thm
+*.toc
