@@ -1,2 +1,83 @@
 \Chapter{Optimalizált grafikus megjelenítés}
 \label{Chap:grafika}
+Az alábbiakban a grafikus alrendszer néhány jellemzõje, az akalmazott grafikai algoritmusok és adatstruktúrák kerülnek bemutatásra.
+
+\Section{Számítógépi grafika erõforrás igényei}
+A számítógépi grafika egy komplex területe az információs technológiáknak. Az alábbiakban láthatjuk részletezve, hogy milyen elvárásokkal néz szembe egy alkalmazás, ami három-dimenziós alakzatokat jelenít meg \textbf{valós} idõben.
+\SubSection{Számítási igény}
+Ismert, hogy annak érdekében, hogy az ember mozgóképnek érzékeljen, folyamatos sorban prezentált képeket, legalább 6 különbözõ képnek kell megjelennie másodpercenként. Ahhoz pedig, hogy a mozgóképet úgy érzékeljük, mintha az nem is képek sorozata lenne, hanem egy valójában egybefüggõ animáció, másodpercenként legalább 24 kép megjelenítésére van szükség. Általában ez a legalsó korlátja azoknak az alkalmazásoknak, melyek valósidejû grafikai szimulációkat futtatnak, de sok esetben ennél jóval több 30, vagy akár 60 is lehet a szükséges képek száma másodpercenként. Ennek oka, hogy a grafikai alkalmazások feladata jellemzõen nem kizárólag a képek megjelenítése. Esetünkben is szeretnénk ha az alkalmazás \textit{interaktív} lenne, tehát szkripteket futtatna, és azok által felhasználói beavatkozást tenne lehetõvé különbözõ bemeneti eszközökön keresztül. Ezen kívül még rengeteg feladata lehet egy ilyen alkalmazásnak, mint például a fizikai szimulációkhoz kapcsolódó számolások elvégzése, vagy a hang effektek létrehozása.
+
+Láthatjuk tehát, hogy annak érdekében, hogy az alkalmazásunk megfelelõ vizuális és \textit{reszponzivitási} élményt nyújtson, nem kezelhetjük könnyelmûen az egy konkrét kép létrehozására allokált idõt és egyéb erõforrásokat. Ha azt szeretnénk, hogy legalább 30 legyen a másodpercenként prezentált képek száma, egy alkalmazás iteráció (a rajzfelület törlésétõl az új kép megjelenítéséig eltelt idõ) nem tarthat tovább, mint $\frac{1}{30}$ másodperc.
+
+\SubSection{Memória igény}
+A megfelelõ vizuális élmény szolgáltatása érdekében, jellemzõen óriási adatstruktúrákra van szükség. A két alapvetõ megjelenítési entitás a geometriai objektumok, és a textúrák, amik a geometria valósághû megjelenítéséért felelõsek. Nézzük meg, hogy mik is valójában a memória igényei ezeknek az objektumoknak.
+
+A geometriai objektumok jellemzõen csúcspontokból, és ahhoz kapcsolódó kiegészítõ információkból épülnek fel. Legyen most $N$ a csúcspontok száma egy tetszõleges objektumban.
+
+Egy csúcspont a következõ információkat tartalmazza általában, melyeknek szükséges memóriát allokálni:
+
+\begin{itemize}
+\item A csúcs helyzete a három-dimenziós térben. Ez leírható egy három komponensû vektorral, melynek komponensei lebegõpontos számok. A C++ környezet támogatja a lebegõpontos számok 32 biten történõ ábrázolását a \textit{float} adattípussal \acite{cpp_fundamental_types}. Ezzel összhangban van a használt grafikus környezet, az \textit{OpenGL} méret kiosztása is \acite{ogl_fundamental_types}. Egy csúcs térbeli helyzetének leírásához szükséges tárhely tehát: $3*32=96$ bit.
+\item A csúcshoz rendelt textúra koordináta. Ez egy két-dimenziós pozíció érték, ami azt adja meg, hogy az adott csúcshoz, a textúra mely pontját kell rendelni az objektum megjelenítése során. Ez tárolható egy két komponensû, lebegõpontos szám típusú vektorban, tehát a helyigény: $2*32=64$ bit.
+\item A csúcshoz rendelt normális, binormális és tangens vektor. Ezeknek a vektoroknak az objektum megvilágítási számításaiban van szerepe. Fontos, hogy a három vektor közül egyet elégséges tárolni, hiszen a másik kettõ minden esetben számítható belõle. Azonban a valósidejû kiszámítása ezeknek a vektoroknak értékes idõt vehet el a rajzolási folyamatok közben, tehát mérlegelni kell, hogy a memória használatot vagy a számítási idõt helyezzük elõtérbe. Ebben az esetben tároljuk a vektorok mindegyikét, tehát a helyigény: $3*3*32=288$ bit.
+\end{itemize}
+
+Nem a csúcspontra hanem a geometriára jellemzõ attribútum az \textit{oldalak} száma. Eddig a geometriai objektum csúcspontjait definiáltuk, ezek azonban nem elégségesek a geometria rekonstruálására, hiszen a csúcspontok tetszõleges módon köthetõek össze. Szükségünk van még arra az információra, hogy mely csúcsok alkotnak egy-egy \textit{sokszöget}, illetve a számítógépi grafikában jellemzõ \textit{háromszögeket}.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/monkeyheadtrian.eps, width=8cm, height=6cm}
+\caption{Geometria 507 csúccsal és 968 oldallal}
+\label{fig:monkeyhead}
+\end{figure}
+
+Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatékony, hiszen egy összefüggõ alakzatban több sokszög osztozik egy-egy csúcson. Ennek kiküszöbölésére, a csúcspontokat nem közvetlenül használjuk a sokszögek definiálására, hanem indexeken keresztül. Így tehát egy sokszög leírására egész számokat használunk, amelyek a csúcspontok halmazát indexeli.
+
+Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \acite{cpp_fundamental_types}\acite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
+
+Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
+
+Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507*448+968*96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/factory.eps, width=3.5cm, height=7cm}
+\caption{Geometria 123550 csúccsal és 237252 oldallal}
+\label{fig:factory}
+\end{figure}
+
+Egy bonyolultabb objektum (\myref{fig:factory}) - mely 123550 csúccsal és 237252 oldallal rendelkezik - helyigénye a következõképpen alakul: $123550*448+237252*96=$ bit, ami $78126592/8=9765824$ bájt azaz $9765,8$ kilobájt.
+
+Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut. 
+
+A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 texel méretû, négyzet alakú textúrát. Ilyen jellegû textúra gyakori lehet ismétlõdõ textúrázásnál, falak vagy természetes talajok megjelenítése esetén (\myref{fig:landscape} ábra). Ekkor a textúra mérete egyértelmûen adódik: A texelek száma $512^2=262144$, a tároláshoz szükséges méret pedig $1048,5$ kilobájt.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/landscape.eps, width=12cm, height=6.75cm}
+\caption{Ismétlõdõ textúra a talaj színezésére}
+\label{fig:landscape}
+\end{figure}
+
+Láthatjuk, hogy már egyetlen összetettebb alakzatnak is néhány megabájt, míg egy kifejezetten egyszerû és kisméretû textúrának is több, mint 1 megabájt lehet a memória igénye. Ilyen entitásokból azonban több száz vagy akár több ezer található egy-egy grafikai szimulációban vagy jelenetben. Egy átlagos videókártyának a memóriája 1-2 gigabájt nagyságú, amit azonban értelemszerûen nem kizárólagosan használ az alkalmazás, az számos futó processz között lehet megosztva. Ezek után könnyen belátható, hogy szükséges a memóriát foglaló objektumok szigorú felügyelete, valamint a precíz pufferelési technikák használata.
+
+\Section{Optimalizációs lehetõségek}
+Az elõzõ részben láthattuk, hogy milyen számítási és memória nehézségei vannak egy grafikus alkalmazásnak. A következõkben ezekre a problémákra keresünk megoldásokat különbözõ adatstruktúrák és algoritmusok segítségével.
+\SubSection{Oktális fák}
+Az \textit{oktális fák} olyan fa gráfok, melyekre teljesül, hogy minden belsõ csúcsnak \textbf{pontosan} 8 gyermeke van (innen az "oktális" elnevezés). Az oktális fák, a kvadrális fák megfelelõje a három-dimenziós térben. A struktúra attól válig különlegessé, hogy az egyes csúcspontokhoz valamilyen módszer szerint térrészeket rendelünk. Általában minden csúcsponthoz egy kocka alakú térrész van rendelve, úgy, hogy a mindenkori gyermekekhez azon nyolc egyenlõ méretû térrész van rendelve, amelyek összege egyenlõ a szülõhöz rendelt térrésszel.
+
+Az oktális fák csoportosíthatóak a tér felosztás jellege szerint:
+
+\begin{itemize}
+\item A pont alapú felosztás során, a fa minden csúcsa egy pontot reprezentál a térben, ami a felosztási pontot jelenti. Mivel csak a felosztás pontja van tárolva a csúcsokban, a csúcsokhoz rendelt térrész mérete nem meghatározott. Ebbõl az következik, hogy a fa gyökér csúcsához a végtelen tér van rendelve. Ennek elõnye, hogy elõre nem ismert méretû térrész is kezelhetõ benne, hátránya viszont, hogy csak diszkrét pontok adhatóak hozzá a fához. Ez esetünkben probléma lesz, hiszen általában kiterjedt geometriai objektumokat (illetve azok egy térbeli közelítését) szeretnénk majd tárolni a fában.
+\item A tér alapú felosztás során, a fa minden csúcsához a térrész közepét rendeljük. Ennek hátránya, hogy elõre ismernünk kell egy véges térrész paramétereit, amit a fa gyökér csúcsához rendelünk. Elõnye pedig, hogy így tárolhatunk véges kiterjedésû geometriákat a struktúrában.
+\end{itemize}
+
+Az oktális fák tovább csoportosíthatóak külön
+
+\SubSection{Dinamikus oktális fa}
+\SubSection{Láthatósági lekérdezés oktális fával}
+\SubSection{GPU pufferek használata}
+\SubSection{Manipulálható rajzolási folyamat}
+\SubSection{Állapot átmenet optimalizáció OpenGL-ben}
+
