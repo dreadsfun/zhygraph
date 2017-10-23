@@ -146,6 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="exception.h" />
+    <ClInclude Include="multi_thread.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="multi_thread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
