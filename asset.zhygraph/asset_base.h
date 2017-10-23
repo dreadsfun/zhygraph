@@ -1,12 +1,11 @@
 #pragma once
-/*
-std::atomic
-*/
 #include <atomic>
-/*
-std::string
-*/
 #include <string>
+#include <functional>
+#include <array>
+#include <list>
+#include <mutex>
+#include <core.zhygraph\multi_thread.h>
 namespace zhygraph {
 	namespace asset {
 		using namespace std;
@@ -29,6 +28,25 @@ namespace zhygraph {
 				loaded,
 				unloading,
 				corrupt
+			};
+
+			typedef function<void(bool)> void_fn_t;
+
+			class callback {
+			private:
+				void_fn_t mfn;
+
+			public:
+				callback() = default;
+
+				template<typename T, typename ... Args>
+				callback( T fn, Args ... args ) {
+					mfn = bind( fn, args ..., placeholders::_1 );
+				}
+
+				const void_fn_t& get() const {
+					return mfn;
+				}
 			};
 
 		private:
@@ -56,23 +74,8 @@ namespace zhygraph {
 			*/
 			asset_base( const string& name, const string& path );
 
-			/*
-			Loads the asset from the path stored in the asset
-			Must set the state to loading before starting any loading operations
-			Must set the state to loaded and return true if the loading is successful
-			Must set the state to created and return false if the loading is unsuccessful, and the asset data remained "clean"
-			Must set the state to corrupt and return false if the loading is unsuccessful, and for some reason the data could not be cleansed
-			*/
-			virtual bool load() = 0;
-
-			/*
-			Unloads the asset, freeing its resources
-			Must set the state to unloading before starting any unloading operations
-			Must set the state to created and return true if the loading is successful
-			Must set the state to loaded and return false if the unloading is unsuccessful, and the asset data remained clean and usable
-			Must set the state to corrupt and return false if the unloading is unsuccessful, and for some reason the data is left unusable
-			*/
-			virtual bool unload() = 0;
+			void load( core::multi_thread& worker, const callback& ready );
+			void unload( core::multi_thread& worker, const callback& ready );
 
 			/*
 			Return the name of this asset
@@ -87,7 +90,13 @@ namespace zhygraph {
 			/*
 			Load and return the current state of the asset
 			*/
-			asset_state state() const;
+			const atomic<asset_state>& state() const;
+
+			virtual bool gl_asset() const = 0;
+
+		protected:
+			virtual bool _internal_load() = 0;
+			virtual bool _internal_unload() = 0;
 		};
 	}
 }
