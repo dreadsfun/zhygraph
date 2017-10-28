@@ -1,6 +1,6 @@
 \Chapter{Optimalizált grafikus megjelenítés}
 \label{Chap:grafika}
-Az alábbiakban a grafikus alrendszer néhány jellemzõje, az akalmazott grafikai algoritmusok és adatstruktúrák kerülnek bemutatásra.
+Az alábbiakban a grafikus alrendszer néhány jellemzõje, a számítógépi grafika teljesítmény és memória igénye, valamint az erõforrás használat optimalizálásához használható, grafikai algoritmusok és adatstruktúrák kerülnek bemutatásra.
 
 \Section{Számítógépi grafika erõforrás igényei}
 A számítógépi grafika egy komplex területe az információs technológiáknak. Az alábbiakban láthatjuk részletezve, hogy milyen elvárásokkal néz szembe egy alkalmazás, ami három-dimenziós alakzatokat jelenít meg \textbf{valós} idõben.
@@ -17,7 +17,7 @@ A geometriai objektumok jellemzõen csúcspontokból, és ahhoz kapcsolódó kiegészít
 Egy csúcspont a következõ információkat tartalmazza általában, melyeknek szükséges memóriát allokálni:
 
 \begin{itemize}
-\item A csúcs helyzete a három-dimenziós térben. Ez leírható egy három komponensû vektorral, melynek komponensei lebegõpontos számok. A C++ környezet támogatja a lebegõpontos számok 32 biten történõ ábrázolását a \textit{float} adattípussal \acite{cpp_fundamental_types}. Ezzel összhangban van a használt grafikus környezet, az \textit{OpenGL} méret kiosztása is \acite{ogl_fundamental_types}. Egy csúcs térbeli helyzetének leírásához szükséges tárhely tehát: $3*32=96$ bit.
+\item A csúcs helyzete a három-dimenziós térben. Ez leírható egy három komponensû vektorral, melynek komponensei lebegõpontos számok. A C++ környezet támogatja a lebegõpontos számok 32 biten történõ ábrázolását a \textit{float} adattípussal \cite{cpp_fundamental_types}. Ezzel összhangban van a használt grafikus környezet, az \textit{OpenGL} méret kiosztása is \cite{ogl_fundamental_types}. Egy csúcs térbeli helyzetének leírásához szükséges tárhely tehát: $3*32=96$ bit.
 \item A csúcshoz rendelt textúra koordináta. Ez egy két-dimenziós pozíció érték, ami azt adja meg, hogy az adott csúcshoz, a textúra mely pontját kell rendelni az objektum megjelenítése során. Ez tárolható egy két komponensû, lebegõpontos szám típusú vektorban, tehát a helyigény: $2*32=64$ bit.
 \item A csúcshoz rendelt normális, binormális és tangens vektor. Ezeknek a vektoroknak az objektum megvilágítási számításaiban van szerepe. Fontos, hogy a három vektor közül egyet elégséges tárolni, hiszen a másik kettõ minden esetben számítható belõle. Azonban a valósidejû kiszámítása ezeknek a vektoroknak értékes idõt vehet el a rajzolási folyamatok közben, tehát mérlegelni kell, hogy a memória használatot vagy a számítási idõt helyezzük elõtérbe. Ebben az esetben tároljuk a vektorok mindegyikét, tehát a helyigény: $3*3*32=288$ bit.
 \end{itemize}
@@ -33,7 +33,7 @@ Nem a csúcspontra hanem a geometriára jellemzõ attribútum az \textit{oldalak} sz
 
 Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatékony, hiszen egy összefüggõ alakzatban több sokszög osztozik egy-egy csúcson. Ennek kiküszöbölésére, a csúcspontokat nem közvetlenül használjuk a sokszögek definiálására, hanem indexeken keresztül. Így tehát egy sokszög leírására egész számokat használunk, amelyek a csúcspontok halmazát indexeli.
 
-Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \acite{cpp_fundamental_types}\acite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
+Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
 
 Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
 
@@ -55,7 +55,7 @@ A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 tex
 \begin{figure}[ht]
 \centering
 \epsfig{file=chapters/content/landscape.eps, width=12cm, height=6.75cm}
-\caption{Ismétlõdõ textúra a talaj színezésére}
+\caption{Ismétlõdõ textúra a talaj színezésére \cite{texture_picture}}
 \label{fig:landscape}
 \end{figure}
 
@@ -73,10 +73,141 @@ Az oktális fák csoportosíthatóak a tér felosztás jellege szerint:
 \item A tér alapú felosztás során, a fa minden csúcsához a térrész közepét rendeljük. Ennek hátránya, hogy elõre ismernünk kell egy véges térrész paramétereit, amit a fa gyökér csúcsához rendelünk. Elõnye pedig, hogy így tárolhatunk véges kiterjedésû geometriákat a struktúrában.
 \end{itemize}
 
-Az oktális fák tovább csoportosíthatóak külön
+Az oktális fák tovább csoportosíthatóak egyéb szempontok szerint:
+
+Dinamika szempontjából:
+
+\begin{itemize}
+\item Statikus az oktális fa, ha azt egyszer építjük fel, egy elõre meghatározott geometria (vagy pont) halmazból és nem változik a szerkezete az élettartama során. Ennek elõnye, hogy nem szükséges kezelni azokat az eseteket, melyek során a fában tárolt objektumok valamely fizikai paramétere (kiterjedése, pozíciója vagy orientációja) megváltozhat. Ez hasznos lehet akkor, ha van egy elõre ismert objektum halmaz, melynek elemeirõl tudjuk, hogy nem változtathatóak meg a paramétereik. Egy grafikai szimulációban, például egy videójátékban ilyenek lehetnek a hátteret alkotó geometriák, mint házak, nem animált fák stb.
+\item Dinamikusnak nevezzük az oktális fát, ha az abban tárolt objektumok fizikai paraméterei megváltozhatnak, és ezzel a fa belsõ struktúrája is módosításra kerülhet. Hátránya, hogy szükséges a program szintjén kezelni ezeket az eseteket, ami akkor is okozhat teljesítménybeli különbséget a statikus fával szemben, ha a fa struktúrája végül soha nem változik meg. Elõnye természetesen, hogy a benne tárolt objektumok fizikai paraméterei tetszõlegesen változtathatóak.
+\end{itemize}
+
+Csúcspont felosztás szempontjából:
+
+[.....]
 
 \SubSection{Dinamikus oktális fa}
-\SubSection{Láthatósági lekérdezés oktális fával}
+Az alábbiakban láthatjuk, hogy milyen problémákat vet fel egy dinamikus oktális fa implementációja, és hogyan lehet ezeket megoldani.
+
+[.....]
+
+\subsection{Láthatósági lekérdezés oktális fával}
+\subsubsection{Nézõpont struktúrák}
+A számítógépi grafika egy lényeges struktúrája a nézõpontot, illetve a megjelenített virtuális teret \textit{szemlélõ} entitás, nézeti paramétereit reprezentáló objektum. Általános esetben ezeket az objektumokat kamerának szokás nevezni. Elõfordulhat, hogy az emberi szem tulajdonságaival vonunk párhuzamot a struktúra leírásakor, azonban vannak olyan nézeti típusok (ortogonális projekció), melyek nem magyarázhatóak ebben a megközelítésben.
+
+A kamera struktúra azért felelõs, hogy egy matematikailag jól definiált módon írja le, hogy a virtuális térnek melyik az a része, amit a grafikus alrendszernek meg kell jelenítenie. Ennek érdekében a struktúrába a következõ adattagokat vezetjük be:
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/perspective.eps, width=7.5cm, height=4.2cm}
+\caption{A perspektivikus projekció paraméterei \cite{perspective_picture}}
+\label{fig:perspective}
+\end{figure}
+
+\begin{itemize}
+\item A kamera legfontosabb jellemzõje, a projekció típusa. Ez határozza meg, hogy milyen további adatokra van szükség a \textit{nézeti transzformáció} leírásához. A projekció típusa lehet \textbf{ortogonális} és \textbf{perspektivikus}.
+\end{itemize}
+
+Az ortogonális projekció egyedi paraméterei:
+\begin{itemize}
+\item Az ortogonális projekció esetén direkt módon kell megadnunk a kamera alakzat paramétereit. Az alakzatot a \textit{minimum csúcs} és a \textit{maximum csúcs} definiálja. A minimum csúcs a $P_1=(L, B, -N)$, a maximum csúcs pedig a $P_2=(R, T, -F)$ pontként áll elõ. Az $L,B,R,T$ paramétereket szabadon definiáljuk, az $N,F$ paraméterek pedig a közeli (\textbf{N}ear) és távoli (\textbf{F}ar) vágósík távolságokból adódnak. Az \myref{fig:ortho} ábra címkéi alapján: $P_1=(xLeft, yBottom, -zNear)$ és $P_2=(xRight, yTop, -zFar)$.
+\end{itemize}
+
+A perspektivikus projekció egyedi paraméterei:
+\begin{itemize}
+\item A nézõpont, horizontális fél-nyílásszöge. Megadja a vágósíkok közepén, és a nézõponton átmenõ egyenes, valamint a nézõponton és a közeli (vagy távoli) vágósík, valamely függõleges oldalának közepén átmenõ egyenes által bezárt szöget. Az \myref{fig:perspective} ábrán, az $\overline{AB}$ és $\overline{AC}$ szakaszok által bezárt szög.
+\item Képernyõ méret aránya. A vetítési felület szélességének és magasságának aránya. Az \myref{fig:frustum} ábrán, a \textit{width} és \textit{height} aránya. Az ábrán a vetítési felület és a közeli vágósík egybe esik ($N=0$), de ez általában nem így van.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/frustum.eps, width=10.05cm, height=7.05cm}
+\caption{A perspektivikus projekció paraméterei \cite{ogl_guide}}
+\label{fig:frustum}
+\end{figure}
+
+A két projekció típus közös paraméterei:
+\begin{itemize}
+\item Közeli vágósík távolsága. Megadja a nézõpont (ortogonális projekció esetén \textit{"nézõsík"}) és a közeli vágósík távolságát. Az \myref{fig:perspective} ábrán a \textit{z=near} távolság. Azon pontok, melyek ennél közelebb vannak a nézõponthoz (\textit{eye}), nem kerülnek megjelenítésre.
+\item Távoli vágósík távolsága. Megadja a nézõpont és a távoli vágósík távolságát. Az \myref{fig:perspective} ábrán a \textit{z} távolság. Azon pontok, melyek ennél távolabb esnek a nézõponttól, nem kerülnek megjelenítésre.
+\end{itemize}
+
+Ortogonális projekció esetén, a három-dimenziós térbõl, kettõ-dimenziós felületre történõ vetítés párhuzamos egyenesekkel történik. A leírt paraméterek egy "dobozt" határoznak meg, melyet úgy transzformálunk, hogy a középpontja, a kamera koordináta-rendszerének origójára essen. A transzformáció után, egység kockává skálázzuk az alakzatot, úgy, hogy a minimum pontja a $(-1,-1,-1)$ pontra, a maximum pontja pedig a $(1,1,1)$ pontra essen \cite{wiki_ortho}. A projekció ezen fajtája szögtartó, megõrzi az egyenesek párhuzamosságát, a szakaszok méretarányait valamint a területek arányát. \cite{math_ortho}. Ezen jellemzõk lehetõvé teszik, hogy pontos méréseket végezzünk a három-dimenziós tér vetületében, valamint, hogy pixel-helyesen jelenítsünk meg, például grafikus felhasználói felület elemeit (gombok, címkék). Az ortogonális projekció mátrix alakja:
+
+\[
+\begin{bmatrix}
+\frac{2}{W} & 0           & 0              & 0\\
+0           & \frac{2}{H} & 0              & 0\\
+0           & 0           & -\frac{2}{F-N} & -\frac{F+N}{F-N}\\
+0           & 0           & 0              & 1
+\end{bmatrix}
+\]
+
+Perspektivikus projekció esetén a vetítés összetartó egyenesekkel történik. Az egyenesek metszéspontja a nézõpont (\textit{fókuszpont}). A vetítés ekkor nem távolság, párhuzamosság vagy szögtartó. A valósághû megjelenítés érdekében - ahogy a való életben is tapasztaljuk - a távolabbi objektumok kisebbnek, a közelebbiek pedig nagyobbnak fognak tûnni. A paraméterek egy \textbf{gúlát} határoznak meg, a megjelenített térrész pedig - a közeli vágósíknál történõ vágás után - egy csonka gúla lesz. A perspektivikus projekció mátrix alakja:
+
+\[
+\begin{bmatrix}
+\frac{2*N}{W} & 0             & 0                & 0\\
+0             & \frac{2*N}{H} & 0                & 0\\
+0             & 0             & -\frac{F+N}{F-N} & \frac{2*F*N}{F-N}\\
+0             & 0             & -1               & 0
+\end{bmatrix}
+\]
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/ortho.eps, width=9.6cm, height=5.6cm}
+\caption{Az ortogonális projekció paraméterei \cite{ortho_picture}}
+\label{fig:ortho}
+\end{figure}
+
+\subsubsection{A nézõpont struktúrák elhelyezése az oktális fában}
+Láthattuk tehát a korábbi részekben, hogy hogyan tárolhatunk objektumokat egy oktális fában valamint, hogy milyen struktúrákkal reprezentáljuk a virtuális teret figyelõ objektumot. A következõkben azt vizsgáljuk meg, hogy hogyan alkalmazható a két adatstruktúra együttesen, a láthatósági vizsgálat megvalósítására.
+
+A láthatósági vizsgálatok jelentõsségét általánosan igazolhatjuk a korábban bemutatott adatokkal, melyek szerint egy-egy geometriai objektum és az azokhoz tartozó textúrák megjelenítése egy teljesítmény-költséges folyamat. Természetesen a cél az, hogy minél több processzor idõt és memóriát spóroljunk. A legtöbbet pedig azokon az objektumokon spórolhatunk, amiket egyáltalán nem jelenítünk meg. Ehhez az kell, hogy a rajzolási folyamat minél korábbi szakaszában és minél kisebb költséggel meghatározhassuk, hogy egy objektum látható-e vagy sem.
+
+Az elsõ megoldást a láthatósági problémára általában maga a grafikus környezet nyújtja. A grafikus feldolgozó eszközök a képalkotási folyamat során "eldobják" azokat a geometria részeket, amik nem fognak látszódni a képernyõn, a vágás során. Ahhoz azonban, hogy a grafikus környezet meg tudja határozni egy-egy ponthalmaz láthatóságát, már át kellett esniük a teljes transzformációs láncon, ami már önmagában jelentõs számú mûveletet jelent.
+
+A következõ lépésben bevezetünk egy új struktúrát. Tudjuk, hogy egy geometriai objektum akkor fog látszódni ha valamely pontja benne van a kamera struktúra által meghatározott térrészben (csonka gúla perspektivikus, és téglatest ortogonális projekció esetén). Láttuk azonban azt is, hogy egy-egy ilyen objektum állhat több száz, vagy akár több tízezer pontból is, így a pontonkénti ellenõrzés nem lenne hatékony. Az új struktúra tehát, legyen egy \textit{közelítése} az eredeti objektumnak, a következõ képpen: 
+\begin{itemize}
+\item Legyenek az $A,B,C,D,E,F,G,H$ pontok egy téglatest csúcsai,
+\item $x_{min},y_{min},z_{min},x_{max},y_{max},z_{max}$ legyenek valós számok és
+\item $V_x,V_y,V_z$ a közelíteni kívánt geometria összes csúcsának x, y és z koordinátájának halmazai
+\end{itemize}
+\begin{alignat*}{3}
+V_x &= \{v_{1x},v_{2x},\ldots,v_{nx}\}\\
+V_y &= \{v_{1y},v_{2y},\ldots,v_{ny}\}\\
+V_z &= \{v_{1z},v_{2z},\ldots,v_{nz}\}
+\end{alignat*}
+Legyen
+\begin{alignat*}{4}
+x_{min} &= min(V_x)\\
+y_{min} &= min(V_y)\\
+z_{min} &= min(V_z)\\
+x_{max} &= max(V_x)\\
+y_{max} &= max(V_y)\\
+z_{max} &= max(V_z)
+\end{alignat*}
+valamint
+\begin{alignat*}{5}
+A &= (x_{min},y_{max},z_{min})\\
+B &= (x_{max},y_{max},z_{min})\\
+C &= (x_{min},y_{max},z_{max})\\
+D &= (x_{max},y_{max},z_{max})\\
+E &= (x_{min},y_{min},z_{min})\\
+F &= (x_{max},y_{min},z_{min})\\
+G &= (x_{min},y_{min},z_{max})\\
+H &= (x_{max},y_{min},z_{max})
+\end{alignat*}
+ 
+ Az így definiált téglatest \textit{"magába foglalja"} a közelíteni kívánt alakzatot. A közelítés segítségével megtehetjük azt az optimalizációs lépést, hogy az alakzat minden csúcsa helyett, csak a téglatest négy csúcsát vizsgáljuk. Természetesen a láthatósági vizsgálat pontossága így degradálódik, azonban a legjobb esetben a "láthatatlanságot" megállapíthatjuk már a négy pont ellenõrzésével is.
+ 
+ A közelítõ téglatesttel elértük, hogy némely esetekben már csak néhány mûvelet szükséges a láthatóság kizárásához. A végsõ lépés a láthatósági vizsgálat optimalizációjában, az oktális fa használata.
+ 
+ Tudjuk a korábban leírtak alapján, hogy a kamera struktúrákat egy-egy véges, zárt geometriai alakzat reprezentálja. Ennek elõnye, hogy bármely más kiterjedt alakzathoz hasonlóan, ezeket is elhelyezhetjük az oktális fában. Jelen esetben azonban nem a kamera tárolása lesz a cél, hanem azon legkisebb térrész meghatározása, amely tartalmazza a kamera alakzat minden pontját. Az oktális fa szokásos mûködése alapján, bejárjuk a fa csúcsait, és mindaddig haladunk rekurzívan a csúcsokhoz tartozó térrészeken, amíg meg nem találjuk azt a csúcsot, amelyhez tartozó térrész megfelel a feltételnek.
+ 
+ Ismerve az oktális fa szerkezetét, ez azt jelenti, hogy a látható objektumok kizárólag ebben a térrészben találhatóak. A további láthatósági vizsgálatok tehát, kizárólag azon objektumokat érintik, amik a megtalált csúcshoz, vagy annak valamely gyermekéhez tartozó térrészben tartózkodnak, ezzel jelentõsen csökkentve az ellenõrzõ mûveletek számát.
+ 
 \SubSection{GPU pufferek használata}
 \SubSection{Manipulálható rajzolási folyamat}
 \SubSection{Állapot átmenet optimalizáció OpenGL-ben}
