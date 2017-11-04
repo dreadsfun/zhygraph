@@ -10,6 +10,7 @@ Ismert, hogy annak érdekében, hogy az ember mozgóképnek érzékeljen, folyamatos s
 Láthatjuk tehát, hogy annak érdekében, hogy az alkalmazásunk megfelelõ vizuális és \textit{reszponzivitási} élményt nyújtson, nem kezelhetjük könnyelmûen az egy konkrét kép létrehozására allokált idõt és egyéb erõforrásokat. Ha azt szeretnénk, hogy legalább 30 legyen a másodpercenként prezentált képek száma, egy alkalmazás iteráció (a rajzfelület törlésétõl az új kép megjelenítéséig eltelt idõ) nem tarthat tovább, mint $\frac{1}{30}$ másodperc.
 
 \SubSection{Memória igény}
+\label{SubSection:glmemory}
 A megfelelõ vizuális élmény szolgáltatása érdekében, jellemzõen óriási adatstruktúrákra van szükség. A két alapvetõ megjelenítési entitás a geometriai objektumok, és a textúrák, amik a geometria valósághû megjelenítéséért felelõsek. Nézzük meg, hogy mik is valójában a memória igényei ezeknek az objektumoknak.
 
 A geometriai objektumok jellemzõen csúcspontokból, és ahhoz kapcsolódó kiegészítõ információkból épülnek fel. Legyen most $N$ a csúcspontok száma egy tetszõleges objektumban.
@@ -31,13 +32,16 @@ Nem a csúcspontra hanem a geometriára jellemzõ attribútum az \textit{oldalak} sz
 \label{fig:monkeyhead}
 \end{figure}
 
-Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatékony, hiszen egy összefüggõ alakzatban több sokszög osztozik egy-egy csúcson. Ennek kiküszöbölésére, a csúcspontokat nem közvetlenül használjuk a sokszögek definiálására, hanem indexeken keresztül. Így tehát egy sokszög leírására egész számokat használunk, amelyek a csúcspontok halmazát indexeli.
+Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatékony, hiszen egy összefüggõ alakzatban több sokszög osztozik egy-egy csúcson. Ennek kiküszöbölésére, a csúcspontokat nem közvetlenül használjuk a sokszögek definiálására, hanem indexeken keresztül. Így tehát egy sokszög leírására egész számokat használunk, amelyek a csúcspontok halmazát indexeli. A \myref{fig:indexedgraph} ábrán látható, hogy a \myref{fig:monkeyhead} ábra geometriája, különbözõ degeneratív állapotokban (az eredeti geometria csúcspontjainak csökkentése bizonyos arányban) hány csúcsot illetve háromszöget tartalmaz. A két grafikon megmutatja a különbözõ állapotokban a tárhelyigény alakulását az indexek használatával (kék grafikon) és az indexek használata nélkül (piros grafikon).
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/meshindexedgraph.eps, width=15cm, height=9cm}
+\caption{Geometria tárhely igénye indexelt és nem indexelt csúcsokkal}
+\label{fig:indexedgraph}
+\end{figure}
 
 Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
-
-Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
-
-Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507*448+968*96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
 
 \begin{figure}[ht]
 \centering
@@ -46,11 +50,17 @@ Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúc
 \label{fig:factory}
 \end{figure}
 
+Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
+
+Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507*448+968*96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
+
 Egy bonyolultabb objektum (\myref{fig:factory}) - mely 123550 csúccsal és 237252 oldallal rendelkezik - helyigénye a következõképpen alakul: $123550*448+237252*96=$ bit, ami $78126592/8=9765824$ bájt azaz $9765,8$ kilobájt.
 
 Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut. 
 
 A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 texel méretû, négyzet alakú textúrát. Ilyen jellegû textúra gyakori lehet ismétlõdõ textúrázásnál, falak vagy természetes talajok megjelenítése esetén (\myref{fig:landscape} ábra). Ekkor a textúra mérete egyértelmûen adódik: A texelek száma $512^2=262144$, a tároláshoz szükséges méret pedig $1048,5$ kilobájt.
+
+Láthatjuk, hogy már egyetlen összetettebb alakzatnak is néhány megabájt, míg egy kifejezetten egyszerû és kisméretû textúrának is több, mint 1 megabájt lehet a memória igénye. Ilyen entitásokból azonban több száz vagy akár több ezer található egy-egy grafikai szimulációban vagy jelenetben. Egy átlagos videókártyának a memóriája 1-2 gigabájt nagyságú, amit azonban értelemszerûen nem kizárólagosan használ az alkalmazás, az számos futó processz között lehet megosztva. Ezek után könnyen belátható, hogy szükséges a memóriát foglaló objektumok szigorú felügyelete, valamint a precíz pufferelési technikák használata.
 
 \begin{figure}[ht]
 \centering
@@ -58,8 +68,6 @@ A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 tex
 \caption{Ismétlõdõ textúra a talaj színezésére \cite{texture_picture}}
 \label{fig:landscape}
 \end{figure}
-
-Láthatjuk, hogy már egyetlen összetettebb alakzatnak is néhány megabájt, míg egy kifejezetten egyszerû és kisméretû textúrának is több, mint 1 megabájt lehet a memória igénye. Ilyen entitásokból azonban több száz vagy akár több ezer található egy-egy grafikai szimulációban vagy jelenetben. Egy átlagos videókártyának a memóriája 1-2 gigabájt nagyságú, amit azonban értelemszerûen nem kizárólagosan használ az alkalmazás, az számos futó processz között lehet megosztva. Ezek után könnyen belátható, hogy szükséges a memóriát foglaló objektumok szigorú felügyelete, valamint a precíz pufferelési technikák használata.
 
 \Section{Optimalizációs lehetõségek}
 Az elõzõ részben láthattuk, hogy milyen számítási és memória nehézségei vannak egy grafikus alkalmazásnak. A következõkben ezekre a problémákra keresünk megoldásokat különbözõ adatstruktúrák és algoritmusok segítségével.
@@ -73,25 +81,45 @@ Az oktális fák csoportosíthatóak a tér felosztás jellege szerint:
 \item A tér alapú felosztás során, a fa minden csúcsához a térrész közepét rendeljük. Ennek hátránya, hogy elõre ismernünk kell egy véges térrész paramétereit, amit a fa gyökér csúcsához rendelünk. Elõnye pedig, hogy így tárolhatunk véges kiterjedésû geometriákat a struktúrában.
 \end{itemize}
 
-Az oktális fák tovább csoportosíthatóak egyéb szempontok szerint:
-
-Dinamika szempontjából:
+Csoportosíthatunk továbbá a dinamika szempontjából:
 
 \begin{itemize}
 \item Statikus az oktális fa, ha azt egyszer építjük fel, egy elõre meghatározott geometria (vagy pont) halmazból és nem változik a szerkezete az élettartama során. Ennek elõnye, hogy nem szükséges kezelni azokat az eseteket, melyek során a fában tárolt objektumok valamely fizikai paramétere (kiterjedése, pozíciója vagy orientációja) megváltozhat. Ez hasznos lehet akkor, ha van egy elõre ismert objektum halmaz, melynek elemeirõl tudjuk, hogy nem változtathatóak meg a paramétereik. Egy grafikai szimulációban, például egy videójátékban ilyenek lehetnek a hátteret alkotó geometriák, mint házak, nem animált fák stb.
 \item Dinamikusnak nevezzük az oktális fát, ha az abban tárolt objektumok fizikai paraméterei megváltozhatnak, és ezzel a fa belsõ struktúrája is módosításra kerülhet. Hátránya, hogy szükséges a program szintjén kezelni ezeket az eseteket, ami akkor is okozhat teljesítménybeli különbséget a statikus fával szemben, ha a fa struktúrája végül soha nem változik meg. Elõnye természetesen, hogy a benne tárolt objektumok fizikai paraméterei tetszõlegesen változtathatóak.
 \end{itemize}
 
-Csúcspont felosztás szempontjából:
+\subsubsection{Beillesztés oktális fába}
 
-[.....]
+Tekintsünk egy statikus oktális fát, tér alapú, kocka felosztással. Adott tehát egy $R_0$ \textit{tengelyekhez igazított} kocka (a kocka élei párhuzamosak illetve merõlegesek az $x,y,z$ tengelyekre) és annak geometriai középpontja $O_0$, ezek fogják jelenteni a fa gyökér elemét. Adott továbbá egy $W_0$ tetszõleges térbeli alakzat $V={v_0,v_1,\ldots,v_n}$ csúccsal és $F={V^{n_0}_0, V^{n_1}_1,\ldots,V^{n_y}_f}$ oldallal, úgy, hogy $N={n_0,n_1,\ldots,n_y}$ a különbözõ számú csúccsal rendelkezõ oldalak csúcsszáma, a $V^{n_i}_j$ pedig az alakzat $j$-edik oldala, $n_i$ csúccsal.
 
-\SubSection{Dinamikus oktális fa}
-Az alábbiakban láthatjuk, hogy milyen problémákat vet fel egy dinamikus oktális fa implementációja, és hogyan lehet ezeket megoldani.
+A beillesztés rekurzív algoritmusa a következõ:
 
-[.....]
+\begin{enumerate}
+\item Ha a fa aktuális csúcsához tartozó térrész $R_x$, magába foglalja a $W_0$ alakzatot, akkor lépjünk a következõ lépésre, egyébként visszatér az algoritmus \textit{hamis} értékkel. A térrész magába foglalja az alakzatot akkor, ha teljesül, hogy az $R^{min}_x$ csúcs kisebb, az $R^{max}_x$ pedig nagyobb minden, a $W_0$ alakzathoz tartozó $v_i (i=0,1,\ldots,n)$ csúcsnál. Az $R^{min}_x$ és $R^{max}_x$ pont, a facsúcshoz tartozó kocka pontjai közül a legkisebb illetve legnagyobb.
+\item Vegyük sorra az aktuális csúcs gyermekeit, és hívjuk az eljárást rekurzívan rájuk. Ha \textit{igaz} értékkel tér vissza az adott gyermek eljárása akkor térjünk vissza \textit{igaz} értékkel. Ha egyik gyermek sem tért vissza \textit{igaz} értékkel, akkor tároljuk az aktuális csúcs listáján a $W_0$ alakzatot és térjünk vissza \textit{igaz} értékkel.
+\end{enumerate}
+
+Az így kialakított algoritmus eredménye az lesz, hogy a megadott $W_0$ alakzatot azon facsúcs fogja tárolni, amely térrésze magába foglalja az alakzatot, és kiterjedése a legkisebb, azon térrészek közül, amelyek szintén magukba foglalják az alakzatot.
+
+Az algoritmus szempontjából némi rugalmasságot jelent, hogy a fa bármely csúcsánál elkezdõdhet a rekurzió. Például ha valamilyen speciális esetben, további információk állnak rendelkezésünkre azt illetõen, hogy a beilleszteni kívánt objektum mely térrészekben helyezkedik el, akkor elegendõ lehet valamely közvetett vagy közvetlen gyermektõl kezdeni az algoritmust, a gyökér elem helyett.
+
+Az ilyen módon felépített struktúra hatékonyan használható különbözõ térbeli lekérdezésekhez. Ilyen lesz például a láthatósági lekérdezés, amit a \myref{section:visibilityquery} részben tárgyalunk. Fontos alkalmazási területe továbbá az oktális fának, a fizikai szimulációk során alkalmazott \textit{ütközési vizsgálatok} optimalizációja. Erre azon fontos tulajdonsága teszi alkalmassá a fát, hogy elõre ismert azon objektumok halmaza (egy facsúcs és a csúcs gyermekeinek listájában tárolt objektumok), amik között elõfordulhat ütközés, ezáltal jelentõsen csökkentve a vizsgálatok szükséges számát.
+
+\subsubsection{Dinamikus oktális fa}
+
+A dinamikus oktális fa képes követni a benne tárolt objektumok helyzetét, és szükség esetén újrastruktúrálni önmagát. A statikus változattal ellentétben, a fa felépítése és az objektumok, csúcsokhoz történõ hozzárendelése nem egyszer történik meg hanem szükség szerint bármennyiszer végbemehet. A fába történõ beillesztést nem befolyásolja a fa dinamikus jellege, csupán kiegészítjük a struktúrát egy \textit{frissítés} eljárással, ami azért lesz felelõs, hogy a megváltozott objektumokat új csúcshoz rendelje, amennyiben az szükséges.
+
+A frissítés algoritmusa a következõ:
+
+\begin{enumerate}
+\item Ha van még feldolgozatlan elem a fa aktuális csúcsához rendelt objektumok között, akkor vegyük a következõt. Ha nincs, haladjunk a \myref{laststep} lépésre.
+\item Ellenõrizzük, hogy az aktuális elemmel történt-e változás. Ehhez, az objektumnak alkalmasnak kell lennie arra, hogy információt szolgáltasson a változás tényérõl. Ha az adott objektum azt jelzi, hogy változás történt az elhelyezkedését illetõen, akkor ellenõrizzük, hogy a csúcshoz rendelt térrész továbbra is magába foglalja-e az objektumot. Ha igen, akkor haladjunk az elsõ lépésre.
+\item Ha nem, akkor eltávolítjuk a csúcs listájáról az objektumot, és meghívjuk a hagyományos beillesztési eljárást rá, annak érdekében, hogy újra a megfelelõ csúcs listájára kerüljön. Láthattuk, hogy a beillesztési eljárás lehetõvé teszi, hogy a bejárást tetszõleges csúcsnál kezdeményezzük. Ebben az esetben különösen hasznosnak bizonyulhat ez a lehetõség, hiszen egy valós esetben az objektumok elmozdulása igen gyakori lehet, ami gyakori újraillesztést eredményezhet. Ehhez azonban szükség van valamilyen, az alkalmazási területre specifikus információra (például ha tudjuk elõre, hogy csak nagyon kis mértékben változik mindig az objektumok helyzete, akkor kezdhetjük az újraillesztést az eredeti csúcs szülõ csúcsánál).
+\item\label{laststep} Ezt a lépést egyszerûen az eljárás meghívása jelenti, rekurzívan az adott csúcs, gyermek csúcsaira, ezzel biztosítva, hogy a teljes fa (\textit{alfa}) frissítésre kerül.
+\end{enumerate}
 
 \subsection{Láthatósági lekérdezés oktális fával}
+\label{section:visibilityquery}
 \subsubsection{Nézõpont struktúrák}
 A számítógépi grafika egy lényeges struktúrája a nézõpontot, illetve a megjelenített virtuális teret \textit{szemlélõ} entitás, nézeti paramétereit reprezentáló objektum. Általános esetben ezeket az objektumokat kamerának szokás nevezni. Elõfordulhat, hogy az emberi szem tulajdonságaival vonunk párhuzamot a struktúra leírásakor, azonban vannak olyan nézeti típusok (ortogonális projekció), melyek nem magyarázhatóak ebben a megközelítésben.
 
@@ -154,17 +182,17 @@ Perspektivikus projekció esetén a vetítés összetartó egyenesekkel történik. Az e
 \end{bmatrix}
 \]
 
+\subsubsection{A nézõpont struktúrák elhelyezése az oktális fában}
+Láthattuk tehát a korábbi részekben, hogy hogyan tárolhatunk objektumokat egy oktális fában valamint, hogy milyen struktúrákkal reprezentáljuk a virtuális teret figyelõ objektumot. A következõkben azt vizsgáljuk meg, hogy hogyan alkalmazható a két adatstruktúra együttesen, a láthatósági vizsgálat megvalósítására.
+
+A láthatósági vizsgálatok jelentõsségét általánosan igazolhatjuk a korábban bemutatott adatokkal, melyek szerint egy-egy geometriai objektum és az azokhoz tartozó textúrák megjelenítése egy teljesítmény-költséges folyamat. Természetesen a cél az, hogy minél több processzor idõt és memóriát spóroljunk. A legtöbbet pedig azokon az objektumokon spórolhatunk, amiket egyáltalán nem jelenítünk meg. Ehhez az kell, hogy a rajzolási folyamat minél korábbi szakaszában és minél kisebb költséggel meghatározhassuk, hogy egy objektum látható-e vagy sem.
+
 \begin{figure}[ht]
 \centering
 \epsfig{file=chapters/content/ortho.eps, width=9.6cm, height=5.6cm}
 \caption{Az ortogonális projekció paraméterei \cite{ortho_picture}}
 \label{fig:ortho}
 \end{figure}
-
-\subsubsection{A nézõpont struktúrák elhelyezése az oktális fában}
-Láthattuk tehát a korábbi részekben, hogy hogyan tárolhatunk objektumokat egy oktális fában valamint, hogy milyen struktúrákkal reprezentáljuk a virtuális teret figyelõ objektumot. A következõkben azt vizsgáljuk meg, hogy hogyan alkalmazható a két adatstruktúra együttesen, a láthatósági vizsgálat megvalósítására.
-
-A láthatósági vizsgálatok jelentõsségét általánosan igazolhatjuk a korábban bemutatott adatokkal, melyek szerint egy-egy geometriai objektum és az azokhoz tartozó textúrák megjelenítése egy teljesítmény-költséges folyamat. Természetesen a cél az, hogy minél több processzor idõt és memóriát spóroljunk. A legtöbbet pedig azokon az objektumokon spórolhatunk, amiket egyáltalán nem jelenítünk meg. Ehhez az kell, hogy a rajzolási folyamat minél korábbi szakaszában és minél kisebb költséggel meghatározhassuk, hogy egy objektum látható-e vagy sem.
 
 Az elsõ megoldást a láthatósági problémára általában maga a grafikus környezet nyújtja. A grafikus feldolgozó eszközök a képalkotási folyamat során "eldobják" azokat a geometria részeket, amik nem fognak látszódni a képernyõn, a vágás során. Ahhoz azonban, hogy a grafikus környezet meg tudja határozni egy-egy ponthalmaz láthatóságát, már át kellett esniük a teljes transzformációs láncon, ami már önmagában jelentõs számú mûveletet jelent.
 
@@ -209,6 +237,24 @@ H &= (x_{max},y_{min},z_{max})
  Ismerve az oktális fa szerkezetét, ez azt jelenti, hogy a látható objektumok kizárólag ebben a térrészben találhatóak. A további láthatósági vizsgálatok tehát, kizárólag azon objektumokat érintik, amik a megtalált csúcshoz, vagy annak valamely gyermekéhez tartozó térrészben tartózkodnak, ezzel jelentõsen csökkentve az ellenõrzõ mûveletek számát.
  
 \SubSection{GPU pufferek használata}
-\SubSection{Manipulálható rajzolási folyamat}
+
+A grafikus könyvtárak, mint az OpenGL vagy a DirectX, elsõdleges célja a nagy teljesítményû grafikai számításokra optimalizált, grafikus vezérlõk alacsony szintû programozása. A vezérlõ kezelése mindig tartalmazza a következõ két lépést: a felhasznált adatok grafikus memóriában történõ tárolása (\textit{feltöltés}), valamint a tárolt adatok feldolgozása. Nem egyértelmû azonban, hogy az egyes lépések milyen részmûveletekkel és ezáltal milyen hatékonysággal mennek végbe.
+
+Az OpenGL korai verziói kizárólag az úgy nevezett \textit{"immediate"}, azaz közvetlen adat feltöltést tették lehetõvé. Ez azt jelentette, hogy a rajzoláshoz szükséges adatokat (mint a \myref{SubSection:glmemory} fejezetben leírtak) minden egyes rajzolási ciklus kezdetekor a grafikus memóriába kellett másolni és onnan használni. Érthetõ okokból ez nem volt hatékony, hiszen a rajzolási folyamat minden esetben memória mûveleteket is vonzott magával.
+
+A késõbbiekben bevezetésre kerültek a, már hatékonyabbnak bizonyuló, automatizált \textit{"fetch-stage"}-ek. Ez lehetõvé tette, hogy a szükséges adatok már nem "egyesével" kerültek a grafikus vezérlõhöz, hanem egy jól meghatározott fázisban, elõre definiált struktúrával. Ez azonban továbbra sem csökkentette a folyamatos másoláshoz szükséges erõforrás igényeket.
+
+A következõ lépés a teljes mértékben grafikus memóriához dedikált puffer objektumok bevezetése volt. Az OpenGL környezetben ilyen objektumok létrehozhatóak a \textit{glGenBuffers} hívással. A GPU pufferek használatának egy hátránya lehet, hogy a feltöltött adat késõbbi változtatása kevésbé intuitiív, mint ha a program memóriájában kezelnék azt. Ezt azonban jelentõsen kompenzálja a használatból eredõ teljesítmény növekedés. A pufferek használata lehetõvé teszi, hogy egyszer legyen szükséges az adatok struktúrájának definiálása és azok GPU memóriába való feltöltése. A továbbiakban pedig a rajzolási mûveletek közvetlenül a puffer adataiból fognak dolgozni.
+
 \SubSection{Állapot átmenet optimalizáció OpenGL-ben}
+
+Az OpenGL környezetre specifikus a \textit{grafikai állapotgép} jelleg. Ez azt jelenti, hogy a futási környezet (\textit{GL context}) viselkedését, illetve a kiadott parancsok hatását, minden pillanatban egy bizonyos számú állapotváltozó határozza meg. Ilyenek például, az aktuális használatban lévõ \textit{tömb puffer}, az aktuális mélységi ellenõrzés (\textit{depth test}) állapota, vagy a stencil mûveletekhez tartozó funkció típusa.
+
+Ezen állapotok megváltoztatásához a legtöbb esetben a grafikus vezérlõre kiadott parancsra van szükség. Az ilyen parancsoknak azonban minden esetben van egy bizonyos plusz idõ költsége az általános függvény hívásokkal szemben, hiszen a mûveletek nem kizárólag a központi processzoron történõ számításokat eredményeznek, hanem külsõ hardver (GPU) "megszólítását" is. 
+
+Annak érdekében tehát, hogy az állapot átmenetek minél kevésbé terheljék az alkalmazást, egy belsõ állapottérre van szükség. Ez egyszerûen azt jelenti, hogy azokat a kontextus változókat, amiket használunk (vagy amelyeket \textit{gyakran} használunk), az alkalmazás memóriájában is eltároljuk. Az állapotváltozók így két helyen lesznek tárolva. Ennek hátránya lehet a szinkronizációból eredõ problémák. Az alkalmazás oldali állapottér bevezetésével biztosítanunk kell, hogy a továbbiakban az állapotváltozók \textbf{lekérdezése} és \textbf{beállítása} kizárólag ezen állapottéren keresztül történik. 
+
+Az állapottér jellemzõ mûvelete a lekérdezés és a beállítás mellett a \textit{feltöltés}. Ez a mûvelet jelenti a grafikus vezérlõ által tárolt állapottér frissítését, az alkalmazás oldali állapottér változóival.
+
+Ennek a kialakításnak az elõnye, hogy az állapotok frissítése az alkalmazás egy jól meghatározott pontján történik, így az abból származó teljesítmény költséggel könnyen lehet számolni, és ami a legfontosabb: az állapotváltozók frissítésére kizárólag akkor kerül sor, ha valóban történt változás az alkalmazás oldali állapottérben. Ennek ellenõrzése pedig kisebb költségekkel jár, mint folyamatos, szükségtelen frissítéseket végezni.
 
