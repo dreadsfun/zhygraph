@@ -1,2 +1,69 @@
 \Chapter{Rendszer architektúra}
-\label{Chap:tartalom}
+
+\Section{Magas szintû áttekintés}
+
+A \myref{fig:highlevelsystemovmin} ábrán láthatjuk a rendszer egy magas szintû, leegyszerûsítétt komponens diagramját. A rendszer öt fõ részbõl tevõdik össze. Négy különálló alrendszert képez a digitális tartalom nyílvántartó rendszer (\textit{Asset System}), a rendszer központi funkcióit összefoglaló alrendszer (\textit{Engine Core}), a szkript alrendszer (\textit{Script Backend}) és a grafikus alrendszer (\textit{Render System}). Az ábrán látható \textit{Script Interface} komponens pedig, az alrendszerek által, a szkript környezet felé szolgáltatott funkcionalitások összessége.
+
+Az ábrán láthatóak továbbá, a komponensek közötti legfõbb kapcsolódási pontok. A nyílvántartó rendszer, a központi funkciók és a grafikus alrendszer közötti kapcsololatot a virtuális teret rendszerezõ fagráf jelenti. A fagráf egyes csúcsai egy úgy nevezett \textit{tartalom foglalaton} (a \myref{subsec:assetsocket} részben részletesebben lesz szó errõl) keresztül referálnak az aktuálisan hozzájuk rendelt tartalomra, a grafikus alrendszer pedig ezeket a tartalmakat dolgozza fel futása során, a gráf csúcsait bejárva.
+
+Egy másik rendszerek közötti, gyengébb összefüggést jelent a konfigurációs megoldás. Ebben az esetben nincs szó konkrét funkcionális kapcsolatról, csupán a konfigurációs objektum megosztottsága, és a különbözõ alrendszerek által felhasznált konfigurációs paraméterek biztosítanak egy bizonyos fokú adat összefüggést (errõl a \myref{subsec:configuration} rész szól részletesebben).
+
+Az utolsó, ábrán látható asszociációt pedig az úgy nevezett \textit{modellek} jelentik. Ezek olyan speciális objektumok, amik a különbözõ alrendszerek natív funkcionalitását hivatottak kiszolgáltatni a \textit{szkript felület} (Script Interface) felé (a \myref{subsec:models} részben láthatjuk hogyan).
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/highlevelsystemovmin.eps, width=\textwidth, height=13.105cm}
+\caption{Rendszer komponensek áttekintése}
+\label{fig:highlevelsystemovmin}
+\end{figure}
+
+\Section{Központi funkciók}
+
+A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, amit mind a grafikus mind pedig a nyílvántartó rendszer el kíván érni. Ezen kívül a konfigurációs osztályok, a futtatható \textit{referencia} alkalmazás "csontvázát" jelentõ osztályok, a rendszerüzenetek továbbítására szolgáló osztályok valamint egyéb segédfunkciók tartoznak ide.
+
+\SubSection{Konfiguráció}
+
+Konfigurációs paraméternek fogunk nevezni minden olyan típus-érték párt, ami az alkalmazás indulásakor egyszer töltõdik be, a futás során nem változik meg (sem a típusa, sem az értéke) és valamilyen módon hatással van egy alrendszer, vagy egy alrendszerben található funkció mûködésére.
+
+A konfiguráció úgy nevezett \textit{INI} fájlokon keresztül történik. Az INI fájlformátum egy nem-hivatalos konfigurációs formátum bizonyos platformokon. Elõnye, hogy egyszerû, szöveg alapú fájlok, így könnyen szerkeszthetõek és olvashatóak. A formátum három összetevõje a \textit{szekciók}, az \textit{attribútumok} és az \textit{értékek}. A három összetevõ elrendezése a következõ:
+
+\begin{lstlisting}
+[section1]
+attribute1=value1
+attribute2=value2
+
+[section2]
+attribute3=value3
+attribute4=value4
+\end{lstlisting}
+
+\cite{inifile}.
+
+\label{subsec:configuration}
+\SubSection{Virtuális tér fagráf}
+\SubSection{Alkalmazás szerkezet}
+\SubSection{Segédfunkciók}
+\SubSection{Rendszerüzenetek}
+
+\Section{A grafikus alrendszer}
+\SubSection{Virtuális tér}
+\SubSection{Digitális tartalom implementációk}
+\SubSection{Grafikus vezérlõ osztály}
+\SubSection{Grafikus állapottér}
+\SubSection{Rendszer konfigurációk}
+
+\Section{A tartalom nyílvántartó alrendszer}
+\SubSection{Tartalom referencia}
+\SubSection{Tartalom gyártó egység}
+\SubSection{Nyílvántartó vezérlõ osztály}
+\SubSection{Tartalom "foglalat"}
+\label{subsec:assetsocket}
+\SubSection{Rendszer konfigurációk}
+
+\Section{A szkript alrendszer}
+\SubSection{Digitális tartalom implementáció}
+\SubSection{Szkript vezérlõ osztály}
+\SubSection{Szkript állapottér}
+\SubSection{Modellek}
+\label{subsec:models}
+\SubSection{Rendszer konfigurációk}
