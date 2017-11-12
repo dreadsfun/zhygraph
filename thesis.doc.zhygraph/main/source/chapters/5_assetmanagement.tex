@@ -1,4 +1,5 @@
 \Chapter{Digitális tartalom nyílvántartás}
+\label{chap:assetmanagement}
 \label{Chap:tartalom}
 A rendszer egy alapvetõ komponense, a tartalom nyílvántartó alrendszer. A következõkben láthatjuk mit nevezünk digitális tartalomnak, hogy milyen felelõsségei vannak egy ilyen alrendszernek és, hogy hogyan épül fel a futási környezetben használt, a tartalmat reprezentáló adatstruktúra.
 
@@ -32,6 +33,7 @@ A hasítótáblák olyan, asszociatív adatstruktúrák, melyekben a kulcsok egy hasító
 A hasítótábla kulcs típusa az egyedi azonosító típusa lesz (\textit{string}), az érték típusa pedig az adatstruktúra \textit{referenciatípusa}. Mivel nincs szükség a kulcsok rendezésére, valamint általában az objektumok elérése gyakoribb lesz, mint a beillesztésük, a hasítótábla egy rendezetlen változatát választjuk, ezzel spórolva a rendezés költségét. A C++ nyelv például biztosít ilyen adatstruktúrát az \textit{std::unordered\_map<T>} osztály formájában. A rendezetlen hasítótábla elem beillesztésének és elérésének idõkomplexitása átlagos esetben: $O(1)$, legrosszabb esetben: $O(size())$, ahol size() az aktuális táblaméret \cite{unordered_map}.
 
 \Section{Nem használt tartalom kisöprése}
+\label{section:gclist}
 Annak érdekében, hogy a rendszer memóriafoglalását egy bizonyos szint alatt tartsuk, illetve, hogy feleslegesen ne tartsunk fent foglalást, azokat az objektumokat, amelyekre nincsen hivatkozás egy szemétgyûjtõ listára fogjuk helyezni. A szemétgyûjtõ listáról pedig bizonyos idõközönként egy algoritmus kiválasztja azokat az objektumokat, melyek erõforrásai felszabadításra kerülnek. 
 
 Ehhez szükséges az objektumokra aktívan jelen levõ \textit{referenciák} (hivatkozások) számontartása. Ezt egy "csomagoló" osztállyal érjük el, aminek egyetlen szerepe van: az általa hivatkozott tartalom objektumra jelenlevõ referenciák számlálása. A csomagoló osztály - az adatstruktúránkkal ellentétben - másolható, ez teszi lehetõvé, hogy az alrendszeren kívül, vagy az alrendszeren belül különbözõ kódrészek úgy osszák meg az adott objektumot, hogy azt nem másolják le, viszont a referenciák számát mindig számontartsuk. 
