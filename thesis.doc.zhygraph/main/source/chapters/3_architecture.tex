@@ -2,13 +2,29 @@
 
 \Section{Magas szintû áttekintés}
 
-A \myref{fig:highlevelsystemovmin} ábrán láthatjuk a rendszer egy magas szintû, leegyszerûsítétt komponens diagramját. A rendszer öt fõ részbõl tevõdik össze. Négy különálló alrendszert képez a digitális tartalom nyílvántartó rendszer (\textit{Asset System}), a rendszer központi funkcióit összefoglaló alrendszer (\textit{Engine Core}), a szkript alrendszer (\textit{Script Backend}) és a grafikus alrendszer (\textit{Render System}). Az ábrán látható \textit{Script Interface} komponens pedig, az alrendszerek által, a szkript környezet felé szolgáltatott funkcionalitások összessége.
+A \myref{fig:highlevelsystemovmin} ábrán láthatjuk a rendszer egy magas szintû, leegyszerûsített komponens diagramját. A rendszer öt fõ részbõl tevõdik össze. Négy különálló alrendszert képez a digitális tartalom nyílvántartó rendszer (\textit{Asset System}), a rendszer központi funkcióit összefoglaló alrendszer (\textit{Engine Core}), a szkript alrendszer (\textit{Script Backend}) és a grafikus alrendszer (\textit{Render System}). Az ábrán látható \textit{Script Interface} komponens pedig, az alrendszerek által, a szkript környezet felé szolgáltatott funkcionalitások összessége.
 
 Az ábrán láthatóak továbbá, a komponensek közötti legfõbb kapcsolódási pontok. A nyílvántartó rendszer, a központi funkciók és a grafikus alrendszer közötti kapcsololatot a virtuális teret rendszerezõ fagráf jelenti. A fagráf egyes csúcsai egy úgy nevezett \textit{tartalom foglalaton} (a \myref{subsec:assetsocket} részben részletesebben lesz szó errõl) keresztül referálnak az aktuálisan hozzájuk rendelt tartalomra, a grafikus alrendszer pedig ezeket a tartalmakat dolgozza fel futása során, a gráf csúcsait bejárva.
 
 Egy másik rendszerek közötti, gyengébb összefüggést jelent a konfigurációs megoldás. Ebben az esetben nincs szó konkrét funkcionális kapcsolatról, csupán a konfigurációs objektum megosztottsága, és a különbözõ alrendszerek által felhasznált konfigurációs paraméterek biztosítanak egy bizonyos fokú adat összefüggést (errõl a \myref{subsec:configuration} rész szól részletesebben).
 
 Az utolsó, ábrán látható asszociációt pedig az úgy nevezett \textit{modellek} jelentik. Ezek olyan speciális objektumok, amik a különbözõ alrendszerek natív funkcionalitását hivatottak kiszolgáltatni a \textit{szkript felület} (Script Interface) felé (a \myref{subsec:models} részben láthatjuk hogyan).
+
+\subsubsection{Fájl útvonalak}
+A továbbiakban szerepelni fognak az említett koncepciókat és funkciókat megvalósító programkódok forrásainak elérési útvonala. Az útvonalakat egy egyszerûsített formában láthatjuk, mint például: \textit{core/multi\_thread}. Ennek értelmezéséhez a következõket szükséges figyelembe venni:
+
+\begin{itemize}
+\item Minden említett útvonal alapkönyvtára a \textbf{zhygraph} könyvtár.
+\item Minden alrendszer saját könyvtára a \textbf{subsystem.zhygraph} elnevezési formát követi.
+\item Sok esetben, a C++ nyelvre jellemzõ konvenció és programtechnikai okokból egy-egy osztály vagy funkció deklarációja és definíciója két részre van osztva. A deklaráció a \textbf{.h}, míg a definíció a \textbf{.cpp} kiterjesztésû fájlokban található. Az említett elérési útvonalak kiterjesztés nélkül szerepelnek, ami azt jelenti, hogy mind a két fájlra vonatkozik, amennyiben a kód két részre van osztva, valamint csak a \textbf{.h} kiterjesztésû fájlokra, ha nincs elérhetõ forrás fájl.
+\end{itemize}
+
+Ezek alapján a \textit{core/multi\_thread} útvonal, fizikailag a következõ fájlokra vonatkozik:
+\begin{itemize}
+\item \textit{zhygraph/core.zhygraph/multi\_thread.h}
+\item \textit{zhygraph/core.zhygraph/multi\_thread.cpp}
+\end{itemize}
+Mivel az alapkönyvtár nem változik, illetve az alrendszer könyvtárak elnevezése is konzisztens, a leegyszerûsített útvonal mindig egyértelmû.
 
 \begin{figure}[ht]
 \centering
@@ -22,10 +38,11 @@ Az utolsó, ábrán látható asszociációt pedig az úgy nevezett \textit{modellek} je
 A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, amit mind a grafikus mind pedig a nyílvántartó rendszer el kíván érni. Ezen kívül a konfigurációs osztályok, a futtatható \textit{referencia} alkalmazás "csontvázát" jelentõ osztályok, a rendszerüzenetek továbbítására szolgáló osztályok valamint egyéb segédfunkciók tartoznak ide.
 
 \SubSection{Konfiguráció}
+\label{subsec:configuration}
 
 Konfigurációs paraméternek fogunk nevezni minden olyan típus-érték párt, ami az alkalmazás indulásakor egyszer töltõdik be, a futás során nem változik meg (sem a típusa, sem az értéke) és valamilyen módon hatással van egy alrendszer, vagy egy alrendszerben található funkció mûködésére.
 
-A konfiguráció úgy nevezett \textit{INI} fájlokon keresztül történik. Az INI fájlformátum egy nem-hivatalos konfigurációs formátum bizonyos platformokon. Elõnye, hogy egyszerû, szöveg alapú fájlok, így könnyen szerkeszthetõek és olvashatóak. A formátum három összetevõje a \textit{szekciók}, az \textit{attribútumok} és az \textit{értékek}. A három összetevõ elrendezése a következõ:
+A konfiguráció úgy nevezett \textit{INI} fájlokon keresztül történik. Az INI fájlformátum egy nem-hivatalos konfigurációs formátum bizonyos platformokon. Elõnye, hogy egyszerû, szöveg alapú fájlok, így könnyen szerkeszthetõek és olvashatóak. A formátum három összetevõje a \textit{szekciók}, az \textit{attribútumok} és az \textit{értékek} \cite{inifile}. A három összetevõ elrendezése a következõ:
 
 \begin{lstlisting}
 [section1]
@@ -37,13 +54,68 @@ attribute3=value3
 attribute4=value4
 \end{lstlisting}
 
-\cite{inifile}.
+Egy INI formátum alapú konfiguráció implementáció található a \textit{core/config} útvonalon. A \textit{config} osztály egy aktuálisan betöltött INI fájlt reprezentál. A betöltést a \textit{load} függvénnyel lehet kezdeményezni, mely a konfigurációs fájl elérési útvonalát várja paraméterként. A sikeres betöltés után a \textit{group} hívással érhetõek el a különbözõ csoportok. Egy csoport elemei egy konkrét \textit{[section]} elem alá írt név-érték párok lesznek, a csoport neve pedig a zárójelek közé írt név. A group hívás visszatérési értéke egy csoport példány lesz. A csoportban definiált név-érték párok között a \textit{value, integer, number, test} funkciókkal lehet keresni, amik egyben a kívánt típussá - rendre karakterlánc, egész szám, tört szám, logikai érték - konvertálják az értéket.
 
-\label{subsec:configuration}
 \SubSection{Virtuális tér fagráf}
+
+A virtuális tér elemeit, egy fagráfban tároljuk, tehát teljesülnek a következõk:
+\begin{enumerate}
+\item A gráf összefüggõ és nem tartalmaz kört
+\item A gráfban egyszerû kör jön létre, ha hozzáadunk egy élt
+\item A gráf nem marad összefüggõ ha eltávolítunk egy élt
+\end{enumerate}
+
+A gráfot irányítottnak tekintjük, hiszen a csúcsok között szülõ-gyermek viszonyt feltételezünk. Ezzel együtt teljesül az, hogy minden csúcsnak pontosan egy szülõje van, kivéve a gyökér elemet, aminek nincs szülõje. Továbbá minden csúcsnak tetszõleges számú gyermeke lehet.
+
+A csúcsok viszonya az úgy nevezett \textit{hierarchikus transzformációk} miatt lényeges. Ennek alap ötlete, hogy minden egyes csúcshoz tartozik egy transzformáció, ami leírja a csúcs helyzetét, orientációját és skálázását. A transzformációk bázisa azonban mindig az aktuális csúcs szülõjének koordinátarendszere, aminek a "valós" térbeli elhelyezkedését a saját transzformációja, és az õ szüleinek transzformáció lánca határozza meg, rekurzívan.
+
+A gyökér csúcs transzformációjához tartozó bázist tekintjük az abszolút bázisnak, amelyben a pontokat az úgy nevezett "világ" koordináták írnak le.
+
+Ennek a rendszernek az elõnye, hogy a relatív transzformációk könnyedén modellezik a virtuális térben található objektumok kapcsolatát. Például tegyül fel, hogy el szeretnénk helyezni a térben egy lovat ábrázoló geometriát, valamint annak hátán egy lovast. A relatív transzformációk nélkül a lovas helyzetét is ugyanazon bázisban kellene meghatároznunk, mint a lóét, ami nem okozna problémát ha az objektumok között nem lenne semmilyen összefüggés. Jelen esetben, azonban nem egyszerûen egy lovat és egy lovast szeretnénk modellezni, hanem egy lovast, ami \textbf{rajta ül} egy lovon.
+
+A különbség akkor lényeges, ha megváltozik a ló helyzete, például mert szeretnénk animálni annak mozgását illetve haladását. Az elsõ esetben a lovas a helyén maradna, a ló pedig "kimenne" alóla. Ennek korrigálására a ló helyzetét megváltoztató transzformációt alkalmaznunk kellene, külön a lovasra.
+
+Két objektumra talán nem tûnik még komplikáltnak alkalmazni ugyanazon elmozdulást, képzeljük el azonban, ha a lovason található öltözékek mind-mind külön objektumok, a kezében pedig lovagló pálca van. Ebben az esetben a ló elmozdulását már jóval több objektumra kell alkalmazni, ami egyre komplikáltabb számításokat eredményez.
+
+A problémára megoldást jelent a relatív transzformációk rendszere. Ezek alapján a lovast úgy modellezhetjük, hogy a ló bázisának az abszolút bázist tekintjük, a lovasénak a ló transzformációja által meghatározott rendszert, a lovas öltözékeinek helyzete pedig a lovashoz relatív értelemben van megállapítva.
+
+A relatív transzformációkat magába foglaló, facsúcsokat reprezentáló osztályt láthatunk a \textit{core/scene\_node} útvonalon.
+
 \SubSection{Alkalmazás szerkezet}
-\SubSection{Segédfunkciók}
+
+
+
+\SubSection{Segédfunkciók és struktúrák}
+
+\subsubsection{Szálkezelés}
+
+A \textit{core/multi\_thread} útvonalon található a standard \textit{thread} osztály egy kiterjesztése. A standard szál objektumokat egy valamilyen \textit{callable} ("hívható") objektummal kell létrehoznunk, aminek a futtatása egy külön szálon fog történni, ezután azonban a szál objektum, valamint a hozzátartozó szál nem használható tovább. A \textit{multi-thread} osztály a szálak újrahasznosítását teszi lehetõvé, annak érdekében, hogy elkerüljük az újboli szál kreáció és szál-objektum példányosítás költségeit.
+
+\subsubsection{Oktális fa}
+
+A \textit{core/octree} útvonalon található egy dinamikus oktális fa implementációja. A megvalósításhoz tartozó két fõ osztály az \textit{octree\_node} és az \textit{octree}. Az elõbbi egy osztály sablon, aminek a paramétere egy "volume-type", tehát egy olyan absztrakt struktúra, ami megvalósítástól függõ módon ír le egy térrészt. Az utóbbi pedig csupán egy gyökér elemet biztosít a fa számára, valamint kivezeti a csúcsok publikus funkcióit. Az oktális fa mûködésérõl és alkalmazásáról részletes leírást láthatunk a \myref{section:optimalize} részben.
+
 \SubSection{Rendszerüzenetek}
+
+Annak érdekében, hogy a különbözõ rendszerfunkciók mûkõdésérõl valósidejû információkat kapjunk, illetve, hogy az esetlegesen felmerülõ hibák rögzítésre kerülhessenek bevezetünk egy rendszerüzenet kezelõ rendszert.
+
+Az üzenet rendszer implementációja a \textit{core/logger} útvonalon található. A rendszer fõ osztálya a \textit{logger} osztály, amin keresztül elérhetõek a fõ funkciók. Az üzenetküldés alap funkciója a \textit{log} függvény, ami egy üzenetprioritást, egy üzenetet és az üzenet küldõ osztály nevét várja paraméterként.
+
+Az üzenetek prioritásai a következõképpen alakulnak:
+
+\begin{description}
+\item \textit{debug} - olyan üzenet, ami a fejlesztés közben, fõleg hibakeresési célokkal jelenhet meg a fejlesztõ számára
+\item \textit{info} - alapvetõ információ üzenet, a rendes mûködés menetérõl szolgáltat tájékoztatást
+\item \textit{warn} - olyan üzenet, aminek kiváltó okáról nem dönthetõ el pontosan, hogy a rendes vagy a rendellenes mûködés része-e, a legtöbb esetben nem jelent veszélyt a program futására, de érdemes figyelni rá
+\item \textit{error} - olyan \textbf{hiba} üzenet, aminek kiváltó oka nem eredményezi a program leállását, azonban jelzi valamely funkció rendellenes mûködését, külsõ vagy belsõ okok is kiválthatják
+\item \textit{fatal} - olyan \textbf{hiba} üzenet, aminek kiváltó oka nagy valószínûséggel a program leállását fogja eredményezni, külsõ vagy belsõ okok is kiválthatják
+\end{description}
+
+Az üzenetek a \textit{log\_channel} interfészen keresztül kerülnek feldolgozásra. Az interfész célja, hogy különbözõ, egyedi megvalósításokat hozhassunk létre, az üzenetek kimenetelét tekintve. 
+
+A \textit{stdout\_channel} implementáció, ahogy az elnevezése sugallja, a standard kimenetre írja a kapott üzeneteket (\textit{std::cerr} a hiba és \textit{std::cout} a nem hiba üzenetek kimenete ). A másik megvalósítás a \textit{file\_channel}, ami pedig a példányosításkor megadott fájlba írja az üzeneteit.
+
+A rendszer úgy van megvalósítva, hogy tetszõleges számú \textit{csatorna} adható a rendszerhez, és mindegyik csatorna megkapja az összes küldött üzenetet, amivel aztán az implementációtól függõ mûvelet hajtódik végre.
 
 \Section{A grafikus alrendszer}
 \SubSection{Virtuális tér}
