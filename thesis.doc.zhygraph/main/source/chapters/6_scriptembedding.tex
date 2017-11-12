@@ -16,28 +16,27 @@ A Python környezet, más szkriptnyelvekhez hasonlóan biztosítja a lehetõséget, ho
 
 Például, tegyük fel, hogy a C könyvtár egy beépített funkcióját a \textit{system()} hívást akarjuk elérhetõvé tenni a Python számára. Azt szeretnénk, hogy a következõ módon legyen hívható a funkció:
 
-\begin{lstlisting}
-	>>> import exmpl
-	>>> status = exmpl.system("ls -l")
-\end{lstlisting}
+\begin{python}
+import exmpl
+status = exmpl.system("ls -l")
+\end{python}
 
 Elsõ lépésként létrehozunk egy forrás fájlt \textit{exmplmodule.c} névvel, aminek a tartalma a következõ lesz:
 
-\lstset{language=C}
-\begin{lstlisting}
-	#include <Python.h>
+\begin{cpp}
+#include <Python.h>
 
-	static PyObject* 
-	exmpl_system(PyObject* self, PyObject* args) {
-		const char* command;
-		int sts;
+static PyObject* 
+exmpl_system(PyObject* self, PyObject* args) {
+    const char* command;
+    int sts;
 
-		if (!PyArg_ParseTuple(args, "s", &command))
-			return NULL;
-		sts = system(command);
-		return Py_BuildValue("i", sts);
-	}
-\end{lstlisting}
+    if (!PyArg_ParseTuple(args, "s", &command))
+        return NULL;
+    sts = system(command);
+    return Py_BuildValue("i", sts);
+}
+\end{cpp}
 
 Az ilyen formában kialakított funkcióknak a C/C++ oldalon mindig két paramétere van: a \textit{self} és az \textit{args}. A self paraméter a Pythonban (és egyéb objektum-orientált nyelvekben) azon objektumot jelenti, amire a funkcióhívás történt (implicit \textit{this pointer} a C++ nyelvben). Ez jelen esetben \textit{NULL} lesz, hiszen a funkció modul- és nem objektumszintû. Az args paraméter egy kompozit objektum, ez tárolja a funkciónak átadott minden egyéb paramétert. 
 
@@ -47,21 +46,18 @@ A PyArg\_ParseTuple igaz értékkel tér vissza ha minden értéknek megfelelõ volt a
 
 A következõ lépésben létrehozzuk a modul, funkció tábláját és az inicializációs függvényét. Ahhoz, hogy a system funkciót meghívhassuk Pythonból, regisztrálnunk kell azt, a modul funkció táblájában:
 
-\lstset{language=C}
-\begin{lstlisting}
-	static PyMethodDef ExmplMethods[] = {
-		...
-		{"system",  exmpl_system, METH_VARARGS,
-		 "Execute a shell command."},
-		...
-		{NULL, NULL, 0, NULL}        /* Sentinel */
-	};
-\end{lstlisting}
+\begin{cpp}
+static PyMethodDef ExmplMethods[] = {
+    // ...
+    {"system",  exmpl_system, METH_VARARGS, "Execute a shell command."},
+    // ...
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+\end{cpp}
 
 Ezután létrehozzuk a modult leíró struktúrát, amiben hivatkozunk az elõzõ funkciótáblára:
 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 static struct PyModuleDef exmplmodule = {
 	PyModuleDef_HEAD_INIT,
 	"exmpl", /* name of module */
@@ -70,53 +66,51 @@ static struct PyModuleDef exmplmodule = {
 	or -1 if the module keeps state in global variables.*/
 	ExmplMethods
 };
-\end{lstlisting}
+\end{cpp}
 
 Végül ezt a struktúrát kapja meg a modult létrehozó funkció, amikor a modul betöltésre kerül az interpreter által:
 
-\lstset{language=C}
-\begin{lstlisting}
-	PyMODINIT_FUNC
-	PyInit_exmpl(void) {
-		return PyModule_Create(&exmplmodule);
-	}
-\end{lstlisting}
+\begin{cpp}
+PyMODINIT_FUNC
+PyInit_exmpl(void) {
+    return PyModule_Create(&exmplmodule);
+}
+\end{cpp}
 
 Amikor egy Python program elsõként importálja a modult, ez a funkció kerül meghívásra. A funkció létrehozza a modult, és elhelyezi benne a funkciótáblában regisztrált függvényeket, amik ezután használhatóvá válnak.
 
 Ha a Python környezetet beágyazva inicializáljuk, a modul létrehozása nem történik meg automatikusan. Ahhoz, hogy ez megtörténjen, a modult hozzá kell adnunk az inicializációs táblához:
 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 int
 main(int argc, char *argv[]) {
-	wchar_t *program = Py_DecodeLocale(argv[0], NULL);
-	if (program == NULL) {
-		fprintf(stderr, 
-		"Fatal error: cannot decode argv[0]\n");
-		exit(1);
-	}
+    wchar_t *program = Py_DecodeLocale(argv[0], NULL);
+    if (program == NULL) {
+        fprintf(stderr, 
+                "Fatal error: cannot decode argv[0]\n");
+        exit(1);
+    }
 
-	/* Add a built-in module, before Py_Initialize */
-	PyImport_AppendInittab("exmpl", PyInit_exmpl);
+    /* Add a built-in module, before Py_Initialize */
+    PyImport_AppendInittab("exmpl", PyInit_exmpl);
 
-	/* Pass argv[0] to the Python interpreter */
-	Py_SetProgramName(program);
+    /* Pass argv[0] to the Python interpreter */
+    Py_SetProgramName(program);
 
-	/* Initialize the Python interpreter.  Required. */
-	Py_Initialize();
+    /* Initialize the Python interpreter.  Required. */
+    Py_Initialize();
 
-	/* Optionally import the module; alternatively,
-	   import can be deferred until the embedded script
-	   imports it. */
-	PyImport_ImportModule("exmpl");
+    /* Optionally import the module; alternatively,
+       import can be deferred until the embedded script
+       imports it. */
+    PyImport_ImportModule("exmpl");
 
-	...
+    // ...
 
-	PyMem_RawFree(program);
-	return 0;
+    PyMem_RawFree(program);
+    return 0;
 }
-\end{lstlisting}
+\end{cpp}
 
 Ahogy feltettük korábban, ennek a megközelítésnek a hátránya, hogy a C kód kevésbé olvasható. Láthatóan a paraméterek felhasználása Python objektumokon keresztül történik, illetve egyéb Python specifikus hívást is kell tennünk a megfelelõ mûködés érdekében \cite{extendpython}. Nézzük meg, hogy milyen további lehetõségek állnak rendelkezésünkre a Python beágyazását illetõen.
 
@@ -133,58 +127,54 @@ A \textit{ctypes} egy külsõ, funkció könyvtár, ami lehetõvé teszi, hogy natív, d
 
 A ctypes egy modulja a cdll, ami lehetõvé teszi, hogy tetszõleges dinamikus könyvtárakat töltsünk be az alkalmazás címterébe, Pythonon keresztül. Használata a következõ:
 
-\lstset{language=Python}
-\begin{lstlisting}
-	>>> from ctypes import *
-	>>> lib = cdll.LoadLibrary('cAPI.dll')
-\end{lstlisting}
+\begin{python}
+from ctypes import *
+lib = cdll.LoadLibrary('cAPI.dll')
+\end{python}
 
 A \textit{LoadLibrary} hívás eredménye egy DLL objektum, amin keresztül, innentõl kezdve elérhetõek a könyvtár exportált funkciói, amennyiben sikeres volt a betöltés.
 
 A \textit{cAPI.dll} könyvtárat úgy kell létrehoznunk, hogy a használni kívánt funkciók a C hívási szemantikát kövessék. Ezek alapján egy példa C funkció, amit Pythonból is hívhatunk a következõ képpen alakul:
 
-\lstset{language=C}
-\begin{lstlisting}
-	CAPI_SHARED int log_debug( const char* msg ) {
-		return capi_bridge::instance->m_logger->
-			log( 
-			priority::debug, 
-			msg, 
-			"capi_bridge" 
-			);
-	}
-\end{lstlisting}
+\begin{cpp}
+CAPI_SHARED int log_debug( const char* msg ) {
+    return capi_bridge::instance->m_logger->
+        log( 
+            priority::debug, 
+            msg, 
+            "capi_bridge" 
+        );
+}
+\end{cpp}
 
 Láthatjuk, hogy az elõzõ részben tárgyalt módszerrel ellentétben, most nincs szükség a Python specifikus paraméterátadási és visszatérési módszerekre. A funkció kényelmesen használható továbbra is, mint bármely másik C funkció. Láthatjuk továbbá, hogy kizárólag a hívási szemantikának kell C specifikusnak lennie, maga a függvény implementációja már tartalmazhat tetszõleges C++ kódot is, ezzel kiteljesítve a Python-C-C++ kapcsolatot.
 
 A \textit{CAPI\_SHARED} kifejezés csupán arra szolgál, hogy a Visual C++ környezetben megjelöljük a funkciót, mint exportálni kívánt funkció. Ez szükséges ahhoz, hogy a könyvtár betöltése után elérhetõvé váljon. A kifejezés a következõ képpen van definiálva:
 
-\lstset{language=C}
-\begin{lstlisting}
-	#ifndef CAPI_SHARED
-	#  ifdef CAPI_EXPORTS
-	#    define CAPI_SHARED __declspec(dllexport)
-	#  else
-	#    define CAPI_SHARED __declspec(dllimport)
-	#  endif // ~CAPI_EXPORTS
-	#endif // ~CAPI_SHARED
-\end{lstlisting}
+\begin{cpp}
+#ifndef CAPI_SHARED
+#  ifdef CAPI_EXPORTS
+#    define CAPI_SHARED __declspec(dllexport)
+#  else
+#    define CAPI_SHARED __declspec(dllimport)
+#  endif // ~CAPI_EXPORTS
+#endif // ~CAPI_SHARED
+\end{cpp}
 
 A Python nyelv oldalán, annyi lehet a felelõsségünk, hogy biztosítsuk az felhasznált natív funkciók típusbiztonságát. Erre a ctypes azt a lehetõséget biztosítja, hogy felsoroljuk a funkciók visszatérési értékének és paramétereinek a típusát. Ez gyakorlatilag egy leegyszerûsített módja a függvényszignatúra definiálásának:
 
-\begin{lstlisting}
+\begin{python}
 lib.log_debug.argtypes = [c_char_p]
 lib.log_debug.restype = c_int
-\end{lstlisting}
+\end{python}
 
 A \textit{c\_char\_p} megfelelõje a karakter pointer (\textit{char*}) a C oldalon, a \textit{c\_int} típusé pedig az \textit{int}. Ezen, ctypes-ban definiált kifejezések biztosítják a kompatibilitást a C és és Python nyelvek típusai között. Az összes elérhetõ típus látható a \myref{fig:ctypes} ábrán.
 
 Ezek után a funkció egyszerûen hívható Pythonból a következõ képpen:
 
-\lstset{language=Python}
-\begin{lstlisting}
-	>>> lib.log_debug('log test')
-\end{lstlisting}
+\begin{python}
+lib.log_debug('log test')
+\end{python}
 
 \Section{Python hívása C++-ból}
 
@@ -198,8 +188,7 @@ Meghívhatunk Python funkciót C++-ból a \textit{PyRun\_SimpleString("update()")} 
 
 A Python minden globálisan definiált függvényt, a környezet globális táblájában tárol. Így tehát, ha el tudjuk érni a globális táblát, akkor bármely ott definiált funkciót is használhatjuk. A Python környezet biztosít funkciókatt a globális tábla eléréséhez:
 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 #include <Python.h>
 
 void process_expression(int num, char* func_name)
@@ -232,30 +221,26 @@ void process_expression(int num, char* func_name)
     }
     PyRun_SimpleString("print x");
 }
-\end{lstlisting}
+\end{cpp}
 
 Elsõ lépésben az eljárás elkér egy referenciát a fõmodulra, a 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 PyImport_AddModule("__main__")
-\end{lstlisting}
+\end{cpp}
  hívással. Ezután a 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 PyModule_GetDict(main_module)
-\end{lstlisting} 
+\end{cpp} 
 már a globális táblát adja vissza, ami a keresett függvényt tartalmazza. Így a függvény eléréséhez már csak a 
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 PyDict_GetItemString(global_dict, func_name)
-\end{lstlisting}
+\end{cpp}
 hívás szükséges, ahol a \textit{func\_name} a függvény neve (jelen esetben \textit{update}). 
 
 Az utolsó lépés, hogy a
-\lstset{language=C}
-\begin{lstlisting}
+\begin{cpp}
 PyObject_CallObject(expression, NULL)
-\end{lstlisting}
+\end{cpp}
 függvénnyel meghívjuk a kívánt funkciót. Ennek a hívásnak az elsõ paramétere maga a függvény objektum, ami már egy betöltött és lefordított funkció a Python környezetben így ennek ismételt hívása nem jelent plusz teljesítmény költséget. 
 
 Az utolsó kérdés a Python függvény meghívásával kapcsolatban, a paraméterek átadása. A \textit{CallObject} hívás második paramétere egy \textit{PyObject*} típusú változó, ahova egy változó elemszámú kompozit objektumot vár a függvény, aminek az elemeit végül a meghívni kívánt funkció kapja meg paraméterként. Ezen módja a paraméter átadásnak nagy fokú rugalmasságot enged meg, hiszen tetszõleges számú és típusú paramétert adhatunk át a függvénynek. Hátránya, hogy némi plusz teljesítmény költség merül fel, valamint a kompozit létrehozása nem minden esetben triviális.
