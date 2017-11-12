@@ -146,11 +146,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="config.h" />
     <ClInclude Include="exception.h" />
+    <ClInclude Include="export.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="multi_thread.h" />
+    <ClInclude Include="octree.h" />
+    <ClInclude Include="scene_node.h" />
+    <ClInclude Include="time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="multi_thread.cpp" />
+    <ClCompile Include="scene_node.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

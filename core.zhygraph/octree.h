@@ -335,6 +335,9 @@ public:
 	}
 };
 
+/*
+usage example:
+
 int main() {
 	octree< aabbvolume > ot(aabb(vec3(), vec3(1.f)));
 
@@ -364,3 +367,4 @@ int main() {
 	std::cin.ignore();
 	return 0;
 }
+*/
