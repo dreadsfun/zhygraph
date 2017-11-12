@@ -4,7 +4,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <IncludePath>$(SolutionDir);$(SolutionDir)dep.zhygraph\include\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(SolutionDir)dep.zhygraph\lib\$(Configuration)\$(Platform)\;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(SolutionDir)dep.zhygraph\lib\$(Configuration)\$(Platform)\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)target.zhygraph\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)obj.zhygraph\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
