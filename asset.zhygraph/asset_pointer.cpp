@@ -1,10 +1,11 @@
 #include "asset_pointer.h"
+#include "asset_manager.h"
 namespace zhygraph {
 	namespace asset {
-		asset_pointer::asset_pointer( asset_manager_ptr owner )
+		asset_pointer::asset_pointer( asset_manager* owner )
 			: mowner( owner ) { }
 
-		asset_pointer::asset_pointer( asset_manager_ptr owner, asset_base* asset )
+		asset_pointer::asset_pointer( asset_manager* owner, asset_base* asset )
 			: mowner( owner ) {
 			if( asset != nullptr ) {
 				mpasset = asset;
@@ -91,7 +92,7 @@ namespace zhygraph {
 			}
 		}
 
-		asset_manager_ptr asset_pointer::owner() {
+		asset_manager* asset_pointer::owner() {
 			return mowner;
 		}
 

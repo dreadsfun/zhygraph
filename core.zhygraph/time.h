@@ -1,9 +1,10 @@
 #pragma once
 #include <chrono>
+#include "export.h"
 namespace zhygraph {
 	namespace core {
 		using std::chrono::high_resolution_clock;
-		typedef std::chrono::time_point< high_resolution_clock > time_point;
+		using time_point = std::chrono::time_point< high_resolution_clock >;
 		using std::chrono::duration;
 
 		namespace detail {
@@ -22,8 +23,8 @@ namespace zhygraph {
 			}
 
 		private:
-			static detail::init_time init;
-			static time_point start;
+			static core_shared detail::init_time init;
+			static core_shared time_point start;
 		};
 
 		class stop_watch {
@@ -54,8 +55,5 @@ namespace zhygraph {
 			bool m_run { false };
 			double m_internal { 0.0 };
 		};
-
-		detail::init_time engine_time::init ( engine_time::start );
-		time_point engine_time::start;
 	}
 }

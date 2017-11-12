@@ -7,6 +7,7 @@
 #include <atomic>
 #include <memory>
 #include <list>
+#include "export.h"
 namespace zhygraph {
 	namespace core {
 		using namespace std;
@@ -91,8 +92,8 @@ namespace zhygraph {
 			std::atomic_bool m_work_time { true };
 
 		public:
-			multi_thread( void );
-			~multi_thread( void );
+			core_shared multi_thread( void );
+			core_shared ~multi_thread( void );
 			multi_thread( const multi_thread& ) = delete;
 			multi_thread& operator = ( const multi_thread& ) = delete;
 			std::string pop_last_error( void );
@@ -148,10 +149,10 @@ namespace zhygraph {
 			list<multi_thread> mthreads;
 
 		public:
-			uint32_t thread_count(uint32_t n);
-			multi_thread* least_job_thread();
-			multi_thread* most_job_thread();
-			multi_thread* idle_thread();
+			core_shared uint32_t thread_count(uint32_t n);
+			core_shared multi_thread* least_job_thread();
+			core_shared multi_thread* most_job_thread();
+			core_shared multi_thread* idle_thread();
 		};
 	}
 }

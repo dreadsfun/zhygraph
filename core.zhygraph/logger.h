@@ -94,6 +94,8 @@ namespace zhygraph {
 			}
 		};
 
+		using logger_ptr = std::unique_ptr<logger>;
+
 		class log_stream {
 		private:
 			const logger* m_owner { nullptr };
@@ -153,18 +155,17 @@ namespace zhygraph {
 		private:
 			static std::mutex cout_lock;
 		};
-		std::mutex stdout_channel::cout_lock;
 
-#define debug( m ) m_logger->log( log_priority::debug, m, typeid( *this ).name() );
-#define info( m ) m_logger->log( log_priority::info, m, typeid( *this ).name() );
-#define warn( m ) m_logger->log( log_priority::warn, m, typeid( *this ).name() );
-#define error( m ) m_logger->log( log_priority::error, m, typeid( *this ).name() );
-#define fatal( m ) m_logger->log( log_priority::fatal, m, typeid( *this ).name() );
+#define debug( m ) mlogger->log( log_priority::debug, m, typeid( *this ).name() );
+#define info( m ) mlogger->log( log_priority::info, m, typeid( *this ).name() );
+#define warn( m ) mlogger->log( log_priority::warn, m, typeid( *this ).name() );
+#define error( m ) mlogger->log( log_priority::error, m, typeid( *this ).name() );
+#define fatal( m ) mlogger->log( log_priority::fatal, m, typeid( *this ).name() );
 
-#define sdebug m_logger->init_stream( log_priority::debug, typeid( *this ).name() )
-#define sinfo m_logger->init_stream( log_priority::info, typeid( *this ).name() )
-#define swarn m_logger->init_stream( log_priority::warn, typeid( *this ).name() )
-#define serror m_logger->init_stream( log_priority::error, typeid( *this ).name() )
-#define sfatal m_logger->init_stream( log_priority::fatal, typeid( *this ).name() )
+#define sdebug mlogger->init_stream( log_priority::debug, typeid( *this ).name() )
+#define sinfo mlogger->init_stream( log_priority::info, typeid( *this ).name() )
+#define swarn mlogger->init_stream( log_priority::warn, typeid( *this ).name() )
+#define serror mlogger->init_stream( log_priority::error, typeid( *this ).name() )
+#define sfatal mlogger->init_stream( log_priority::fatal, typeid( *this ).name() )
 	}
 }

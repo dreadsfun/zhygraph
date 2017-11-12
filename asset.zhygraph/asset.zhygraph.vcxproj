@@ -150,12 +150,14 @@
     <ClInclude Include="asset_manager.h" />
     <ClInclude Include="asset_pointer.h" />
     <ClInclude Include="asset_socket.h" />
+    <ClInclude Include="export.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asset_base.cpp" />
     <ClCompile Include="asset_manager.cpp" />
     <ClCompile Include="asset_pointer.cpp" />
     <ClCompile Include="asset_socket.cpp" />
+    <ClCompile Include="link.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

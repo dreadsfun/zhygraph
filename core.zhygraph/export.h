@@ -5,4 +5,4 @@
 #  else
 #    define core_shared __declspec(dllimport)
 #  endif // ~CORE_EXPORTS
-#endif // ~core_shared#pragma once
+#endif // ~core_shared

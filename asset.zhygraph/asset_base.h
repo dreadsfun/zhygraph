@@ -93,6 +93,7 @@ namespace zhygraph {
 			const atomic<asset_state>& state() const;
 
 			virtual bool gl_asset() const = 0;
+			virtual uint32_t size() const = 0;
 
 		protected:
 			virtual bool _internal_load() = 0;

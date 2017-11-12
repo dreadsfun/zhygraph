@@ -1,5 +1,6 @@
 #pragma once
 #include "asset_pointer.h"
+#include "asset_manager.h"
 namespace zhygraph {
 	namespace asset {
 		class asset_socket {

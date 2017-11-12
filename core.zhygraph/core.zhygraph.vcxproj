@@ -158,9 +158,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="approot.cpp" />
+    <ClCompile Include="link.c" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="multi_thread.cpp" />
     <ClCompile Include="scene_node.cpp" />
+    <ClCompile Include="time.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

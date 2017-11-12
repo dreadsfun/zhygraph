@@ -19,5 +19,7 @@ namespace zhygraph {
 		log_stream logger::init_stream( log_priority p, const std::string & cl ) const {
 			return log_stream( p, cl, this );
 		}
+
+		std::mutex stdout_channel::cout_lock;
 	}
 }

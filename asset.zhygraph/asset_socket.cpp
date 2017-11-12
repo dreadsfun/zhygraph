@@ -2,12 +2,12 @@
 namespace zhygraph {
 	namespace asset {
 		asset_socket::asset_socket( asset_manager_ptr owner )
-			: mcurrent( owner ),
-			mdesired( owner ) { }
+			: mcurrent( owner.get() ),
+			mdesired( owner.get() ) { }
 
 		asset_socket::asset_socket( asset_manager_ptr owner, asset_pointer current )
 			: mcurrent( current ),
-			mdesired( owner ) { }
+			mdesired( owner.get() ) { }
 
 		void asset_socket::swap( asset_pointer desired ) {
 			if( desired != mcurrent && desired != mdesired ) {

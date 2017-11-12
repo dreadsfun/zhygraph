@@ -8,10 +8,10 @@ namespace zhygraph {
 	namespace core {
 		using namespace std;
 		class config {
-		private:
+		public:
 			typedef unordered_map< string, string > name_value_map;
 			typedef unordered_map< string, name_value_map > ini_map;
-		public:
+
 			class _group {
 			private:
 				const name_value_map& m_grps_map;
@@ -101,9 +101,6 @@ namespace zhygraph {
 					return _group( em );
 				else
 					return _group( f->second );
-			}
-			_group client_group() {
-				return this->group( "client" );
 			}
 		};
 	}
