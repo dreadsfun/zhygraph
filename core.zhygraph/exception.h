@@ -50,7 +50,7 @@ namespace zhygraph {
 #  define _exception(type, ...) type(_VA_ARGS_)
 #  define dbg_throw_if(cond, type, ...)
 #endif
-#define throw_if(cond, type, ...) if(cond) throw _exception(type, __VA_ARGS__);
-#define throw_if_not(cond, type, ...) if(!cond) throw _exception(type, __VA_ARGS__);
+#define throw_if(cond, type, ...) if((cond)) throw _exception(type, __VA_ARGS__);
+#define throw_if_not(cond, type, ...) if(!(cond)) throw _exception(type, __VA_ARGS__);
 	}
 }
