@@ -1,17 +1,15 @@
-\Chapter{A keretrendszer hasznÃ¡lata Ã©s a szkript felÃ¼let}
+\Chapter{A keretrendszer használata és a szkript felület}
 \label{Chap:api}
 
-Ebben a rÃ©szben talÃ¡lhatunk informÃ¡ciÃ³kat azt illetÅ‘en, hogy hogyan is kezdhetÃ¼nk el fejleszteni a keretrendszer segÃ­tsÃ©gÃ©vel Ã©s, hogy milyen funkciÃ³k vannak biztosÃ­tva a szkript kÃ¶rnyezeten keresztÃ¼l.
+Ebben a részben találhatunk információkat azt illetõen, hogy hogyan is kezdhetünk el fejleszteni a keretrendszer segítségével és, hogy milyen funkciók vannak biztosítva a szkript környezeten keresztül.
 
-\Section{SzÃ¼ksÃ©ges fÃ¡jlok}
+\Section{Szükséges fájlok}
+\SubSection{Alacsony szintû konfiguráció}
+A \textit{main/engine.conf} útvonalon található fájl tartalmazza a rendszer különbözõ komponenseinek paramétereit, és azok függõségeit. Itt találhatóak továbbá a nyílvántartó rendszer számára biztosított tartalom-deklarációk is.
 
-VegyÃ¼k elÅ‘szÅ‘r sorra a rendszer mÅ±kÃ¶dÃ©sÃ©hez szÃ¼ksÃ©ges konfigurÃ¡ciÃ³s Ã©s egyÃ©b, adatfÃ¡jlokat:
-\begin{description}
-\item \textit{engine.conf} - Ez a fÃ¡jl tartalmazza a rendszer kÃ¼lÃ¶nbÃ¶zÅ‘ komponenseinek paramÃ©tereit, Ã©s azok fÃ¼ggÅ‘sÃ©geit. Itt talÃ¡lhatÃ³ak tovÃ¡bbÃ¡ a nyÃ­lvÃ¡ntartÃ³ rendszer szÃ¡mÃ¡ra biztosÃ­tott tartalom-deklarÃ¡ciÃ³k is.
+Ahhoz, hogy egy tartalom, például egy textúra, felhasználható legyen a rendszer számára, szerepelnie kell az adott típus felsorolásában. Tegyük fel például, hogy a \textit{grass.png} nevû textúrát szeretnénk elérhetõvé tenni. Elsõ lépésként eltávolítjuk a fájl kiterjesztését, mert a pont karakter útvonal elválasztóként viselkedik az absztraktált fájlrendszerben.
 
-Ahhoz, hogy egy tartalom, pÃ©ldÃ¡ul egy textÃºra, felhasznÃ¡lhatÃ³ legyen a rendszer szÃ¡mÃ¡ra, szerepelnie kell az adott tÃ­pus felsorolÃ¡sÃ¡ban. TegyÃ¼k fel pÃ©ldÃ¡ul, hogy a \textit{grass.png} nevÅ± textÃºrÃ¡t szeretnÃ©nk elÃ©rhetÅ‘vÃ© tenni. ElsÅ‘ lÃ©pÃ©skÃ©nt eltÃ¡volÃ­tjuk a fÃ¡jl kiterjesztÃ©sÃ©t, mert a pont karakter Ãºtvonal elvÃ¡lasztÃ³kÃ©nt viselkedik az absztraktÃ¡lt fÃ¡jlrendszerben.
-
-KÃ¶vetkezÅ‘ lÃ©pÃ©sben megkeressÃ¼k a konfigurÃ¡ciÃ³s fÃ¡jlban, a tartalom tÃ­pusÃ¡hoz tartozÃ³ nyÃ­lvÃ¡ntartÃ³ osztÃ¡lyt. Jelen esetben ez a \textit{texture_manager} lesz, hiszen egy textÃºrÃ¡t kÃ­vÃ¡nunk deklarÃ¡lni. Minden nyÃ­lvÃ¡ntartÃ³ osztÃ¡ly rendelkezik az \textit{assets} tÃ¶mb attribÃºtummal, ebbe kell elhelyeznÃ¼nk a kÃ­vÃ¡nt Ã©rtÃ©keket. TehÃ¡t a kÃ­vÃ¡nt textÃºra deklarÃ¡lÃ¡sa a kÃ¶vetkezÅ‘ lesz:
+Következõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
 
 \begin{lstlisting}
 <component name="texture_manager" class="texture_manager">
@@ -21,7 +19,7 @@ KÃ¶vetkezÅ‘ lÃ©pÃ©sben megkeressÃ¼k a konfigurÃ¡ciÃ³s fÃ¡jlban, a tartalom tÃ­pu
 </component>
 \end{lstlisting}
 
-A beillesztett Ã©rtÃ©k formÃ¡tuma Ã¡ltalÃ¡nosan: \textit{tartalom_tÃ­pus@tartalom_Ãºtvonal}. Minden mÃ¡s tÃ­pusÃº tartalomra hasonlÃ³ az eljÃ¡rÃ¡s, pÃ©ldÃ¡ul egy geometriai objektum deklarÃ¡lÃ¡sa a kÃ¶vetkezÅ‘ lehet:
+A beillesztett érték formátuma általánosan: \textit{tartalom\_típus@tartalom\_útvonal}. Minden más típusú tartalomra hasonló az eljárás, például egy geometriai objektum deklarálása a következõ lehet:
 
 \begin{lstlisting}
 <component name="mesh_manager" class="mesh_manager">
@@ -31,7 +29,7 @@ A beillesztett Ã©rtÃ©k formÃ¡tuma Ã¡ltalÃ¡nosan: \textit{tartalom_tÃ­pus@tartalo
 </component>
 \end{lstlisting}
 
-TovÃ¡bbi gyakori felhasznÃ¡lÃ¡sa lehet mÃ©g ennek a konfigurÃ¡ciÃ³s fÃ¡jlnak az Ã¼zenetkÃ¼ldÃ©si csatornÃ¡k leÃ­rÃ¡sa. PÃ©ldÃ¡ul az Ã¼zenetek fÃ¡jlba Ã­rÃ¡nyÃ­tÃ¡sa a kÃ¶vetkezÅ‘ komponens deklarÃ¡ciÃ³val tÃ¶rtÃ©nik:
+További gyakori felhasználása lehet még ennek a konfigurációs fájlnak az üzenetküldési csatornák leírása. Például az üzenetek fájlba írányítása a következõ komponens deklarációval történik:
 
 \begin{lstlisting}
 <component name="n_file_channel" class="file_channel">
@@ -39,13 +37,14 @@ TovÃ¡bbi gyakori felhasznÃ¡lÃ¡sa lehet mÃ©g ennek a konfigurÃ¡ciÃ³s fÃ¡jlnak az 
 </component>
 \end{lstlisting}
 
-Az \textit{engine.log} a fÃ¡jl Ãºtvonala, ahova az Ã¼zenetek kerÃ¼lnek majd, ezen a csatornÃ¡n keresztÃ¼l.
+Az \textit{engine.log} a fájl útvonala, ahova az üzenetek kerülnek majd, ezen a csatornán keresztül.
 
-A tovÃ¡bbi komponensek deklarÃ¡ciÃ³ja Ã©s injektÃ¡lÃ¡sa akkor lehet fontos ha a keretrendszert tovÃ¡bb kÃ­vÃ¡njuk fejleszteni.
+A további komponensek deklarációja és injektálása akkor lehet fontos ha a keretrendszert tovább kívánjuk fejleszteni.
 
-\item \textit{materials} - Ebben a fÃ¡jlban talÃ¡lhatÃ³ak az Ãºgy nevezett \textit{material} deklarÃ¡ciÃ³k. Ezek olyan objektumok, amik meghatÃ¡rozzÃ¡k, hogy egy adott geometriai objektumot milyen grafikus "Ã¡rnyÃ©kolÃ³" programmal Ã©s milyen textÃºrÃ¡kkal kell kirajzolni.
+\SubSection{Anyag tulajdonságok deklarációja}
+A \textit{main/materials} útvonalon található fájlban láthatjuk az úgy nevezett \textit{material} deklarációkat. Ezek olyan objektumok, amik meghatározzák, hogy egy adott geometriai objektumot milyen grafikus "árnyékoló" programmal és milyen textúrákkal kell kirajzolni.
 
-PÃ©ldÃ¡ul ha szeretnÃ©nk felhasznÃ¡lni az elÅ‘zÅ‘leg deklarÃ¡lt textÃºrÃ¡t, akkor ez lehet a tartalma a fÃ¡jlnak:
+Például ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
 
 \begin{lstlisting}
 <materials>
@@ -56,51 +55,54 @@ PÃ©ldÃ¡ul ha szeretnÃ©nk felhasznÃ¡lni az elÅ‘zÅ‘leg deklarÃ¡lt textÃºrÃ¡t, akko
 </materials>
 \end{lstlisting}
 
-A fÃ¡jlnak mindig \textit{materials} taggal kell kezdÅ‘dnie, ezen belÃ¼l kell felsorolni a kÃ¼lÃ¶nbÃ¶zÅ‘ material objektumok deklarÃ¡ciÃ³it. Az elsÅ‘ paramÃ©ter, a \textit{name} az objektum nevÃ©t hatÃ¡rozza meg, kÃ©sÅ‘bb ezzel hivatkozhatunk majd rÃ¡. A \textit{shader} tagban meghatÃ¡rozott fÃ¡jl, a grafikus Ã¡rnyÃ©kolÃ³ program elÃ©rÃ©si Ãºtvonala. A textÃºrÃ¡hoz hasonlÃ³an ennek is deklarÃ¡lva kell lennie a nyÃ­lvÃ¡ntartÃ³ rendszer valamely komponensÃ©ben. Az utolsÃ³ sor azt hatÃ¡rozza meg, hogy az Ãºgy nevezett \textit{albedo_map} (az objektum alap szÃ­nÃ©t ez hatÃ¡rozza meg) textÃºra tÃ­pushoz, az elÅ‘zÅ‘leg bevezetett fÅ± textÃºrÃ¡t rendeljÃ¼k.
+A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgy nevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
 
-\item \textit{scenes} - Ebben a fÃ¡jlban kell leÃ­rni a mÃ¡r ismertetett virtuÃ¡lis fagrÃ¡f szerkezetÃ©t. A fÃ¡jl struktÃºrÃ¡ja Ãºgy van kialakÃ­tva, hogy elsÅ‘ lÃ©pÃ©sben a hasznÃ¡lni kÃ­vÃ¡nt facsÃºcsokat deklarÃ¡ljuk egymÃ¡stÃ³l fÃ¼ggetlenÃ¼l, majd azt Ã­rjuk le, hogy egy konkrÃ©t jeleneten belÃ¼l milyen kapcsolatban vannak ezek a csÃºcsok.
+\SubSection{Virtuális tér fagráf definíciók}
+A \textit{main/scenes} fájlban kell leírni a már ismertetett virtuális fagráf szerkezetét. A fájl struktúrája úgy van kialakítva, hogy elsõ lépésben a használni kívánt facsúcsokat deklaráljuk egymástól függetlenül, majd azt írjuk le, hogy egy konkrét jeleneten belül milyen kapcsolatban vannak ezek a csúcsok.
 
-KÃ©pzeljÃ¼k el ezt Ãºgy, hogy egy grÃ¡fnak csak a pontjai adottak, az Ã©lei ismeretlenek Ã©s kÃ¼lÃ¶nbÃ¶zÅ‘ grÃ¡fokat hozunk lÃ©tre, kÃ¼lÃ¶nbÃ¶zÅ‘ Ã©l-halmazok definiÃ¡lÃ¡sÃ¡val. AzÃ©rt elÅ‘nyÃ¶s ez a megkÃ¶zelÃ­tÃ©s, mert elÅ‘fordulhatnak jelenetenkÃ©nt ismtÃ©lÅ‘dÅ‘ csÃºcsok, Ã­gy azonban elegendÅ‘ egyszer definiÃ¡lni Å‘ket.
+Képzeljük el ezt úgy, hogy egy gráfnak csak a pontjai adottak, az élei ismeretlenek és különbözõ gráfokat hozunk létre, különbözõ él-halmazok definiálásával. Azért elõnyös ez a megközelítés, mert elõfordulhatnak jelenetenként ismtélõdõ csúcsok, így azonban elegendõ egyszer definiálni õket.
 
-Egy pÃ©lda a fÃ¡jl tartalmÃ¡ra a kÃ¶vetkezÅ‘:
+Egy példa a fájl tartalmára a következõ:
 
 \begin{lstlisting}
 <scene-graph>
   <nodes>
-	  <node name="camera" class="camera_node">
-		  <attribute name="projection_mode" value="perspective"/>
-			<attribute name="aspect_ratio" value="1.33333"/>
-			<attribute name="field_of_view" value="0.33333"/>
-			<attribute name="near_clip" value="0.1"/>
-			<attribute name="far_clip" value="500"/>
-		</node>
-		<node name="n1" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@terrain"/>
-			<attribute name="materials" value="grass_texture"/>
-		</node>
-		<node name="n11" class="scene_node_base"/>
-		<node name="n111" class="scene_node_base"/>
-		<node name="n112" class="scene_node_base"/>
-		<node name="n1121" class="scene_node_base"/>
-		<node name="n12" class="scene_node_base"/>
-		<node name="n13" class="scene_node_base"/>
-		<node name="n14" class="scene_node_base"/>
-		<node name="n141" class="scene_node_base"/>
-		<node name="n142" class="scene_node_base"/>
-	</nodes>
+    <node name="camera" class="camera_node">
+      <attribute name="projection_mode" value="perspective"/>
+      <attribute name="aspect_ratio" value="1.33333"/>
+      <attribute name="field_of_view" value="0.33333"/>
+      <attribute name="near_clip" value="0.1"/>
+      <attribute name="far_clip" value="500"/>
+    </node>
+    <node name="n1" class="mesh_renderer_node">
+      <attribute name="mesh_url" value="mesh@terrain"/>
+      <attribute name="materials" value="grass_texture"/>
+    </node>
+    <node name="n11" class="scene_node_base"/>
+    <node name="n111" class="scene_node_base"/>
+    <node name="n112" class="scene_node_base"/>
+    <node name="n1121" class="scene_node_base"/>
+    <node name="n12" class="scene_node_base"/>
+    <node name="n13" class="scene_node_base"/>
+    <node name="n14" class="scene_node_base"/>
+    <node name="n141" class="scene_node_base"/>
+	<node name="n142" class="scene_node_base"/>
+  </nodes>
 	
-	<scenes>
-		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
-	</scenes>
+  <scenes>
+    <scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
+  </scenes>
 </scene-graph>
 \end{lstlisting}
 
-A fÃ¡jl kezdÅ‘ tagja ismÃ©t fix, ezutÃ¡n kÃ¶vetkezik a csÃºcsok felsorolÃ¡sa a \textit{nodes} tagon belÃ¼l. Egy csÃºcs definiciÃ³jÃ¡hoz mindenkÃ©ppen szÃ¼ksÃ©ges egy nÃ©v (\textit{name}) Ã©s egy tÃ­pus (\textit{class}). A nÃ©vvel hivatkozhatunk rÃ¡juk kÃ©sÅ‘bb, a csÃºcskapcsolatok leÃ­rÃ¡sakor vagy a szkriptekben tÃ¶rtÃ©nÅ‘ felhasznÃ¡lÃ¡sukkor. A tÃ­pusnak egy C++-ban lÃ©trehozott Ã©s \textit{reflektÃ¡lt} osztÃ¡lynak kell lennie.
+A fájl kezdõ tagja ismét fix, ezután következik a csúcsok felsorolása a \textit{nodes} tagon belül. Egy csúcs definiciójához mindenképpen szükséges egy név (\textit{name}) és egy típus (\textit{class}). A névvel hivatkozhatunk rájuk késõbb, a csúcskapcsolatok leírásakor vagy a szkriptekben történõ felhasználásukkor. A típusnak egy C++-ban létrehozott és \textit{reflektált} osztálynak kell lennie.
 
-LÃ¡thatjuk, hogy szerepel egy csÃºcs, \textit{mesh_renderer_node} tÃ­pussal. Ez egy olyan tÃ­pusÃº csÃºcs, ami geometriai objektumokat kÃ©pes megjelenÃ­teni. A kÃ©t megadott attribÃºtuma a \textit{mesh_url} Ã©s a \textit{materials}. Az elÅ‘bbi azt hatÃ¡rozza meg, hogy melyik, a korÃ¡bban lÃ¡tott mÃ³dszerrel deklarÃ¡lt geometriai objektumot hasznÃ¡lja fel a csÃºcs. Az utÃ³bbi pedig az anyagtulajdonsÃ¡gokat leÃ­rÃ³ material objektum neve, ahogy azt a \textit{materials} fÃ¡jlban deklarÃ¡ltuk.
+Láthatjuk, hogy szerepel egy csúcs, \textit{mesh\_renderer\_node} típussal. Ez egy olyan típusú csúcs, ami geometriai objektumokat képes megjeleníteni. A két megadott attribútuma a \textit{mesh\_url} és a \textit{materials}. Az elõbbi azt határozza meg, hogy melyik, a korábban látott módszerrel deklarált geometriai objektumot használja fel a csúcs. Az utóbbi pedig az anyagtulajdonságokat leíró material objektum neve, ahogy azt a \textit{materials} fájlban deklaráltuk.
 
-A \textit{scenes} tagban kell felsorolnunk a kÃ¼lÃ¶nbÃ¶zÅ‘ jelenetek (a csÃºcsok Ã¶sszekÃ¶tÃ©sÃ©nek kÃ¼lÃ¶nbÃ¶zÅ‘ mÃ³djai) jellemzÅ‘it. A \textit{name} paramÃ©ter egy egyedi nÃ©v, amivel kÃ©sÅ‘bb hivatkozhatunk rÃ¡, a \textit{graph} paramÃ©ter pedig a hasznÃ¡lt csÃºcsok listÃ¡jÃ¡t, illetve kapcsolatÃ¡t hatÃ¡rozza meg. A kapcsolatok leÃ­rÃ¡sÃ¡ra a kÃ¶vetkezÅ‘ szabÃ¡ly van Ã©rvÃ©nyben: egy leÃ­rt csÃºcs mindig, az elÅ‘zÅ‘leg leÃ­rt csÃºcs gyermeke lesz, ha az lÃ©tezik. Jelen esetben tehÃ¡t a "camera" nevÅ± csÃºcs a gyÃ¶kÃ©r elem, annak gyermeke pedig az "n1" csÃºcs. Ha nem az utolsÃ³nak leÃ­rt csÃºcsot szeretnÃ©nk a kÃ¶vetkezÅ‘ csÃºcs szÃ¼lÅ‘jekÃ©nt, akkor egy "." (pont) karaktert kell Ã­rnunk, ami egy visszalÃ©pÃ©st jelent. Ãgy pÃ©ldÃ¡ul az "n112" csÃºcs, nem az "n111" csÃºcs gyermeke lesz, hanem az "n11"-Ã©. Az "n12" csÃºcs szÃ¼lÅ‘je pedig az "n1" csÃºcs lesz.
-\end{description}
+A \textit{scenes} tagban kell felsorolnunk a különbözõ jelenetek (a csúcsok összekötésének különbözõ módjai) jellemzõit. A \textit{name} paraméter egy egyedi név, amivel késõbb hivatkozhatunk rá, a \textit{graph} paraméter pedig a használt csúcsok listáját, illetve kapcsolatát határozza meg. A kapcsolatok leírására a következõ szabály van érvényben: egy leírt csúcs mindig, az elõzõleg leírt csúcs gyermeke lesz, ha az létezik. Jelen esetben tehát a "camera" nevû csúcs a gyökér elem, annak gyermeke pedig az "n1" csúcs. Ha nem az utolsónak leírt csúcsot szeretnénk a következõ csúcs szülõjeként, akkor egy "." (pont) karaktert kell írnunk, ami egy visszalépést jelent. Így például az "n112" csúcs, nem az "n111" csúcs gyermeke lesz, hanem az "n11"-é. Az "n12" csúcs szülõje pedig az "n1" csúcs lesz.
 
-\Section{Szkript funkciÃ³k}
+\Section{Szkript funkciók}
 
+\SubSection{Felhasználói interakció}
+\SubSection{Fagráf manipuláció és transzformációk}
+\SubSection{Megjelenítési funkciók}
