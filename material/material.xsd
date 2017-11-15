@@ -1,0 +1,44 @@
+﻿<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="materials">
+    <xs:complexType>
+      <xs:sequence>
+        
+        <xs:element name="material" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              
+              <xs:element name="shader" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:attribute name="file" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+
+              <xs:element name="texture" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="sampler" type="xs:string" use="required"/>
+                  <xs:attribute name="file" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+
+              <xs:element name="vector" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="uniform" type="xs:string" use="required"/>
+                  <xs:attribute name="x" type="xs:float" use="required"/>
+                  <xs:attribute name="y" type="xs:float" use="optional"/>
+                  <xs:attribute name="z" type="xs:float" use="optional"/>
+                  <xs:attribute name="w" type="xs:float" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+              
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+        
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

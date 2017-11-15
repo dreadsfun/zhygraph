@@ -1,0 +1,126 @@
+﻿<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="param_class_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="char"/>
+      <xs:enumeration value="unsigned char"/>
+      <xs:enumeration value="int"/>
+      <xs:enumeration value="unsigned int"/>
+      <xs:enumeration value="long"/>
+      <xs:enumeration value="double"/>
+      <xs:enumeration value="bool"/>
+      <xs:enumeration value="string"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="attribute_type">
+    <xs:sequence>
+      <xs:element name="insert" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="value" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:token" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="param_type">
+    <xs:attribute name="type" type="param_class_type"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:element name="component">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded" type="attribute_type"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:token" use="required"/>
+      <xs:attribute name="class" type="xs:token" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="inject">
+    <xs:complexType>
+      <xs:attribute name="receiver" type="xs:token" use="required"/>
+      <xs:attribute name="injection" type="xs:token" use="required"/>
+      <xs:attribute name="slot" type="xs:token" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="inject_one_type">
+    <xs:attribute name="injection" type="xs:token" use="required"/>
+    <xs:attribute name="slot" type="xs:token" use="required"/>
+  </xs:complexType>  
+  
+  <xs:element name="inject-one">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="inject" type="inject_one_type" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="receiver" type="xs:token" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="inject_all_type">
+    <xs:attribute name="receiver" type="xs:token" use="required"/>
+    <xs:attribute name="slot" type="xs:token" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="inject-all">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="inject" type="inject_all_type" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="injection" type="xs:token" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="inject-slot">
+    <xs:complexType>
+      <xs:attribute name="slot" type="xs:token" use="required"/>
+      <xs:attribute name="injection" type="xs:token" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="DI">
+    <xs:complexType>
+      <xs:sequence>
+
+        <xs:element name="plugins" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="shared" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="lib" type="xs:Name" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="components" minOccurs="0" maxOccurs="1" >
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="component" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="wiring" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="inject" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element ref="inject-all" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element ref="inject-one" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:element ref="inject-slot" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

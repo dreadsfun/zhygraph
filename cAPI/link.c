@@ -1,0 +1,1 @@
+#pragma comment(lib, "di_rtlib.lib")

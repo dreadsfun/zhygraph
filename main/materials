@@ -1,0 +1,11 @@
+<materials>
+	<material name="cube_doggy">
+		<shader file="text@standardfx"/>
+		<texture sampler="albedo_map" file="texture@doggy_cute_jpg"/>
+	</material>
+	
+	<material name="tent_standard">
+		<shader file="shader@test_fragment"/>
+		<texture sampler="albedo_map" file="texture@texture"/>
+	</material>
+</materials>

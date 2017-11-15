@@ -1,0 +1,68 @@
+﻿<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:complexType name="vec3_type">
+    <xs:attribute name="x" type="xs:float" use="required"/>
+    <xs:attribute name="y" type="xs:float" use="required"/>
+    <xs:attribute name="z" type="xs:float" use="required"/>
+  </xs:complexType>
+  
+  <xs:complexType name="vec4_type">
+    <xs:attribute name="x" type="xs:float" use="required"/>
+    <xs:attribute name="y" type="xs:float" use="required"/>
+    <xs:attribute name="z" type="xs:float" use="required"/>
+    <xs:attribute name="w" type="xs:float" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="scene-graph">
+    <xs:complexType>
+      <xs:sequence>
+
+        <xs:element name="nodes" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              
+              <xs:element name="node" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="position" type="vec3_type" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="rotation" type="vec4_type" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="scale" type="vec3_type" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="name" type="xs:token"/>
+                        <xs:attribute name="value" type="xs:string"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:token" use="required"/>
+                  <xs:attribute name="class" type="xs:token" use="required"/>
+                </xs:complexType>
+              </xs:element>
+              
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
+        <xs:element name="scenes" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              
+              <xs:element name="scene" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:token" use="required"/>
+                  <xs:attribute name="graph" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+              
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  
+</xs:schema>
