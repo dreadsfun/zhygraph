@@ -1,2 +1,106 @@
-\Chapter{Implement�ci� �s a programoz�si fel�let}
+\Chapter{A keretrendszer használata és a szkript felület}
 \label{Chap:api}
+
+Ebben a részben találhatunk információkat azt illetően, hogy hogyan is kezdhetünk el fejleszteni a keretrendszer segítségével és, hogy milyen funkciók vannak biztosítva a szkript környezeten keresztül.
+
+\Section{Szükséges fájlok}
+
+Vegyük előszőr sorra a rendszer működéséhez szükséges konfigurációs és egyéb, adatfájlokat:
+\begin{description}
+\item \textit{engine.conf} - Ez a fájl tartalmazza a rendszer különböző komponenseinek paramétereit, és azok függőségeit. Itt találhatóak továbbá a nyílvántartó rendszer számára biztosított tartalom-deklarációk is.
+
+Ahhoz, hogy egy tartalom, például egy textúra, felhasználható legyen a rendszer számára, szerepelnie kell az adott típus felsorolásában. Tegyük fel például, hogy a \textit{grass.png} nevű textúrát szeretnénk elérhetővé tenni. Első lépésként eltávolítjuk a fájl kiterjesztését, mert a pont karakter útvonal elválasztóként viselkedik az absztraktált fájlrendszerben.
+
+Következő lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következő lesz:
+
+\begin{lstlisting}
+<component name="texture_manager" class="texture_manager">
+  <attribute name="assets">
+    <insert value="texture@grass"/>
+  </attribute>
+</component>
+\end{lstlisting}
+
+A beillesztett érték formátuma általánosan: \textit{tartalom_típus@tartalom_útvonal}. Minden más típusú tartalomra hasonló az eljárás, például egy geometriai objektum deklarálása a következő lehet:
+
+\begin{lstlisting}
+<component name="mesh_manager" class="mesh_manager">
+  <attribute name="assets"> 
+    <insert value="mesh@terrain"/>
+  </attribute>
+</component>
+\end{lstlisting}
+
+További gyakori felhasználása lehet még ennek a konfigurációs fájlnak az üzenetküldési csatornák leírása. Például az üzenetek fájlba írányítása a következő komponens deklarációval történik:
+
+\begin{lstlisting}
+<component name="n_file_channel" class="file_channel">
+  <attribute name="file" value="engine.log"/>
+</component>
+\end{lstlisting}
+
+Az \textit{engine.log} a fájl útvonala, ahova az üzenetek kerülnek majd, ezen a csatornán keresztül.
+
+A további komponensek deklarációja és injektálása akkor lehet fontos ha a keretrendszert tovább kívánjuk fejleszteni.
+
+\item \textit{materials} - Ebben a fájlban találhatóak az úgy nevezett \textit{material} deklarációk. Ezek olyan objektumok, amik meghatározzák, hogy egy adott geometriai objektumot milyen grafikus "árnyékoló" programmal és milyen textúrákkal kell kirajzolni.
+
+Például ha szeretnénk felhasználni az előzőleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
+
+\begin{lstlisting}
+<materials>
+	<material name="grass_texture">
+		<shader file="text@standardfs"/>
+	  <texture sampler="albedo_map" file="texture@grass"/>
+  </material>
+</materials>
+\end{lstlisting}
+
+A fájlnak mindig \textit{materials} taggal kell kezdődnie, ezen belül kell felsorolni a különböző material objektumok deklarációit. Az első paraméter, a \textit{name} az objektum nevét határozza meg, később ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgy nevezett \textit{albedo_map} (az objektum alap színét ez határozza meg) textúra típushoz, az előzőleg bevezetett fű textúrát rendeljük.
+
+\item \textit{scenes} - Ebben a fájlban kell leírni a már ismertetett virtuális fagráf szerkezetét. A fájl struktúrája úgy van kialakítva, hogy első lépésben a használni kívánt facsúcsokat deklaráljuk egymástól függetlenül, majd azt írjuk le, hogy egy konkrét jeleneten belül milyen kapcsolatban vannak ezek a csúcsok.
+
+Képzeljük el ezt úgy, hogy egy gráfnak csak a pontjai adottak, az élei ismeretlenek és különböző gráfokat hozunk létre, különböző él-halmazok definiálásával. Azért előnyös ez a megközelítés, mert előfordulhatnak jelenetenként ismtélődő csúcsok, így azonban elegendő egyszer definiálni őket.
+
+Egy példa a fájl tartalmára a következő:
+
+\begin{lstlisting}
+<scene-graph>
+  <nodes>
+	  <node name="camera" class="camera_node">
+		  <attribute name="projection_mode" value="perspective"/>
+			<attribute name="aspect_ratio" value="1.33333"/>
+			<attribute name="field_of_view" value="0.33333"/>
+			<attribute name="near_clip" value="0.1"/>
+			<attribute name="far_clip" value="500"/>
+		</node>
+		<node name="n1" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@terrain"/>
+			<attribute name="materials" value="grass_texture"/>
+		</node>
+		<node name="n11" class="scene_node_base"/>
+		<node name="n111" class="scene_node_base"/>
+		<node name="n112" class="scene_node_base"/>
+		<node name="n1121" class="scene_node_base"/>
+		<node name="n12" class="scene_node_base"/>
+		<node name="n13" class="scene_node_base"/>
+		<node name="n14" class="scene_node_base"/>
+		<node name="n141" class="scene_node_base"/>
+		<node name="n142" class="scene_node_base"/>
+	</nodes>
+	
+	<scenes>
+		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
+	</scenes>
+</scene-graph>
+\end{lstlisting}
+
+A fájl kezdő tagja ismét fix, ezután következik a csúcsok felsorolása a \textit{nodes} tagon belül. Egy csúcs definiciójához mindenképpen szükséges egy név (\textit{name}) és egy típus (\textit{class}). A névvel hivatkozhatunk rájuk később, a csúcskapcsolatok leírásakor vagy a szkriptekben történő felhasználásukkor. A típusnak egy C++-ban létrehozott és \textit{reflektált} osztálynak kell lennie.
+
+Láthatjuk, hogy szerepel egy csúcs, \textit{mesh_renderer_node} típussal. Ez egy olyan típusú csúcs, ami geometriai objektumokat képes megjeleníteni. A két megadott attribútuma a \textit{mesh_url} és a \textit{materials}. Az előbbi azt határozza meg, hogy melyik, a korábban látott módszerrel deklarált geometriai objektumot használja fel a csúcs. Az utóbbi pedig az anyagtulajdonságokat leíró material objektum neve, ahogy azt a \textit{materials} fájlban deklaráltuk.
+
+A \textit{scenes} tagban kell felsorolnunk a különböző jelenetek (a csúcsok összekötésének különböző módjai) jellemzőit. A \textit{name} paraméter egy egyedi név, amivel később hivatkozhatunk rá, a \textit{graph} paraméter pedig a használt csúcsok listáját, illetve kapcsolatát határozza meg. A kapcsolatok leírására a következő szabály van érvényben: egy leírt csúcs mindig, az előzőleg leírt csúcs gyermeke lesz, ha az létezik. Jelen esetben tehát a "camera" nevű csúcs a gyökér elem, annak gyermeke pedig az "n1" csúcs. Ha nem az utolsónak leírt csúcsot szeretnénk a következő csúcs szülőjeként, akkor egy "." (pont) karaktert kell írnunk, ami egy visszalépést jelent. Így például az "n112" csúcs, nem az "n111" csúcs gyermeke lesz, hanem az "n11"-é. Az "n12" csúcs szülője pedig az "n1" csúcs lesz.
+\end{description}
+
+\Section{Szkript funkciók}
+
