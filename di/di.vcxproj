@@ -36,7 +36,7 @@
     <ClInclude Include="di.hxx" />
   </ItemGroup>
   <ItemGroup>
-    <Xsd Include="di.xsd" />
+    <None Include="di.xsd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5D7890D1-C197-43A0-9EC5-861979354D56}</ProjectGuid>
@@ -79,18 +79,25 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\props\Common Paths.props" />
+    <Import Project="..\props\Static Lib Out.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\props\Common Paths.props" />
+    <Import Project="Static Lib Out.props" />
+    <Import Project="..\props\Static Lib Out.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\props\Common Paths.props" />
+    <Import Project="Static Lib Out.props" />
+    <Import Project="..\props\Static Lib Out.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\props\Common Paths.props" />
+    <Import Project="Static Lib Out.props" />
+    <Import Project="..\props\Static Lib Out.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />

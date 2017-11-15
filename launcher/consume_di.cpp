@@ -1,6 +1,7 @@
 #include "consume_di.hpp"
 #include <di/di.hxx>
 #include <di/di-pimpl.hxx>
+#include <iostream>
 xml_configuration::xml_configuration(void * data, size_t size)
 	: m_data(data),
 	m_size(size),

@@ -40,19 +40,24 @@ private:
 			text_asset_ptr t = std::static_pointer_cast< text_asset >( 
 				m_type_manager->get( "text" )->load_asset( asset_url( m_scene_file.get_value() ) ) 
 				);
-			scene_graph_paggr sg_p;
-			xml_schema::document_pimpl doc_p( sg_p.root_parser(), sg_p.root_name() );
-			sg_p.pre();
-			doc_p.parse( t->get_text().c_str(), t->get_text().length(), true );
-			scene_graph* sg = sg_p.post();
-			
-			if( sg->scenes_present() && sg->nodes_present() ) {
-				for( const scene& sc : sg->scenes().scene() ) {
-					scene_tree_ptr npsc = std::make_shared< scene_tree >( m_logger.get() );
-					sinfo << "building scene \"" << sc.name() << "\"...";
-					npsc->build( sc, sg->nodes() );
-					m_scenes.insert( std::make_pair( npsc->get_name(), npsc ) );
+
+			if( t ) {
+				scene_graph_paggr sg_p;
+				xml_schema::document_pimpl doc_p( sg_p.root_parser(), sg_p.root_name() );
+				sg_p.pre();
+				doc_p.parse( t->get_text().c_str(), t->get_text().length(), true );
+				scene_graph* sg = sg_p.post();
+
+				if( sg->scenes_present() && sg->nodes_present() ) {
+					for( const scene& sc : sg->scenes().scene() ) {
+						scene_tree_ptr npsc = std::make_shared< scene_tree >( m_logger.get() );
+						sinfo << "building scene \"" << sc.name() << "\"...";
+						npsc->build( sc, sg->nodes() );
+						m_scenes.insert( std::make_pair( npsc->get_name(), npsc ) );
+					}
 				}
+			} else {
+				serror << "failed to initailize scene manager, scene asset was null at \"" << m_scene_file.get_value() << "\"";
 			}
 		} catch( const xml_schema::parser_exception& e ) {
 			serror << "error parsing scene file: " << e.text() << " line: " << e.line() << " column: " << e.column();

@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="consume_di.cpp" />
     <ClCompile Include="launcher.cpp" />
+    <ClCompile Include="link.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

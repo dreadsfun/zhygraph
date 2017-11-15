@@ -35,5 +35,8 @@
     <ClCompile Include="consume_di.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="link.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

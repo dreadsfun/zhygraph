@@ -302,7 +302,7 @@ protected:
 #pragma region member functions
 protected:
 	scene_node_base( const std::string& d );
-	virtual void _load( type_manager_ptr p, bool async ) { }
+	virtual bool _load( type_manager_ptr p, bool async ) { return true; }
 	virtual void _unload( type_manager_ptr p ) { }
 
 public:

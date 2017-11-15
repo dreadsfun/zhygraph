@@ -22,7 +22,7 @@ public:
 	const texture_map_vector& get_textures( void ) const;
 
 private:
-	virtual void _load( type_manager_ptr tm, bool async );
+	virtual bool _load( type_manager_ptr tm, bool async );
 	virtual void _unload( type_manager_ptr p );
 	virtual void update( node_subscription& ns ) override;
 };
@@ -54,7 +54,7 @@ public:
 	void begin_screen( int width, int height );
 
 private:
-	virtual void _load( type_manager_ptr tm, bool async ) override;
+	virtual bool _load( type_manager_ptr tm, bool async ) override;
 	virtual void update( node_subscription& ns ) override;
 	void _update_to_projection_mode( void );
 };

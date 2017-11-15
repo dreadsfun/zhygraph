@@ -11,18 +11,24 @@ const mesh_renderer_node::texture_map_vector & mesh_renderer_node::get_textures(
 	return m_textures;
 }
 
-void mesh_renderer_node::_load( type_manager_ptr tm, bool async ) {
+bool mesh_renderer_node::_load( type_manager_ptr tm, bool async ) {
 	asset_url murl( m_mesh_url );
-
 	asset_manager_ptr mgr = tm->get( "mesh" );
 	asset_manager_ptr tmgr = tm->get( "texture" );
 
 	for( const std::string& mat : m_materials ) {
 		const material* mmod = material_library::get_material( mat );
 		if( mmod != nullptr && mmod->texture().size() > 0 ) {
-			m_textures.emplace_back();
+			bool growtxmap = true;
 			for( const texture& t : mmod->texture() ) {
-				m_textures.back().insert( std::make_pair( t.sampler(), std::static_pointer_cast< asset::texture >( tmgr->get_asset( asset_url( t.file() ) ) ) ) );
+				asset::texture_ptr tptr = std::static_pointer_cast< asset::texture >( tmgr->get_asset( asset_url( t.file() ) ) );
+				if( tptr ) {
+					if( growtxmap ) {
+						m_textures.emplace_back();
+						growtxmap = false;
+					}
+					m_textures.back().insert( std::make_pair( t.sampler(), tptr ) );
+				}
 			}
 		}
 	}
@@ -43,6 +49,8 @@ void mesh_renderer_node::_load( type_manager_ptr tm, bool async ) {
 			}
 		}
 	}
+
+	return static_cast< bool >( m_mesh );
 }
 
 void mesh_renderer_node::_unload( type_manager_ptr p ) {
@@ -71,8 +79,9 @@ void camera_node::begin_screen( int width, int height ) {
 		static_cast< int >( m_viewport_width * width ), static_cast< int >( m_viewport_height * height ) );
 }
 
-void camera_node::_load( type_manager_ptr tm, bool async ) {
+bool camera_node::_load( type_manager_ptr tm, bool async ) {
 	_update_to_projection_mode();
+	return true;
 }
 
 void camera_node::update( node_subscription & ns ) { 

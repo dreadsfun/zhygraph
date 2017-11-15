@@ -137,8 +137,7 @@ void scene_node_base::update( node_subscription & ns ) { }
 
 void scene_node_base::load( type_manager_ptr p, bool async ) {
 	m_type_manager = p;
-	this->_load( m_type_manager, async );
-	m_loaded = true;
+	m_loaded = this->_load( m_type_manager, async );
 }
 
 void scene_node_base::unload( type_manager_ptr p ) {

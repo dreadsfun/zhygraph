@@ -6,6 +6,7 @@
 #include <core/time.hpp>
 #include <di_rtlib/define_attribute.hpp>
 #include <di_rtlib/define_dependency.hpp>
+#include <cassert>
 #include "material_library.hpp"
 #include "ogl_asset.hpp"
 #include "ogl_scene_node.hpp"
@@ -46,6 +47,7 @@ public:
 	}
 
 	shader_program* insert_from_material( const material* mt, asset::shader_ptr vertex ) {
+		assert( vertex );
 		shader_program* r = nullptr;
 		if( mt != nullptr ) {
 			// check if the material already exists
@@ -53,14 +55,14 @@ public:
 			if( fit == m_unique_map.end() ) {
 				// if not..
 				asset_manager_ptr shader_mgr = m_type_mgr->get( "shader" );
-				if( mt != nullptr ) {
-					// if the material definition exists..
-					// load the required shaders and insert a program
-					// that matches the material
-					shader_mgr->load_asset( vertex->get_path() );
-					r = this->insert( vertex, std::static_pointer_cast< asset::shader >(
-						shader_mgr->load_asset( asset_url( mt->shader().file() ) )
-						) );
+				// if the material definition exists..
+				// load the required shaders and insert a program
+				// that matches the material
+				shader_mgr->load_asset( vertex->get_path() );
+				asset_ptr fragment = shader_mgr->load_asset( asset_url( mt->shader().file() ) );
+
+				if( fragment ) {
+					r = this->insert( vertex, std::static_pointer_cast< asset::shader >( fragment ) );
 					if( r != nullptr ) {
 						// if insertion was successful, 
 						// map the new program with the material
