@@ -8,7 +8,7 @@
 			<attribute name="far_clip" value="500"/>
 		</node>
 		<node name="n1" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@alduin"/>
+			<attribute name="mesh_url" value="mesh@tent"/>
 			<attribute name="materials" value="alduin"/>
 		</node>
 		<node name="n11" class="scene_node_base"/>

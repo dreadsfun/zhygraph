@@ -52,8 +52,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Xsd Include="di.xsd">
-      <Filter>Resource Files</Filter>
-    </Xsd>
+    <None Include="di.xsd">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

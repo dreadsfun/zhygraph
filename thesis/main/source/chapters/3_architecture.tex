@@ -2,59 +2,76 @@
 
 \Section{Magas szintû áttekintés}
 
-A \myref{fig:highlevelsystemovmin} ábrán láthatjuk a rendszer egy magas szintû, leegyszerûsített komponens diagramját. A rendszer öt fõ részbõl tevõdik össze. Négy különálló alrendszert képez a digitális tartalom nyílvántartó rendszer (\textit{Asset System}), a rendszer központi funkcióit összefoglaló alrendszer (\textit{Engine Core}), a szkript alrendszer (\textit{Script Backend}) és a grafikus alrendszer (\textit{Render System}). Az ábrán látható \textit{Script Interface} komponens pedig, az alrendszerek által, a szkript környezet felé szolgáltatott funkcionalitások összessége.
-
-Az ábrán láthatóak továbbá, a komponensek közötti legfõbb kapcsolódási pontok. A nyílvántartó rendszer, a központi funkciók és a grafikus alrendszer közötti kapcsololatot a virtuális teret rendszerezõ fagráf jelenti. A fagráf egyes csúcsai egy úgy nevezett \textit{tartalom foglalaton} (a \myref{subsec:assetsocket} részben részletesebben lesz szó errõl) keresztül referálnak az aktuálisan hozzájuk rendelt tartalomra, a grafikus alrendszer pedig ezeket a tartalmakat dolgozza fel futása során, a gráf csúcsait bejárva.
-
-Egy másik rendszerek közötti, gyengébb összefüggést jelent a konfigurációs megoldás. Ebben az esetben nincs szó konkrét funkcionális kapcsolatról, csupán a konfigurációs objektum megosztottsága, és a különbözõ alrendszerek által felhasznált konfigurációs paraméterek biztosítanak egy bizonyos fokú adat összefüggést (errõl a \myref{subsec:configuration} rész szól részletesebben).
-
-Az utolsó, ábrán látható asszociációt pedig az úgy nevezett \textit{modellek} jelentik. Ezek olyan speciális objektumok, amik a különbözõ alrendszerek natív funkcionalitását hivatottak kiszolgáltatni a \textit{szkript felület} (Script Interface) felé (a \myref{subsec:models} részben láthatjuk hogyan).
+A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov} ábrán láthatunk egy leegyszerûsített komponens diagramot. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
 
 \subsubsection{Fájl útvonalak}
 A továbbiakban szerepelni fognak az említett koncepciókat és funkciókat megvalósító programkódok forrásainak elérési útvonala. Az útvonalakat egy egyszerûsített formában láthatjuk, mint például: \textit{core/multi\_thread}. Ennek értelmezéséhez a következõket szükséges figyelembe venni:
 
 \begin{itemize}
 \item Minden említett útvonal alapkönyvtára a \textbf{zhygraph} könyvtár.
-\item Minden alrendszer saját könyvtára a \textbf{subsystem.zhygraph} elnevezési formát követi.
-\item Sok esetben, a C++ nyelvre jellemzõ konvenció és programtechnikai okokból egy-egy osztály vagy funkció deklarációja és definíciója két részre van osztva. A deklaráció a \textbf{.h}, míg a definíció a \textbf{.cpp} kiterjesztésû fájlokban található. Az említett elérési útvonalak kiterjesztés nélkül szerepelnek, ami azt jelenti, hogy mind a két fájlra vonatkozik, amennyiben a kód két részre van osztva, valamint csak a \textbf{.h} kiterjesztésû fájlokra, ha nincs elérhetõ forrás fájl.
+\item Sok esetben, a C++ nyelvre jellemzõ konvenció és programtechnikai okokból egy-egy osztály vagy funkció deklarációja és definíciója két részre van osztva. A deklaráció a \textbf{.hpp}, míg a definíció a \textbf{.cpp} kiterjesztésû fájlokban található. Az említett elérési útvonalak kiterjesztés nélkül szerepelnek, ami azt jelenti, hogy mind a két fájlra vonatkozik, amennyiben a kód két részre van osztva, valamint csak a \textbf{.hpp} kiterjesztésû fájlokra, ha nincs elérhetõ forrás fájl.
 \end{itemize}
 
 Ezek alapján a \textit{core/multi\_thread} útvonal, fizikailag a következõ fájlokra vonatkozik:
 \begin{itemize}
-\item \textit{zhygraph/core.zhygraph/multi\_thread.h}
-\item \textit{zhygraph/core.zhygraph/multi\_thread.cpp}
+\item \textit{zhygraph/core/multi\_thread.hpp}
+\item \textit{zhygraph/core/multi\_thread.cpp}
 \end{itemize}
 Mivel az alapkönyvtár nem változik, illetve az alrendszer könyvtárak elnevezése is konzisztens, a leegyszerûsített útvonal mindig egyértelmû.
 
-\begin{figure}[ht]
-\centering
-\epsfig{file=chapters/content/highlevelsystemovmin.eps, width=\textwidth, height=13.105cm}
-\caption{Rendszer komponensek áttekintése}
-\label{fig:highlevelsystemovmin}
-\end{figure}
+\Section{Függõség injektálás}
+
+A \textit{dependency injection}, azaz "függõség injektálás" egy olyan program architektúra technika, ami egy rendszer, komponensekre történõ bontását és a komponensek közötti függõségek kezelését hivatott segíteni. Virtuális nyelvekben, ahol eredendõen rendelkezésre állnak a \textit{reflexió} technikái, mint a Java-ban, triviálisan megvalósítható és alkalmazható az injektálás. Más a helyzet azonban a C++ környezet esetén, hiszen nem áll rendelkezésre a reflexió és így az injektálás lehetõsége sem.
+
+\SubSection{Reflexió C++-ban}
+
+Egy programozási nyelv, vagy nyelvrendszer kontextusában reflexiónak nevezzük azt a eljárást, mely során a program futása közben - a programot alkotó struktúrákról (funkciók, osztályok, adattagok stb.) - elérhetõ adatokat generálunk. Az említett Java nyelvben például ez teljesen automatikusan történik, a C++ esetén azonban szükség van bizonyos "trükkökre" a megvalósításhoz.
+
+A technika lényege, hogy fejlesztõként vállaljuk a felelõsséget, hogy a reflektálni kívánt osztályokat \textbf{manuálisan} tesszük elérhetõvé a futási környezet számára.
+
+A \textit{di\_rtlib} könyvtárban található az injektáló rendszer egy megvalósítása. A \textit{register\_class.hpp} tartalma:
+
+\begin{cpp}
+#pragma once
+#include "meta_class.hpp"
+namespace di {
+template< typename T >
+class class_registrator {
+public:
+  class_registrator( const std::string& cl ) {
+    class_registry::insert< T >( cl );
+  }
+};
+#define register_class( clname )\
+static ::di::class_registrator< clname >\
+__register_ ##clname ##__ { #clname }
+}
+\end{cpp}
+
+A \textit{register\_class} kifejezés jelenti a belépési pontot a reflektálás rendszerébe. Az ötlet az, hogy egy olyan osztályt definiálunk (\textit{class\_registrator}), ami a konstruktorában regisztrál egy osztályt, a megadott néven. A regisztráció során a névhez hozzárendelõdik egy funkció objektum (\textit{functor}), ami a regisztátor osztály típus paraméterébõl kerül kialakításra, úgy, hogy a funkció a megadott típust példányosítsa meghívásakor:
+
+\begin{cpp}
+template< typename T >
+static void insert( const std::string& cn ) {
+  auto fit = instance->m_classes.find( cn );
+  if( fit == instance->m_classes.end() ) {
+    auto ctor = []() -> component* {
+      return static_cast< component* >( new T() );
+    };
+    instance->m_classes.emplace( cn, meta_class( cn, ctor ) );
+  }
+}
+\end{cpp}
+
+A \textit{register\_class} kifejezés egy regisztrátor példány létrehozását kezdeményezi, ami a program indulásakor (címtérbe történtõ betöltéskor, dinamikus könyvtár esetén) le is fut, innentõl automatizálva a folyamatot.
+
+\SubSection{Komponensek és függõségek}
+\SubSection{Attribútumok}
+\SubSection{Komponens konfiguráció}
 
 \Section{Központi funkciók}
 
-A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, amit mind a grafikus mind pedig a nyílvántartó rendszer el kíván érni. Ezen kívül a konfigurációs osztályok, a futtatható \textit{referencia} alkalmazás "csontvázát" jelentõ osztályok, a rendszerüzenetek továbbítására szolgáló osztályok valamint egyéb segédfunkciók tartoznak ide.
-
-\SubSection{Konfiguráció}
-\label{subsec:configuration}
-
-Konfigurációs paraméternek fogunk nevezni minden olyan típus-érték párt, ami az alkalmazás indulásakor egyszer töltõdik be, a futás során nem változik meg (sem a típusa, sem az értéke) és valamilyen módon hatással van egy alrendszer, vagy egy alrendszerben található funkció mûködésére.
-
-A konfiguráció úgy nevezett \textit{INI} fájlokon keresztül történik. Az INI fájlformátum egy nem-hivatalos konfigurációs formátum bizonyos platformokon. Elõnye, hogy egyszerû, szöveg alapú fájlok, így könnyen szerkeszthetõek és olvashatóak. A formátum három összetevõje a \textit{szekciók}, az \textit{attribútumok} és az \textit{értékek} \cite{inifile}. A három összetevõ elrendezése a következõ:
-
-\begin{lstlisting}
-[section1]
-attribute1=value1
-attribute2=value2
-
-[section2]
-attribute3=value3
-attribute4=value4
-\end{lstlisting}
-
-Egy INI formátum alapú konfiguráció implementáció található a \textit{core/config} útvonalon. A \textit{config} osztály egy aktuálisan betöltött INI fájlt reprezentál. A betöltést a \textit{load} függvénnyel lehet kezdeményezni, mely a konfigurációs fájl elérési útvonalát várja paraméterként. A sikeres betöltés után a \textit{group} hívással érhetõek el a különbözõ csoportok. Egy csoport elemei egy konkrét \textit{[section]} elem alá írt név-érték párok lesznek, a csoport neve pedig a zárójelek közé írt név. A group hívás visszatérési értéke egy csoport példány lesz. A csoportban definiált név-érték párok között a \textit{value, integer, number, test} funkciókkal lehet keresni, amik egyben a kívánt típussá - rendre karakterlánc, egész szám, tört szám, logikai érték - konvertálják az értéket.
+A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, a szálkezeléssel kapcsolatos funkciók, az idõmérésre használt osztályok, a rendszerüzenetek küldésére megvalósított funkciók, valamint a nyílvántartó rendszer alapjai is.
 
 \SubSection{Virtuális tér fagráf}
 
@@ -81,42 +98,11 @@ A problémára megoldást jelent a relatív transzformációk rendszere. Ezek alapján 
 
 A relatív transzformációkat magába foglaló, facsúcsokat reprezentáló osztályt láthatunk a \textit{core/scene\_node} útvonalon.
 
-\SubSection{Alkalmazás szerkezet}
-
-Mivel a tárgyalt alrendszerek dinamikus (vagy megosztott) könyvtárak létrehozására vannak tervezve, a rendszer használatához szükség van egy belépési pontra (\textit{main} függvény) is. Annak érdekében, hogy a belépési pont kódja minél letisztultabb legyen, a központi funkciók közé tartozik egy alkalmazás szerkezet is. Ennek a megvalósítása található a \textit{core/approot} útvonalon. Az \textit{application root} osztály három paramétert vár a konstruktorában, ezek határozzák meg, rendre a digitális tartalmak deklarációját tartalmazó fájl, az elsõdleges konfigurációs fájl és a virtuális tereket leíró fájl elérési útvonalát. Így az alkalmazás belépési pontja egészen egyszerû lesz:
-
-\begin{cpp}
-int main( int argc, char** argv ) {
-  try {
-    zhygraph::core::application_root 
-	  app( "assets.ini", "config.ini", "scenes.sc" );
-    app.initialize();
-    app.run();
-  } catch( const std::exception& e ) {
-    std::cerr << e.what();
-    return -1;
-  }
-  
-  return 0;
-}
-\end{cpp}
-
-Az \textit{initialize} függvény, létrehoz minden szükséges konfigurációs és alrendszer objektumot, és inicializálja azokat. A \textit{run} függvény pedig tartalmazza a futáshoz szükséges \textit{alkalmazás ciklust}.
-
 \SubSection{Segédfunkciók és struktúrák}
 
 \subsubsection{Szálkezelés}
 
 A \textit{core/multi\_thread} útvonalon található a standard \textit{thread} osztály egy kiterjesztése. A standard szál objektumokat egy valamilyen \textit{callable} ("hívható") objektummal kell létrehoznunk, aminek a futtatása egy külön szálon fog történni, ezután azonban a szál objektum, valamint a hozzátartozó szál nem használható tovább. A \textit{multi-thread} osztály a szálak újrahasznosítását teszi lehetõvé, annak érdekében, hogy elkerüljük az újboli szál kreáció és szál-objektum példányosítás költségeit.
-
-\subsubsection{Szál elosztás}
-
-A \textit{multi\_thread\_distributor} osztály egy adott számú \textit{multi\_thread} objektumot kezel. Az osztály segítségével különbözõ szempontok szerint választhatunk ki egy-egy szálat. A következõ szempontok kerültek megvalósításra:
-\begin{description}
-\item \textit{Idle Thread} - olyan szál kerüljön kiválasztásra, amire nincs feladat bízva jelenleg
-\item \textit{Least Job Thread} - olyan szál kerüljön kiválasztásra, aminek feladat száma minimális
-\item \textit{Most Job Thread} - olyan szál kerüljön kiválasztásra, aminek feladat száma maximális
-\end{description}
 
 \subsubsection{Oktális fa}
 
@@ -144,60 +130,69 @@ A \textit{stdout\_channel} implementáció, ahogy az elnevezése sugallja, a standa
 
 A rendszer úgy van megvalósítva, hogy tetszõleges számú \textit{csatorna} adható a rendszerhez, és mindegyik csatorna megkapja az összes küldött üzenetet, amivel aztán az implementációtól függõ mûvelet hajtódik végre.
 
+\Section{A tartalom nyílvántartó alrendszer}
+
+A textit{core/asset} útvonalon található minden osztály és funkció, ami a nyílvántartó rendszerhez szükséges. Ezek az osztályok alapul szolgálnak a konkrét tartalom típusok implementációihoz, amiket láthatunk majd az alrendszerek részletezésénél.
+
+\SubSection{Tartalom osztályok alapja}
+
+Minden tartalom típus õsosztálya a \textit{asset\_base} osztály, illetve az absztrakt interfész az \textit{i\_asset}. Az alap osztály tartalmaz néhány olyan adattagot, ami bármely tartalom típusra jellemzõ lehet. Ilyen a tartalom fájl útvonalát jelzõ tag (\textit{m\_path:asset\_url}), az objektum aktuális állapota (\textit{m\_state:asset\_state}), valamint egy egyedi konfigurációs objektum, ami egy-egy tartalomhoz kapcsolódó betöltési paraméterek tárolására alkalmas.
+
+Az alaposztály publikus interfésze az említett tagok lekérdezése és/vagy beállítására szolgáltat funkciókat, illetve a tartalom, memóriába történõ betöltését lehet kezdeményezni rajta keresztül.
+
+\SubSection{Tartalom paraméterek}
+
+Egy tartalom fájl inicializálásakor a rendszer automatikusan ellenõrzi, hogy létezik-e a tartalomról adatokat szolgáltató \textit{meta-fájl}. A fájl elnevezési konvenciója a \textit{eredetinev\_meta} formát követi:
+
+\begin{cpp}
+...
+asset_url metaurl( url.format() + "_meta" );
+if( m_streamer->check_asset( metaurl ) ) {
+  asset_params prs( m_streamer->load_data( metaurl ) );
+  if( prs.parse() ) {
+    for( const auto& pp : prs.get_params() ) {
+      nass->set_load_param( pp.first, pp.second );
+      sinfo << "asset \"" << url.get_name() <<
+        "\" param: " << pp.first << " value: " << pp.second;
+	}
+  }
+}
+...
+\end{cpp}
+
+Ha létezik a meta-fájl, az beolvasásra kerül, majd az adatot a \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
+
+A lehetséges paraméterek egyediek minden tartalom típusra. A textúrákra jellemzõ paraméter például a "szûrési" technika:
+
+\begin{cpp}
+...
+filter_mode=trilinear
+...
+\end{cpp}
+
+\SubSection{Tartalom típus nyílvántartó osztály}
+
+A tartalom nyílvántartás két lépcsõben történik. Az elsõ lépésben a különbözõ típusokat, és az azokhoz tartozó nyílvántartó objektumokat struktúráljuk. A következõ lépésben pedig, egy adott típushoz tartozó objektumokat rendszerezzük, mint például a textúrák.
+
+Az elsõ lépés megvalósításához kialakított interfész a \textit{i\_asset\_type\_manager}. 
+\begin{cpp}
+class i_asset_type_manager {
+public:
+  virtual asset_manager_ptr get( const std::string& ty ) const = 0;
+  virtual std::vector< asset_manager_ptr > get_all( void ) const = 0;
+  virtual std::vector< std::string > get_types( void ) const = 0;
+};
+\end{cpp}
+A feladata egyszerû, valamilyen módon szolgáltatnia kell az összes elérhetõ típus listáját, az összes, típushoz regisztrált nyílvántartó objektumot, valamint egy konkrét típushoz tartozó nyílvántartó objektumot.
+
+Az interfész implementációja egy injektálható komponens, ami a függõségein keresztül éri el az egyes nyílvántartó objektumokat, és az ahhoz tartozó tartalom típusokat (\textit{asset.cpp - asset\_type\_manager}).
+
+\SubSection{Tartalom nyílvántartó osztály}
+
+
+
 \Section{A grafikus alrendszer}
-\SubSection{Virtuális tér}
 \SubSection{Digitális tartalom implementációk}
+\SubSection{Anyagtulajdonságok könyvtára}
 \SubSection{Grafikus vezérlõ osztály}
 \SubSection{Grafikus állapottér}
-\SubSection{Rendszer konfigurációk}
-
-\Section{A tartalom nyílvántartó alrendszer}
-\SubSection{Tartalom referencia}
-
-Ahogy a \myref{chap:assetmanagement} részben részletezve láthatjuk, a digitális tartalmakat reprezentáló objektumokat egy másolás nélküli struktúrával valósítjuk meg, az objektumok megosztása referenciákon keresztül történik. A tartalom objektumokat a \textit{asset/asset\_base} útvonalon található fájlokban, míg a referencia objektumokat a \textit{asset/asset\_pointer} útvonalon található fájlokban valósítjuk meg. 
-
-A referencia objektum publikus funkciói között fõként a tárolt objektum elérését szolgáló \textit{operátorokat}, valamint a referencia számláláshoz szükséges \textit{másoló konstruktorokat} találjuk. Megtalálható az osztályban továbbá, a referenciát birtokló nyílvántartó vezérlõ osztály pointere is. Erre azért van szükség, hogy a referencia számláló nullára csökkenésekor, az objektum jelzést tudjon küldeni a vezérlõ számára (\textit{notify\_unreferenced}).
-
-A jelzéstõl eltekintve az osztály mûkõdése hasonló a standard, referencia számlált "okos-mutatók" mûködéséhez, mint például a \textit{std::shared\_pointer}. A konstruktor létrehoz egy közös memória területen tárolt változót, ami az aktuális referenciák számát tárolja. A másoló konstruktor növeli eggyel a referenciaszámlálót, míg a destruktor csökkenti eggyel, a számláló nullára csökkenésekor pedig megtörténik a számláló változó felszabadítása és a vezérlõ tájékoztatása.
-
-\SubSection{Tartalom gyártó egység}
-
-A \textit{asset/asset\_manager} útvonalon található \textit{asset\_factory} osztály célja, hogy regisztrált tartalom típusok alapján hozzon létre tartalom objektumokat. A mûködése egyszerûen egy asszociatív táron (\textit{std::unordered\_map}) alapul, aminek a kulcsa egy karakterlánc, típusa pedig egy függvény objektum. A típusok regisztrálása során megadásra kerül egy típus azonosító, ez lesz a kulcs, valamint egy fordítási idejû típus paraméter, amibõl pedig a függvény objektum kerül létrehozásra oly módon, hogy az objektum meghívása egy megfelelõ dinamikus-típusú, tartalom objektum létrehozását eredményezze.
- 
-\SubSection{Nyílvántartó vezérlõ osztály}
-
-Szintén a \textit{asset/asset\_manager} útvonalon található a nyílvántartó rendszer központi osztálya, az \textit{asset\_manager} osztály. Ennek feladata, hogy létrehozza a gyártó egység segítségével a tartalom objektumokat, biztosítsa azokhoz az elérést, valamint, hogy kezelje a szemétgyûjtõ listát, amin a zérus referenciával rendelkezõ objektumok találhatóak.
-
-Tartalmaz továbbá az osztály egy szál elosztó objektumot, ami a tartalmak betöltési funkcióit kapják feladatnak, valamint egy különálló OpenGL szálat. Erre azért van szükség mert az OpenGL kontextus mindig csak egy adott szálon lehet aktív, így a grafikus vezérlõtõl függõ objektumok csak ezen a szálon kerülhetnek betöltésre.
-
-\SubSection{Tartalom "foglalat"}
-\label{subsec:assetsocket}
-
-A tartalom foglalat (\textit{asset socket}) feladata, hogy kihagyás-mentes átmenetet biztosítson tartalmak cseréje között. Például ha egy geometriai objektumot kicserélünk - annak érdekében, hogy az új objektum töltési ideje alatt is történjen megjelenítés - a régire történõ referenciát aktívan tartjuk, amíg az új betöltése véget nem ér.
-
-A megvalósítás a \textit{asset/asset\_socket} útvonalon található. Az osztály egyetlen funkciója a \textit{swap}, ami a kívánt objektumot várja paraméterül.
-
-\SubSection{Rendszer konfigurációk}
-
-A nyílvántartó rendszer konfigurációit az \textbf{asset\_system} csoport alatt kell megadni és a lehetséges paraméterek a következõek:
-
-\begin{description}
-\item \textit{loader\_thread\_count[int]} - megadja, hogy a vezérlõ osztályban található szál-elosztó hány szálat tartalmazzon
-\item \textit{gc\_policy[string]} - megadja, hogy milyen stratégia szerint kerüljenek felszabadításra a szemétgyûjtõ listáról az objektumok, lehetséges értékei a \textbf{least\_freed\_object} és a \textbf{leave\_biggest\_object}, a stratégiák leírását a \myref{section:gclist} részben találhatjuk
-\end{description}
-
-Így tehát a nyílvántartó rendszer egy lehetséges konfigurációs csoportja a következõképpen alakul:
-
-\begin{lstlisting}
-[asset_system]
-loader_thread_count=4
-gc_policy=least_freed_object
-\end{lstlisting}
-
-\Section{A szkript alrendszer}
-\SubSection{Digitális tartalom implementáció}
-\SubSection{Szkript vezérlõ osztály}
-\SubSection{Szkript állapottér}
-\SubSection{Modellek}
-\label{subsec:models}
-\SubSection{Rendszer konfigurációk}

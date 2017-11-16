@@ -68,6 +68,16 @@ bool asset_url::operator!=( const asset_url & o ) const {
 	return m_type != o.m_type || m_path != o.m_path;
 }
 
+asset_url::asset_path& asset_url::path()
+{
+	return m_path;
+}
+
+const asset_url::asset_path& asset_url::path() const
+{
+	return m_path;
+}
+
 size_t asset_url::_get_incomplete( const std::string & v ) const {
 	return v.find( INCOMPLETE_TOKEN );
 }
@@ -166,10 +176,11 @@ private:
 	virtual std::string load_data( const asset_url& url ) override {
 		std::string r;
 		struct stat b;
-		stat( url_to_path( url ).c_str(), &b );
+		const std::string& upath = url_to_path(url);
+		stat( upath.c_str(), &b );
 		if( b.st_size > 0 ) {
 			FILE* f = nullptr;
-			fopen_s( &f, url.get_path().c_str(), "rb" );
+			fopen_s( &f, upath.c_str(), "rb" );
 			r.resize( b.st_size );
 			fread_s( &r [ 0 ], b.st_size, sizeof( char ), b.st_size, f );
 			fclose( f );
@@ -282,6 +293,18 @@ asset_url::asset_path asset_url::asset_path::make_complete( const asset_path & p
 		res.m_incompleteness = std::string::npos;
 	}
 	return res;
+}
+
+asset_url::asset_path& asset_url::asset_path::insert_front_part(const std::string& part)
+{
+	m_path.insert(m_path.begin(), part);
+	return *this;
+}
+
+asset_url::asset_path & asset_url::asset_path::insert_back_part(const std::string & part)
+{
+	m_path.push_back(part);
+	return *this;
 }
 
 bool asset_url::asset_path::operator==( const asset_path & o ) const {
@@ -426,15 +449,7 @@ void asset_manager_base::_unload_asset( asset_ptr a ) {
 
 void asset_manager_base::_resolve_asset( const asset_url & aurl ) { 
 	if( aurl.get_type() == this->get_type() ) {
-		std::list< asset_url > final_urls;
-		if( !aurl.is_complete() ) {
-			for( const std::string& sp : m_search_urls ) {
-				final_urls.push_back( aurl.make_complete( asset_url( sp ) ) );
-			}
-		} else {
-			final_urls.push_back( aurl );
-		}
-
+		const std::list< asset_url >& final_urls = _possible_matches(aurl, m_search_urls.get_values());
 		for( const asset_url& a : final_urls ) {
 			if( m_streamer->check_asset( a ) ) {
 				_insert_asset( a );
@@ -461,6 +476,30 @@ void asset_manager_base::_create_loader_thread( asset_ptr a, const i_asset_liste
 			l->load_ready( a );
 		}
 	}, a, l ).detach();
+}
+
+std::list<asset_url> asset_manager_base::_possible_matches(const asset_url& base, const string_vector& search)
+{
+	std::list<asset_url> result;
+
+	if (base.is_complete()) {
+		result.push_back(base);
+	}
+
+	for (const std::string& sp : search) {
+		if (!sp.empty()) {
+			if (base.is_complete()) {
+				asset_url nurl = base;
+				nurl.path().insert_front_part(sp);
+				result.push_back(nurl);
+			}
+			else {
+				result.push_back(base.make_complete(asset_url(sp)));
+			}
+		}
+	}
+
+	return move(result);
 }
 
 std::shared_ptr<i_asset> asset_manager_base::load_asset( const asset_url & url ) {
@@ -529,21 +568,20 @@ void asset_manager_base::unload_unreferenced( void ) {
 	}
 }
 
-std::shared_ptr<i_asset> asset_manager_base::get_asset( const asset_url & url ) {
+std::shared_ptr<i_asset> asset_manager_base::get_asset(const asset_url& url) {
 	std::shared_ptr< i_asset > r;
-	auto fit = m_asset_map.find( url );
-	if( fit != m_asset_map.end() ) {
+
+	const auto& alternatives = _possible_matches(url, m_search_urls.get_values());
+	auto fit = m_asset_map.end();
+	for (auto alternative = alternatives.begin(); alternative != alternatives.end()
+		&& fit == m_asset_map.end(); ++alternative)
+		fit = m_asset_map.find(*alternative);
+
+	if (fit == m_asset_map.end())
+		swarn << "asset at \"" << url << "\" was not found as a preinitialized asset";
+	else
 		r = fit->second;
-	} else {
-		swarn << "asset at \"" << url << "\" was not found as a preinitialized asset, trying to initialize...";
-		_resolve_asset( url );
-		fit = m_asset_map.find( url );
-		if( fit != m_asset_map.end() ) {
-			r = fit->second;
-		} else {
-			swarn << "asset at \"" << url << "\" was not found to auto-initialize";
-		}
-	}
+
 	return r;
 }
 

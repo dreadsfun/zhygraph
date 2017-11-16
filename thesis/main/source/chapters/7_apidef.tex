@@ -11,31 +11,31 @@ Ahhoz, hogy egy tartalom, például egy textúra, felhasználható legyen a rendszer 
 
 Következõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
 
-\begin{lstlisting}
+\begin{xml}
 <component name="texture_manager" class="texture_manager">
   <attribute name="assets">
     <insert value="texture@grass"/>
   </attribute>
 </component>
-\end{lstlisting}
+\end{xml}
 
-A beillesztett érték formátuma általánosan: \textit{tartalom\_típus@tartalom\_útvonal}. Minden más típusú tartalomra hasonló az eljárás, például egy geometriai objektum deklarálása a következõ lehet:
+A beillesztett érték formátuma általánosan: \textit{tartalomtípus@útvonal}. Minden más típusú tartalomra hasonló az eljárás, például egy geometriai objektum deklarálása a következõ lehet:
 
-\begin{lstlisting}
+\begin{xml}
 <component name="mesh_manager" class="mesh_manager">
   <attribute name="assets"> 
     <insert value="mesh@terrain"/>
   </attribute>
 </component>
-\end{lstlisting}
+\end{xml}
 
 További gyakori felhasználása lehet még ennek a konfigurációs fájlnak az üzenetküldési csatornák leírása. Például az üzenetek fájlba írányítása a következõ komponens deklarációval történik:
 
-\begin{lstlisting}
+\begin{xml}
 <component name="n_file_channel" class="file_channel">
   <attribute name="file" value="engine.log"/>
 </component>
-\end{lstlisting}
+\end{xml}
 
 Az \textit{engine.log} a fájl útvonala, ahova az üzenetek kerülnek majd, ezen a csatornán keresztül.
 
@@ -46,14 +46,14 @@ A \textit{main/materials} útvonalon található fájlban láthatjuk az úgy nevezett 
 
 Például ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
 
-\begin{lstlisting}
+\begin{xml}
 <materials>
 	<material name="grass_texture">
 		<shader file="text@standardfs"/>
 	  <texture sampler="albedo_map" file="texture@grass"/>
   </material>
 </materials>
-\end{lstlisting}
+\end{xml}
 
 A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgy nevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
 
@@ -64,8 +64,8 @@ Képzeljük el ezt úgy, hogy egy gráfnak csak a pontjai adottak, az élei ismeretle
 
 Egy példa a fájl tartalmára a következõ:
 
-\begin{lstlisting}
-<scene-graph>
+\begin{xml}
+<scene_graph>
   <nodes>
     <node name="camera" class="camera_node">
       <attribute name="projection_mode" value="perspective"/>
@@ -86,14 +86,20 @@ Egy példa a fájl tartalmára a következõ:
     <node name="n13" class="scene_node_base"/>
     <node name="n14" class="scene_node_base"/>
     <node name="n141" class="scene_node_base"/>
-	<node name="n142" class="scene_node_base"/>
+    <node name="n142" class="scene_node_base"/>
   </nodes>
 	
   <scenes>
-    <scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
+    <scene name="scene1" 
+      graph="camera n1 n11 n111 
+        . n112 n1121 
+        . . . n12 
+        . n13 
+        . n14 n141 
+        . n142"/>
   </scenes>
-</scene-graph>
-\end{lstlisting}
+</scene_graph>
+\end{xml}
 
 A fájl kezdõ tagja ismét fix, ezután következik a csúcsok felsorolása a \textit{nodes} tagon belül. Egy csúcs definiciójához mindenképpen szükséges egy név (\textit{name}) és egy típus (\textit{class}). A névvel hivatkozhatunk rájuk késõbb, a csúcskapcsolatok leírásakor vagy a szkriptekben történõ felhasználásukkor. A típusnak egy C++-ban létrehozott és \textit{reflektált} osztálynak kell lennie.
 
@@ -104,5 +110,58 @@ A \textit{scenes} tagban kell felsorolnunk a különbözõ jelenetek (a csúcsok össz
 \Section{Szkript funkciók}
 
 \SubSection{Felhasználói interakció}
+
+Különbözõ bemeneti eszközökrõl érkezõ jelekre reagálhatunk az itt tárgyalt funkciók segítségével. A \textit{py\_api/input.py} fájlban találhatóak a szükséges funkciók és értékek definíciói.
+
+Az \textit{input} osztályba tartozó funkciók a következõek.
+
+\begin{python}
+get_key_down(key)
+get_key_up(key)
+get_key(key)
+get_button_down(btn)
+get_button_up(btn)
+get_button(btn)
+get_cursor_position()
+get_cursor_displacement()
+\end{python}
+
+A \textit{get\_key*} család funkciói, a paraméterben megadott billentyû lenyomását, míg a \textit{get\_button*} funkciók az egér gombjainak állapotát jelzik. Mindegyik funkció logikai igazat vagy hamisat ad vissza az állapotoktól függõen. Mindkét funkció csoportra igaz, hogy a \textit{down} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb lenyomásakor, a \textit{up} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb felengedésekor, az "irány" jelzés nélküli funkciók pedig mindaddig igazzal térnek vissza, amíg az ellenõrzött billentyû vagy gomb le van nyomva.
+
+A kurzor állapotához kapcsolódik a maradék két funkció: a \textit{position} a kurzor aktuális helyzetét adja meg két elemû, pixelben mért vektorban, relatíve a képernyõ helyzetéhez, úgy, hogy a képernyõ bal felsõ sarka az origó és jobbra illetve lefelé növekednek a tengelyek.
+
+A \textit{displacement} (elmozdulás), a kurzor elõzõ alkalmazás frissítésben és a jelenlegi frissítésben mért helyzetének különbsége. Visszatérési értéke szintén két elemû vektor, mely értékei pixelben értendõk.
+
+A billentyûk és gombok értékei, rendre a \textit{keys} és \textit{buttons} osztályban vannak definiálva. Ezeket kell paraméternek adnunk az elõzõleg tárgyalt funkcióknak, ha ellenõrizni szeretnénk az állapotukat.
+
+\begin{python}
+...
+end = c_int.in_dll(lib, 'keys_end')
+home = c_int.in_dll(lib, 'keys_home')
+left = c_int.in_dll(lib, 'keys_left')
+...
+f7 = c_int.in_dll(lib, 'keys_f7')
+f8 = c_int.in_dll(lib, 'keys_f8')
+f9 = c_int.in_dll(lib, 'keys_f9')
+...
+o = c_int.in_dll(lib, 'keys_o')
+p = c_int.in_dll(lib, 'keys_p')
+q = c_int.in_dll(lib, 'keys_q')
+...
+right = c_int.in_dll(lib, 'buttons_right')
+middle = c_int.in_dll(lib, 'buttons_middle')
+...
+\end{python}
+
+Például ha az "A" billentyû lenyomására szeretnénk reagálni:
+
+\begin{python}
+if get_key_down(keys.a):
+  print "key A was pressed"
+\end{python} 
+
 \SubSection{Fagráf manipuláció és transzformációk}
+
+
+
 \SubSection{Megjelenítési funkciók}

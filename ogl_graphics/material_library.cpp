@@ -18,18 +18,29 @@ const material_library::material_map & material_library::get_materials( void ) {
 
 void material_library::_parse_lib( void ) {
 	try {
-		text_asset_ptr t = std::static_pointer_cast< text_asset >(
-			m_type_manager->get( "text" )->load_asset( asset_url( m_material_file.get_value() ) )
-			);
+		asset_manager_ptr mp = m_type_manager->get("text");
 
-		xml_schema::document_pimpl doc_p( m_mat_p.root_parser(), m_mat_p.root_name() );
-		m_mat_p.pre();
-		doc_p.parse( t->get_text().c_str(), t->get_text().length(), true );
-		materials* mats = m_mat_p.post();
+		if (mp) {
+			text_asset_ptr t = std::static_pointer_cast<text_asset>(
+				mp->load_asset(asset_url(m_material_file.get_value()))
+				);
 
-		for( material& mat : mats->material() ) {
-			m_materials.insert( std::make_pair( mat.name(), &mat ) );
-			sinfo << "material with name \"" << mat.name() << "\" inserted to material library";
+			if (t) {
+
+				xml_schema::document_pimpl doc_p(m_mat_p.root_parser(), m_mat_p.root_name());
+				m_mat_p.pre();
+				doc_p.parse(t->get_text().c_str(), t->get_text().length(), true);
+				materials* mats = m_mat_p.post();
+
+				for (material& mat : mats->material()) {
+					m_materials.insert(std::make_pair(mat.name(), &mat));
+					sinfo << "material with name \"" << mat.name() << "\" inserted to material library";
+				}
+			} else {
+				serror << "material library cannot be initialized, material file was null at \"" << m_material_file.get_value() << "\"";
+			}
+		} else {
+			serror << "material library cannot be initialized, no text asset manager was found";
 		}
 
 	} catch( const xml_schema::parser_exception& e ) {

@@ -156,6 +156,7 @@
     <ClCompile Include="scene_node.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aabb.hpp" />
     <ClInclude Include="asset.hpp" />
     <ClInclude Include="export.hpp" />
     <ClInclude Include="graphics.hpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="multi_thread.hpp" />
     <ClInclude Include="mutex.hpp" />
     <ClInclude Include="node_subscription.hpp" />
+    <ClInclude Include="octree.hpp" />
     <ClInclude Include="scene.hpp" />
     <ClInclude Include="scene_node.hpp" />
     <ClInclude Include="scripting.hpp" />

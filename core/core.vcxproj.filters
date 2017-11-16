@@ -86,5 +86,11 @@
     <ClInclude Include="scripting.hpp">
       <Filter>Header Files\interface</Filter>
     </ClInclude>
+    <ClInclude Include="octree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aabb.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

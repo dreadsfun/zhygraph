@@ -28,6 +28,8 @@ private:
 		const std::string& get_name( void ) const;
 		void set_name( const std::string& v );
 		asset_path make_complete( const asset_path& p ) const;
+		asset_path& insert_front_part(const std::string& part);
+		asset_path& insert_back_part(const std::string& part);
 		bool operator == ( const asset_path& o ) const;
 		bool operator != ( const asset_path& o ) const;
 	};
@@ -60,6 +62,8 @@ public:
 	CORE_SHARED bool is_complete( void ) const;
 	CORE_SHARED bool operator == ( const asset_url& o ) const;
 	CORE_SHARED bool operator != ( const asset_url& o ) const;
+	CORE_SHARED asset_path& path();
+	CORE_SHARED const asset_path& path() const;
 	friend CORE_SHARED  std::ostream& operator << ( std::ostream& op, const asset_url& url );
 
 private:
@@ -255,6 +259,8 @@ protected:
 	void CORE_SHARED _resolve_asset( const asset_url& aurl );
 	void CORE_SHARED _init( void );
 	void CORE_SHARED _create_loader_thread( asset_ptr a, const i_asset_listener* l );
+	std::list<asset_url> _possible_matches(const asset_url& base, const string_vector& search);
+
 
 	virtual CORE_SHARED std::shared_ptr< i_asset > load_asset( const asset_url& url ) override;
 	virtual CORE_SHARED std::shared_ptr< i_asset > load_asset( const std::string& name ) override;

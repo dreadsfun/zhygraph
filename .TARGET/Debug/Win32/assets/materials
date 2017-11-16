@@ -1,0 +1,11 @@
+<materials>
+	<material name="alduin">
+		<shader file="shader@test_fragment"/>
+		<texture sampler="albedo_map" file="texture@texture"/>
+	</material>
+	
+	<material name="tent_standard">
+		<shader file="shader@test_fragment"/>
+		<texture sampler="albedo_map" file="texture@texture"/>
+	</material>
+</materials>
