@@ -67,6 +67,8 @@ static void insert( const std::string& cn ) {
 
 A \textit{register\_class} kifejezés egy regisztrátor példány létrehozását kezdeményezi, ami a program indulásakor (címtérbe történtõ betöltéskor, dinamikus könyvtár esetén) le is fut, innentõl automatizálva a folyamatot.
 
+A módszer elõnye, hogy az így reflektált osztályokat használni tudjuk anélkül, hogy az õt felhasználó kód bármit is tudna róla. Csupán egy publikus interfészt kell deklarálnunk, elérhetõ helyen, az implementáció pedig akár a forrás fájlba is kerülhet, ezzel maximálisan eleget téve az adat-rejtés elvének.
+
 \SubSection{Komponensek és függõségek}
 
 Ahhoz, hogy egy osztály részt vehessen a reflexióban, illetve a függõségek kezelésében, a \textit{component} osztályból kell örökölnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, illetve biztosítja, hogy kizárólag az osztályon belülrõl történjen függõség deklaráció.
@@ -99,7 +101,75 @@ private:
 
 \SubSection{Komponens konfiguráció}
 
+A rendszer különbözõ részei végül egy konfigurációs fájlban futnak össze. Jelen esetben ez az \textit{engine.conf} fájl, ami elengedethetetlen a keretrendszer futtatásához, automatikusan ezen a néven van keresve, közvetlenül a keretrendszer könyvtárában (önálló futtatás esetén, a futtatható állomány mellett).
 
+A konfigurációs fájl egy standard XML fájl, aminek a struktúráját egy \textit{XSD séma} írja le (\textit{di/di.xsd}). A gyökér elem minden esetben a \textit{DI} kifejezés, ennek közvetlen gyermekei lehetnek a \textit{plugins}, a \textit{components} és a \textit{wiring}.
+
+A \textit{plugins} tag alatt deklarálhatunk megosztott (dinamikusan linkelt) könyvtárakat, amiket a keretrendszer használni fog. Erre azért van szükség, mert a könyvtárak által reflektált osztályok és attribútumok csak akkor kerülnek regisztrálásra, ha azok be vannak töltve. Betöltés azonban nem történik automatikusan, hiszen nincs statikus kapcsolat a dinamikus könyvtárak és a futtatható állomány között.
+
+A \textit{components} tag alatt kell felsorolnunk minden komponenst, amit létre szeretnénk hozni. Egy komponens deklarációjához mindenképpen szükség van egy névre (\textit{name}) és egy osztályra (\textit{class}):
+
+\begin{xml}
+...
+<component name="graphics_context" class="win32gl_context"/>
+...
+\end{xml}
+
+A névvel a késõbbiekben hivatkozunk a komponensre, amikor ezen komponens függõségeit kívánjuk beállítani, vagy a komponenst szeretnénk átadni függõségként. Az osztály paraméternek egy reflektált osztálynak kell lennie, ezzel a dinamikus típussal lesz létrehozva a komponens.
+
+A komponensek deklarációjakor állíthatjuk be a reflektált osztályban megadott attribútumokat is:
+
+\begin{xml}
+...
+<component name="material_library" class="material_library">
+  <attribute name="material_file" value="text@materials"/>
+</component>
+...
+\end{xml}
+
+A \textit{wiring} rész alatt szereplhetnek az \textit{inject}, \textit{inject-one}, \textit{inject-slot} és az \textit{inject-all} tagok, melyek mindegyike a függõségek beállítására alkalmas, különbözõ szempontok szerint. 
+
+Az \textit{inject} tagnak szükséges attribútumnak megadni egy fogadó komponenst, egy injektált komponenst, és azt, hogy a fogadó komponens mely függõsége az, amit felold ez az injekció (\textit{slot}).
+
+\begin{xml}
+...
+<inject receiver="engine_launcher" 
+  slot="windowing" injection="windowing"/>
+...
+\end{xml}
+
+Az \textit{inject-one} tag arra való, hogy egy megadott komponens összes függõséget beállítsuk egy blokkon belül. A \textit{receiver} határozza meg a cél komponenst, a további \textit{inject} tagokkal pedig egy-egy függõséget oldhatunk fel, a válaszott komponensekkel (\textit{injection}).
+
+\begin{xml}
+...
+<inject_one receiver="resource_context_handle">
+  <inject slot="windowing" injection="windowing"/>
+  <inject slot="resource_context" injection="graphics_resource_context"/>
+  <inject slot="main_context" injection="graphics_context"/>
+</inject_one>
+...
+\end{xml}
+
+Az \textit{inject-slot} taggal egy megadott elnevezésû függõséget állíthatunk be egyszerre az összes komponensben (amiben szerepel), egy megadott komponenssel. Például majd mindegyik komponens használja az üzenetküldõ komponenst, így célszerû egy taggal injektálni az összes függõséget:
+
+\begin{xml}
+...
+<inject_slot slot="logger" injection="default_logger"/>
+...
+\end{xml}
+
+Az \textit{inject-all} taggal az injektálni kívánt komponenst rögzíthetjük, és azt sorolhatjuk fel, hogy mely komponensek, mely függõségeibe szeretnénk beállítani azt. Például ha csak a kiválasztott komponensekben szeretnénk beállítani az üzenetküldõ rendszert, nem az összesben:
+
+\begin{xml}
+...
+<inject_all injection="default_logger">
+  ...
+  <inject receiver="text_manager" slot="logger"/>
+  <inject receiver="shader_manager" slot="logger"/>
+  ...
+</inject_all>
+...
+\end{xml}
 
 \Section{Központi funkciók}
 
@@ -221,10 +291,56 @@ Az interfész implementációja egy injektálható komponens, ami a függõségein keres
 
 \SubSection{Tartalom nyílvántartó osztály}
 
-
+A nyílvántartó osztály interfésze az \textit{i\_asset\_manager}, melynek funkciói egy-egy tartalom betöltésére illetve felszabadítására vonatkoznak. Az interfész alap implementációja az \textit{asset\_manager\_base}. Ez implementálja az interfész minden funkcióját, a \textit{get\_type} híváson kívül, ami arra szolgál, hogy az adott tartalom típus nevét, karakterlánc formátumban adja meg. Ezen kívül az alap megvalósítás bevezet egy úgy tisztán virtuális függvényt:
+\begin{cpp}
+virtual asset_ptr create_asset( const asset_url& url ) = 0;
+\end{cpp}
+ami arra szolgál, hogy létrehozza az implementációtól függõ tartalom objektumot, a megfelelõ dinamikus típussal.
 
 \Section{A grafikus alrendszer}
 \SubSection{Digitális tartalom implementációk}
-\SubSection{Anyagtulajdonságok könyvtára}
+
+A grafikus alrendszer jelenleg három tartalom típust implementál, ezek a \textit{shader}, a \textit{texture} és a \textit{mesh} típusok (\textit{ogl\_graphics/ogl\_asset.cpp}). Az implementációkban található minden olyan funkció, ami specifikus az OpenGL környezetre, és az OpenGL objektumok létrehozására. Például a textúra betöltése során létrehozunk egy grafikus textúra objektumot:
+\begin{cpp}
+...
+if( error == 0 ) {
+  glGenTextures( 1, &m_gl_name );
+  r = true;
+} else {
+  err = "image decoder error: ";
+  err.append( lodepng_error_text( error ) );
+}
+...
+\end{cpp}
+A betöltési paraméterek feldolgozása történik a \textit{\_set\_wrap\_mode}, \textit{\_set\_filter\_mode} és \textit{\_set\_aniso} függvényekben, OpenGL hívások segítségével.
+
+Az árnyékoló programok betöltése és fordítása történik, a \textit{shader} tartalom típus betöltési funkciójában:
+\begin{cpp}
+...
+m_gl_name = glCreateShader( 
+  string_to_shader_type( this->get_load_param( "shader_type" ) ) );
+const char* src = data.c_str();
+GLint lt = data.length();
+glShaderSource( m_gl_name, 1, &src, &lt );
+glCompileShader( m_gl_name );
+
+GLint ccst = 0;
+glGetShaderiv( m_gl_name, GL_COMPILE_STATUS, &ccst );
+
+if( ccst != GL_TRUE ) {
+  GLint llt = 0;
+  glGetShaderiv( m_gl_name, GL_INFO_LOG_LENGTH, &llt );
+  err.resize( llt );
+  glGetShaderInfoLog( m_gl_name, llt, nullptr, &err[ 0 ] );
+  glDeleteShader( m_gl_name );
+  m_gl_name = 0;
+  err.insert( 0, "failed to compile shader: " );
+} else {
+  r = true;
+}
+...
+\end{cpp}
+
 \SubSection{Grafikus vezérlõ osztály}
-\SubSection{Grafikus állapottér}
+
+Az \textit{ogl\_graphics/ogl\_graphics.cpp} fájlban található a grafikus rendszer központi osztályának az implementációja. Az osztály felelõssége kezelni a virtuális fagráfban található grafikus objektumokat. Ezek jelenleg a kamera és a geometriákat kirajzoló objektum (\textit{camera\_node, mesh\_renderer\_node}). A rajzolás elsõ lépése, hogy összegyûjtsük a kezelni kívánt objektumokat. Ez a fagráf bejárásával történik, mely során az egyes csúcsok "feliratkozhatnak" az aktuális feldolgozási eljárásra. Az így összegyûjtött geometriai objektumok mindegyikére megtörténik a láthatósági vizsgálat, a kapott kamerák szempontjából, az oktális fa segítségével. Majd a végsõ geometria lista megjelenítésre kerül a megfelelõ rajzolási és transzformációs paraméterek beállításával.

@@ -1,5 +1,8 @@
 #include "ogl_asset.hpp"
 namespace asset {
+
+// texture asset
+
 texture::texture( const asset_url& url )
 	: asset_base( url ) { }
 
@@ -80,6 +83,9 @@ void texture::_set_aniso( void ) const {
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_params.get_< int >( "aniso_level" ) );
 }
 
+
+// mesh asset
+
 mesh::mesh( const asset_url & url )
 	: asset_base( url ) { }
 
@@ -119,6 +125,15 @@ bool mesh::load( const std::string & data, std::string & err ) {
 	unsigned int ind_offset = 0;
 	m_indices.resize( sc->mNumMeshes );
 	m_topologies.resize( sc->mNumMeshes );
+
+	glm::vec3 cminpoint;
+	glm::vec3 cmaxpoint;
+
+	if (sc->mNumMeshes > 0 && sc->mMeshes[0]->mNumVertices > 0) {
+		const auto& cp = sc->mMeshes[0]->mVertices[0];
+		cmaxpoint = cminpoint = glm::vec3(cp.x, cp.y, cp.z);
+	}
+
 	for( unsigned int i = 0; i < sc->mNumMeshes; ++i ) {
 		aiMesh* cmesh = sc->mMeshes[ i ];
 
@@ -158,6 +173,9 @@ bool mesh::load( const std::string & data, std::string & err ) {
 			m_positions[ vind ][ 0 ] = cmesh->mVertices[ vind - ind_offset ].x;
 			m_positions[ vind ][ 1 ] = cmesh->mVertices[ vind - ind_offset ].y;
 			m_positions[ vind ][ 2 ] = cmesh->mVertices[ vind - ind_offset ].z;
+
+			cminpoint = glm::min(cminpoint, m_positions[vind]);
+			cmaxpoint = glm::max(cmaxpoint, m_positions[vind]);
 		}
 
 		// allocate vertice count space for vertex texture coordinate data and copy the loaded data
@@ -247,6 +265,10 @@ bool mesh::load( const std::string & data, std::string & err ) {
 		ind_offset += cmesh->mNumVertices;
 	}
 
+	auto csum = cminpoint + cmaxpoint;
+	auto cmid = glm::vec3(csum.x / 2, csum.y / 2, csum.z / 2);
+	mboundingvolume = aabb(cmid, cmid - cminpoint );
+
 	return true;
 }
 
@@ -307,6 +329,11 @@ bool mesh::unload( std::string & err ) {
 	m_buffer_names.indices.clear();
 	m_buffer_names.vaos.clear();
 	return true;
+}
+
+const aabb& mesh::boundingvolume() const
+{
+	return mboundingvolume;
 }
 
 void mesh::_create_vaos( void ) {

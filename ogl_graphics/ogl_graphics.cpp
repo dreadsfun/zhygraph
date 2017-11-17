@@ -4,6 +4,7 @@
 #include <core/logger.hpp>
 #include <core/windowing.hpp>
 #include <core/time.hpp>
+#include <core/octree.hpp>
 #include <di_rtlib/define_attribute.hpp>
 #include <di_rtlib/define_dependency.hpp>
 #include <cassert>

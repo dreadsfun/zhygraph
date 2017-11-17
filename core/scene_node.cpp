@@ -96,30 +96,30 @@ void scene_node_base::set_parent( i_scene_node * n ) {
 	m_parent = n;
 }
 
-void scene_node_base::traverse_depth( node_visitor_ptr v ) {
-	v->visit( this );
+void scene_node_base::traverse_depth(i_node_visitor& v ) {
+	v.visit( this );
 	// this branch ensures that no more
 	// child is traversed at the current depth if the visitor is complete
-	if( !v->completed() ) {
+	if( !v.completed() ) {
 		for( i_scene_node* p : m_children ) {
 			p->traverse_depth( v );
 			// this break ensures that no more DEPTH
 			// is traversed if the visitor is complete
-			if( v->completed() ) break;
+			if( v.completed() ) break;
 
 		}
 	}
 }
 
-void scene_node_base::traverse_breadth( node_visitor_ptr v ) {
+void scene_node_base::traverse_breadth(i_node_visitor& v ) {
 	scene_node_queue q;
 	q.push( this );
 	while( !q.empty() ) {
 		// visit current node
-		v->visit( q.front() );
+		v.visit( q.front() );
 		// do no more discover nor visit if the visitor is completed with
 		// the previous visit
-		if( v->completed() ) break;
+		if( v.completed() ) break;
 		scene_node_vector cdr = q.front()->get_children();
 		for( i_scene_node* c : cdr ) {
 			// discover adjacent nodes
@@ -134,6 +134,31 @@ bool scene_node_base::is_root( void ) const {
 }
 
 void scene_node_base::update( node_subscription & ns ) { }
+
+
+bool scene_node_base::changed(bool recursive) const
+{
+	bool r = m_transform.has_changed();
+
+	class _dirty_check
+		: public i_node_visitor {
+	public:
+		_dirty_check(bool& r)
+			: mresult(r) {}
+		bool completed() const override { return mresult; }
+		void visit(i_scene_node*) override {}
+		void visit(const i_scene_node* n) const override {
+			mresult = mresult && n->transform()
+		}
+	private:
+		bool& mresult;
+	};
+
+	if (recursive) {
+		_dirty_check visitor(r);
+		this->traverse_depth(visitor);
+	}
+}
 
 void scene_node_base::load( type_manager_ptr p, bool async ) {
 	m_type_manager = p;

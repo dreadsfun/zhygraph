@@ -4,6 +4,7 @@
 #include <assimp\postprocess.h>
 #include <GL\glew.h>
 #include <core/asset.hpp>
+#include <core/aabb.hpp>
 #include "lodepng.h"
 namespace asset {
 class texture
@@ -57,6 +58,8 @@ private:
 		std::vector< GLuint > vaos;
 	} m_buffer_names;
 
+	aabb mboundingvolume;
+
 public:
 	mesh( const asset_url& url );
 	size_t get_submesh_count( void ) const;
@@ -64,6 +67,7 @@ public:
 	virtual bool load( const std::string& data, std::string& err ) override;
 	virtual void post_load( void ) override;
 	virtual bool unload( std::string& err ) override;
+	const aabb& boundingvolume() const;
 
 private:
 	void _create_vaos( void );

@@ -7,6 +7,7 @@ class i_node_visitor {
 public:
 	// visit the given node
 	virtual void visit( i_scene_node* n ) = 0;
+	virtual void visit(const i_scene_node* n) const = 0;
 	// returns true if the purpose of this visitor
 	// is achieved and the traversal should be halted
 	// e.g. if it was used for a search, return true if
@@ -29,12 +30,15 @@ public:
 	virtual void add_child( i_scene_node* n ) = 0;
 	virtual void remove_child( i_scene_node* n ) = 0;
 	virtual void set_parent( i_scene_node* n ) = 0;
-	virtual void traverse_depth( node_visitor_ptr v ) = 0;
-	virtual void traverse_breadth( node_visitor_ptr v ) = 0;
+	virtual void traverse_depth(i_node_visitor& v ) = 0;
+	virtual void traverse_breadth(i_node_visitor& v ) = 0;
+	virtual void traverse_depth(const i_node_visitor& v) const = 0;
+	virtual void traverse_breadth(const i_node_visitor& v) const = 0;
 	virtual bool is_root( void ) const = 0;
 	virtual void update( node_subscription& ns ) = 0;
 	virtual void load( type_manager_ptr p, bool async ) = 0;
 	virtual void unload( type_manager_ptr p ) = 0;
+	virtual bool changed(bool recursive) const = 0;
 };
 
 class all_node_visitor 
@@ -326,10 +330,13 @@ public:
 	virtual CORE_SHARED void add_child( i_scene_node* n ) override;
 	virtual CORE_SHARED void remove_child( i_scene_node* n ) override;
 	virtual CORE_SHARED void set_parent( i_scene_node* n ) override;
-	virtual CORE_SHARED void traverse_depth( node_visitor_ptr v ) override;
-	virtual CORE_SHARED void traverse_breadth( node_visitor_ptr v ) override;
+	virtual CORE_SHARED void traverse_depth(i_node_visitor& v ) override;
+	virtual CORE_SHARED void traverse_breadth(i_node_visitor& v ) override;
+	virtual void traverse_depth(const i_node_visitor& v) const override;
+	virtual void traverse_breadth(const i_node_visitor& v) const override;
 	virtual CORE_SHARED bool is_root( void ) const override;
 	virtual CORE_SHARED void update( node_subscription& ns ) override;
+	virtual bool changed(bool recursive) const override;
 
 private:
 	virtual CORE_SHARED void load( type_manager_ptr p, bool async ) override sealed;
