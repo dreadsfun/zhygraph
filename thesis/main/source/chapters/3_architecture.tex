@@ -23,6 +23,8 @@ Mivel az alapkönyvtár nem változik, illetve az alrendszer könyvtárak elnevezése 
 
 A \textit{dependency injection}, azaz "függõség injektálás" egy olyan program architektúra technika, ami egy rendszer, komponensekre történõ bontását és a komponensek közötti függõségek kezelését hivatott segíteni. Virtuális nyelvekben, ahol eredendõen rendelkezésre állnak a \textit{reflexió} technikái, mint a Java-ban, triviálisan megvalósítható és alkalmazható az injektálás. Más a helyzet azonban a C++ környezet esetén, hiszen nem áll rendelkezésre a reflexió és így az injektálás lehetõsége sem.
 
+Injektálásnak azt a módszert nevezzük, ahogy látszólag automatikusan, transzparensen történik a komponensek közötti függõségek feloldása. Nem szükséges tehát valamilyen komponens-specifikus, explicit módon (konstruktorban átadva, funkcióval beállítva stb.) értéket adni egy-egy objektum referenciának, hanem azok egy konfiguráció alapján létrehozásra és beállításra kerülnek.
+
 \SubSection{Reflexió C++-ban}
 
 Egy programozási nyelv, vagy nyelvrendszer kontextusában reflexiónak nevezzük azt a eljárást, mely során a program futása közben - a programot alkotó struktúrákról (funkciók, osztályok, adattagok stb.) - elérhetõ adatokat generálunk. Az említett Java nyelvben például ez teljesen automatikusan történik, a C++ esetén azonban szükség van bizonyos "trükkökre" a megvalósításhoz.
@@ -66,8 +68,38 @@ static void insert( const std::string& cn ) {
 A \textit{register\_class} kifejezés egy regisztrátor példány létrehozását kezdeményezi, ami a program indulásakor (címtérbe történtõ betöltéskor, dinamikus könyvtár esetén) le is fut, innentõl automatizálva a folyamatot.
 
 \SubSection{Komponensek és függõségek}
+
+Ahhoz, hogy egy osztály részt vehessen a reflexióban, illetve a függõségek kezelésében, a \textit{component} osztályból kell örökölnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, illetve biztosítja, hogy kizárólag az osztályon belülrõl történjen függõség deklaráció.
+
+Az osztály függõségeit a \textit{di\_rtlib/define\_dependency.hpp} fájlban található makrókkal lehet deklarálni (illetve lehet a makrók használata nélkül is, de jelentõsen bonyolultabb lenne úgy). A technika hasonló a reflektálásnál leírthoz: egy olyan objektumot deklarálunk az osztályban, ami a konstruktorában "automatikusan" regisztrálja a megadott nevet és típust, mint az osztály egy függõsége. A késõbbiekben ezen a néven keresztül lehet majd injektálni az osztály által igényelt komponenst.
+
+\begin{cpp}
+...
+class asset_type_manager
+  : public i_asset_type_manager, public di::component {
+private:
+  component_dependency( m_logger, i_logger );
+  component_dependencies( m_managers, i_asset_manager );
+...
+\end{cpp}
+
 \SubSection{Attribútumok}
+
+A reflexió lehetõségeit kihasználva, a rendszer biztosítja a komponensekre vonatkozó egyedi attribútumok deklarálását is. Az attribútumok olyan primitív értékek, vagy primitív értékek kollekciói (primitívnek tekintve a karakterláncot is), amik a komponens konfigurációban, a függõségek mellett injektálásra kerülhetnek. Az attribútumok deklarálására szintén létrejött egy "segédmakró", ami a \textit{di\_rtlib/define\_attribute.hpp} fájlban található.
+
+\begin{cpp}
+...
+class file_channel
+  : public i_log_channel, public di::component {
+private:
+  component_attribute( m_file, std::string );
+  mutable std::mutex m_stream_lock;
+...
+\end{cpp}
+
 \SubSection{Komponens konfiguráció}
+
+
 
 \Section{Központi funkciók}
 

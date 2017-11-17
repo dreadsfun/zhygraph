@@ -47,10 +47,10 @@ class transform(cppapi_object):
 
     @property
     def get_position(self):
-        pass
+        return lib.transform_get_position(self._handle)
 
     def set_position(self, pos):
-        pass
+        lib.transform_set_position(self._handle, prvec3(pos))
 
     @property
     def get_rotation(self):
@@ -61,17 +61,17 @@ class transform(cppapi_object):
 
     @property
     def get_scale(self):
-        pass
+        return lib.transform_get_scale(self._handle)
 
     def set_scale(self, scl):
-        pass
+        lib.transform_set_scale(self._handle, prvec3(scl))
 
     @property
     def get_local_euler_angles(self):
-        pass
+        return lib.transform_get_local_euler_angles(self._handle)
 
     def set_local_euler_angles(self, eul):
-        pass
+        lib.transform_set_local_euler_angles(self._handle, prvec3(eul))
 
     #def from_euler(eul):
 
@@ -87,26 +87,26 @@ class transform(cppapi_object):
                                     prvec3(axis), angle, look)
 
     def rotate(self, eul, space):
-        e = prvec3(eul.x, eul.y, eul.z)
+        lib.transform_rotate(self._handle, prvec3(eul), space.value)
 
     def look_at(self, at, up):
-        pass
+        lib.transform_look_at(self._handle, self._handle, prvec3(up))
 
     def inverse_transform_position(self, pos):
-        pass
+        return lib.transform_inverse_transform_position(self._handle, prvec3(pos))
 
     def inverse_transform_direction(self, dirc):
-        pass
+        return lib.transform_inverse_transform_direction(self._handle, prvec3(dirc))
 
     def transform_position(self, pos):
-        pass
+        return lib.transform_transform_position(self._handle, prvec3(pos))
 
     def transform_direction(self, dirc):
-        pass
+        return lib.transform_transform_direction(self._handle, prvec3(dirc))
 
     def set_up(self, up):
-        pass
+        lib.transform_set_up(self._handle, prvec3(up))
 
     @property
     def get_up(self):
-        pass
+        return lib.transform_get_up(self._handle)
