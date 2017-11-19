@@ -33,7 +33,7 @@ scene_tree_parser::tree_token scene_tree_parser::get_token( void ) const {
 scene_tree::scene_tree( i_logger * l )
 	: m_logger( l ) { }
 
-void scene_tree::build( const scene & s, const nodes & ns ) { 
+void scene_tree::build( const scene& s, const nodes& ns ) { 
 	m_name = s.name();
 
 	if( s.graph_present() ) {
@@ -45,14 +45,18 @@ void scene_tree::build( const scene & s, const nodes & ns ) {
 			p.step();
 
 			if( p.get_token() == scene_tree_parser::tree_token::node ) {
-				scene_node_ptr np = _create_node( p.get_current(), ns );
-				if( np ) {
-					m_nodes.push_back( np );
-					i_scene_node* nch = m_nodes.back().get();
-					if( curr != nullptr ) {
-						curr->add_child( nch );
+				try {
+					scene_node_ptr np = _create_node( p.get_current(), ns );
+					if( np ) {
+						m_nodes.push_back( np );
+						i_scene_node* nch = m_nodes.back().get();
+						if( curr != nullptr ) {
+							curr->add_child( nch );
+						}
+						curr = nch;
 					}
-					curr = nch;
+				} catch( const std::exception& e ) {
+					serror << "failed to create node: " << e.what();
 				}
 			}
 
@@ -65,14 +69,14 @@ void scene_tree::build( const scene & s, const nodes & ns ) {
 	}
 }
 
-void scene_tree::traverse_depth( node_visitor_ptr v ) {
+void scene_tree::traverse_depth( i_node_visitor& v ) {
 	scene_node_ptr n = this->get_root();
 	if( n ) {
 		n->traverse_depth( v );
 	}
 }
 
-void scene_tree::traverse_breadth( node_visitor_ptr v ) {
+void scene_tree::traverse_breadth( i_node_visitor& v ) {
 	scene_node_ptr n = this->get_root();
 	if( n ) {
 		n->traverse_breadth( v );
@@ -91,7 +95,7 @@ scene_node_ptr scene_tree::get_root( void ) {
 	return r;
 }
 
-scene_node_ptr scene_tree::_create_node( const std::string & n, const nodes & ns ) const {
+scene_node_ptr scene_tree::_create_node( const std::string& n, const nodes& ns ) const {
 	scene_node_ptr p;
 	for( const node& nd : ns.node() ) {
 		if( nd.name() == n ) {

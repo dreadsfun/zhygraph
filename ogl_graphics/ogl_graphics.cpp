@@ -135,9 +135,89 @@ private:
 	}
 };
 
+class cameranodevolume {
+private:
+	glm::vec3 mbasepoints[ 8 ];
+	mutable glm::vec3 mtransformedpoints[ 8 ];
+	camera_node* mcameranode;
+
+public:
+	cameranodevolume( camera_node* pcamnode )
+		: mcameranode( pcamnode ) {
+		assert( mcameranode );
+		for( uint8_t i = 0; i < 8; ++i )
+			mbasepoints[ i ] = mcameranode->basepoints()[ i ];
+	}
+
+	bool containedin( const aabb& box ) const {
+		if( mcameranode->get_transform().has_changed() )
+			_transformpoints( mbasepoints, mtransformedpoints, mcameranode );
+		bool r = true;
+		for( uint8_t i = 0; r && i < 8; ++i )
+			r = r && box.contains( mtransformedpoints[ i ] );
+		return r;
+	}
+
+	bool equals( const cameranodevolume& other ) const {
+		return mcameranode->get_name() == other.mcameranode->get_name();
+	}
+
+	bool changed() const {
+		return mcameranode->get_transform().has_changed();
+	}
+
+	size_t hash() const {
+		return std::hash<std::string>()( mcameranode->get_name() );
+	}
+
+private:
+	void _transformpoints( const glm::vec3* basepts, glm::vec3* outpts, camera_node* pcamnode ) const {
+		for( uint8_t i = 0; i < 8; ++i )
+			outpts[ i ] = pcamnode->get_transform().transform_position( basepts[ i ] );
+	}
+};
+
+class meshnodevolume {
+private:
+	asset::mesh_ptr mmesh;
+	mesh_renderer_node* mmeshnode;
+	mutable aabb mtransformedbox;
+
+public:
+	meshnodevolume( asset::mesh_ptr pmesh, mesh_renderer_node* pmeshnode )
+		: mmesh( pmesh ),
+		mmeshnode( pmeshnode ) {
+		assert( mmesh && mmeshnode );
+		mtransformedbox = _transformbox( mmesh->boundingvolume(), mmeshnode );
+	}
+
+	bool containedin( const aabb& box ) const {
+		if( mmeshnode->get_transform().has_changed() ) {
+			mtransformedbox = _transformbox( mmesh->boundingvolume(), mmeshnode );
+		}
+		return box.contains( mtransformedbox );
+	}
+
+	bool equals( const meshnodevolume& other ) const {
+		return mmeshnode->get_name() == other.mmeshnode->get_name();
+	}
+
+	bool changed() const {
+		return mmeshnode->get_transform().has_changed();
+	}
+
+	size_t hash() const {
+		return std::hash<std::string>()( mmeshnode->get_name() );
+	}
+
+private:
+	aabb _transformbox( const aabb& box, mesh_renderer_node* pmeshnode ) const {
+		return aabb( pmeshnode->get_transform().transform_position( box.mid() ), pmeshnode->get_transform().transform_direction( box.size() ) );
+	}
+};
+
 class ogl_graphics
 	: public i_graphics, public system_base {
-#pragma region types
 private:
 	typedef std::unique_ptr< i_context_guard > context_guard_ptr;
 	class mesh_renderer_dispatcher {
@@ -154,7 +234,7 @@ private:
 
 		bool load( type_manager_ptr tm ) {
 			asset_manager_ptr sm = tm->get( "shader" );
-			m_vertex_shader = std::static_pointer_cast< asset::shader >( sm->load_asset( asset_url( "shader@mesh_renderer_node_vertex" ) ) );
+			m_vertex_shader = std::static_pointer_cast< asset::shader >( sm->load_asset( asset_url( "shader@mesh_renderer_node_vertex.glsl" ) ) );
 			return m_vertex_shader.operator bool();
 		}
 
@@ -250,21 +330,21 @@ private:
 		}
 
 	};
-#pragma endregion
 
-#pragma region data members
 private:
 	component_dependency( m_type_manager, i_asset_type_manager );
 	component_attribute( m_lighting_enabled, bool, true );
+	component_attribute( m_use_visibility_check, bool, true );
 	context_guard_ptr m_guard;
 	program_pool m_program_pool;
 	mesh_renderer_dispatcher m_mesh_renderer;
-#pragma endregion
+	octree<meshnodevolume> moctree;
 
-#pragma region member functions
 public:
 	ogl_graphics( void )
-		: m_mesh_renderer( &m_program_pool ) { }
+		: m_mesh_renderer( &m_program_pool ),
+		moctree(aabb(glm::vec3(), 
+			glm::vec3(std::numeric_limits<float>::max()))) { }
 
 private:
 	virtual bool initialize( void ) override {
@@ -292,9 +372,47 @@ private:
 	}
 
 	virtual void _process_scene( i_scene_node* root, node_subscription& ns ) override {
-		node_subscription::node_range_iterator_pair crs = ns.get_subscribers( "camera" );
-		if( crs.first != crs.second ) {
+		node_subscription::node_range_iterator_pair cameranoderange = ns.get_subscribers( "camera" );
+		if( cameranoderange.first != cameranoderange.second ) {
 			node_subscription::node_range_iterator_pair mrs = ns.get_subscribers( "mesh_renderer" );
+
+			if( m_use_visibility_check ) {
+				// update the octree first, so the volumes already inside get refreshed
+				// this spares some checks, if there are volumes that will be inserted in this update
+				// as new volumes are not changed for sure
+				moctree.update();
+
+				for( auto b = mrs.first; b != mrs.second; ++b ) {
+					mesh_renderer_node* cmeshnode = static_cast< mesh_renderer_node* >( b->second );
+					assert( cmeshnode );
+					asset::mesh_ptr cmesh = cmeshnode->get_mesh();
+					if( cmesh ) {
+						meshnodevolume cvolume( cmesh, cmeshnode );
+						// see if this volume is in the tree
+						poctree_node<meshnodevolume> containernode = moctree.search( cvolume );
+						if( !containernode ) {
+							// if it is not, add it
+							moctree.addvolume( cvolume );
+						}
+					}
+				}
+
+				// iterate over cameras
+				// generate camera volumes
+				// match camera volumes with a node of the octree
+				// search subscribed meshrenderers in the subtree given by the match
+				for( auto cam = cameranoderange.first; cam != cameranoderange.second; ++cam ) {
+					cameranodevolume cameravolume( static_cast< camera_node* >( cam->second ) );
+					poctree_node<meshnodevolume> subnode = moctree.matchvolume( cameravolume );
+
+					if( subnode ) {
+						// this means, that there is meshrenderer that should be dispatched
+						// based on spatial orientation of the current camera and the meshrenderers
+						for( )
+					}
+				}
+			}
+
 			for( auto b = mrs.first; b != mrs.second; ++b ) {
 				m_mesh_renderer.dispatch( static_cast< mesh_renderer_node* >( b->second ), crs );
 			}
@@ -304,7 +422,6 @@ private:
 	virtual void update_scene( i_scene_node* root ) override {
 		this->process_scene( root );
 	}
-#pragma endregion
 };
 
 #include <di_rtlib/register_class.hpp>

@@ -70,6 +70,8 @@ private:
 		}
 	}
 
+	virtual void visit( const i_scene_node* n ) const override { }
+
 	virtual bool completed( void ) const override {
 		return m_completed;
 	}
@@ -509,13 +511,13 @@ const char* scene_node_get_class_string( long long h ) {
 }
 
 long long scene_node_find( const char* name ) {
-	static std::shared_ptr< scene_node_finder > finder = std::make_shared< scene_node_finder >();
-	finder->set_name( name );
 	auto ls = capi_bridge::instance->m_scene_manager->get_loaded();
+	scene_node_finder finder;
+	finder.set_name( name );
 	for( const auto& pp : ls ) {
 		pp.second->traverse_depth( finder );
 	}
-	return reinterpret_cast< long long >( finder->get_result() );
+	return reinterpret_cast< long long >( finder.get_result() );
 }
 
 long long scene_node_get_transform( long long h ) {

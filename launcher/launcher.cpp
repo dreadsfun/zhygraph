@@ -6,6 +6,7 @@
 #include <core/logger.hpp>
 #include <core/scene.hpp>
 #include <core/windowing.hpp>
+#include <core/scripting.hpp>
 #include <di_rtlib/define_attribute.hpp>
 #include <di_rtlib/define_dependency.hpp>
 #include "launcher.hpp"
@@ -19,6 +20,7 @@ private:
 	component_dependency( m_scene_manager, i_scene_manager );
 	component_dependency( m_logger, i_logger );
 	component_dependency( m_graphics, i_graphics );
+	component_dependency( m_scripting, i_scripting );
 
 	component_dependency( m_windowing, i_windowing_library );
 	component_dependency( m_graphics_context, i_graphics_context );
@@ -76,8 +78,17 @@ private:
 			iel->respond();
 		}
 
-		info( "initializing graphics..." );
-		if( m_graphics->initialize() ) {
+		if( !m_graphics )
+			swarn << "no graphics component was found!";
+
+		if( !m_scripting )
+			swarn << "no scripting component was found";
+
+		info( "initializing graphics and scripting..." );
+		if( m_graphics && m_graphics->initialize() ) {
+
+			if( m_scripting )
+				m_scripting->initialize();
 
 			info( "loading startup scene..." );
 			if( m_scene_manager->load_first() ) {
@@ -100,6 +111,9 @@ private:
 					for( const auto& pp : scns ) {
 						// Graphic system processing every loaded scene
 						m_graphics->update_scene( pp.second->get_root().get() );
+						// Scripting system doing the same..
+						if( m_scripting )
+							m_scripting->update_scene( pp.second->get_root().get() );
 					}
 
 					m_graphics_context->swap_buffers();

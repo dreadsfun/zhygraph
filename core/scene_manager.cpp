@@ -17,6 +17,9 @@ private:
 		virtual void visit( i_scene_node* n ) override {
 			n->load( m_tmgr, m_async );
 		}
+		virtual void visit( const i_scene_node* n ) const override {
+
+		}
 	};
 
 	class node_unloader
@@ -29,6 +32,9 @@ private:
 	private:
 		virtual void visit( i_scene_node* n ) override {
 			n->unload( m_tmgr );
+		}
+		virtual void visit( const i_scene_node* n ) const override {
+
 		}
 	};
 
@@ -118,7 +124,7 @@ private:
 	}
 	
 	void _unload_scene( scene_tree_ptr sc ) {
-		static std::shared_ptr< node_unloader > nu = std::make_shared< node_unloader >( m_type_manager );
+		node_unloader nu( m_type_manager );
 		sc->traverse_depth( nu );
 	}
 
@@ -129,7 +135,8 @@ private:
 		} else {
 			sinfo << "loading scene with name \"" << sc->get_name() << "\"...";
 			st = sc;
-			sc->traverse_depth( std::make_shared< node_loader >( m_type_manager, async ) );
+			node_loader nl( m_type_manager, async );
+			sc->traverse_depth( nl );
 		}
 	}
 };

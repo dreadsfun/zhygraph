@@ -1,6 +1,12 @@
 #include <unordered_map>
 #include <cassert>
 #include "aabb.hpp"
+
+template<typename T>
+class octree_node;
+
+template<typename T>
+using poctree_node = octree_node< T >*;
 /*
 volume_t template interface:
 	bool containedin(const aabb& box) const;
@@ -13,17 +19,20 @@ volume_t template interface:
 
 	bool changed() const;
 		returns true if the volume has changed since the last call to changed()
+
+	size_t hash() const;
 */
 template<typename t>
 class octree_node {
 private:
 	using volume_t = t;
-	using volume_list_t = std::list< volume_t& >;
+	using volume_list_t = std::list< volume_t >;
 	using poctree_node = octree_node*;
 	aabb mbox;
 	poctree_node mchildren[8];
 	volume_list_t mvolumes;
 	size_t mmaxvolume;
+	uint64_t mvolumehash;
 public:
 	octree_node() {
 		_rawrst();
@@ -33,15 +42,31 @@ public:
 		mmaxvolume(maxv) {
 		_rawrst();
 	}
-	uint64_t update() {
-		for (auto it = mvolumes.begin(); it != mvolumes.end(); )
-			if (it->changed() && !it->containedin(mbox))
-				it = mvolumes.erase(it);
-			else
+	uint64_t hash( bool recursive ) const {
+		uint64_t r = mvolumehash;
+		if( recursive )
+			for( uint8_t i = 0; i < 8; ++i )
+				if( mchildren[ i ] )
+					r += mchildren[ i ]->hash( true );
+		return r;
+	}
+	uint64_t update( octree_node* treatasroot ) {
+		assert( treatasroot );
+		for( auto it = mvolumes.begin(); it != mvolumes.end(); )
+			if( it->changed() && !it->containedin( mbox ) ) {
+				// volume cannot be reinserted to this node, dont worry
+				// as it has been already checked, if it is contained by the node
+				// and it is mandatory for volume insertion
+				treatasroot->addvolume( *it );
+				mvolumehash -= it->hash();
+				it = mvolumes.erase( it );
+			} else {
 				++it;
+			}
 
-		for (uint8_t i = 0; i < 8; ++i)
-			mchildren[i]->update();
+		for( uint8_t i = 0; i < 8; ++i )
+			if( mchildren[ i ] )
+				mchildren[ i ]->update();
 	}
 	
 	template<typename mvol_t>
@@ -64,16 +89,16 @@ public:
 			return nullptr;
 		}
 	}
-	poctree_node search(const volume_t& vol) const {
-		poctree_node r = this->matchvolume(vol);
-		for (volume_t& v : mvolumes) {
-			if (v.equals(vol)) {
+	poctree_node search( const volume_t& vol ) const {
+		poctree_node r = this->matchvolume( vol );
+		for( volume_t& v : mvolumes ) {
+			if( v.equals( vol ) ) {
 				return r;
 			}
 		}
 		return nullptr;
 	}
-	bool addvolume(volume_t& vol) {
+	bool addvolume(const volume_t& vol) {
 		if (vol.containedin(mbox)) {
 			/*
 			insertion into this node is only possible if the volume
@@ -139,10 +164,12 @@ public:
 			the specified volume, and none of the uninitialized could have accepted it either, meaning that
 			this node must accept the volume, if size of the list of the accepted volumes is not exceeded by the max size
 			*/
-			if (mvolumes.size() == mmaxvolume)
+			if( mvolumes.size() == mmaxvolume ) {
 				return false;
-			else
-				mvolumes.push_back(vol);
+			} else {
+				mvolumes.push_back( vol );
+				mvolumehash += vol.hash();
+			}
 
 			return true;
 		} else {
@@ -170,17 +197,30 @@ template<typename t>
 class octree {
 private:
 	using volume_t = t;
-	using poctree_node = octree_node< volume_t >*;
 	poctree_node mroot;
+
 public:
-	octree(const aabb& box) {
-		mroot = new octree_node< volume_t >(box);
+	octree( const aabb& box ) {
+		mroot = new octree_node< volume_t >( box );
 	}
-	bool addbox(const aabb& box) {
-		return mroot->addbox(box);
+	poctree_node root() {
+		return mroot;
 	}
-	const poctree_node matchbox(const aabb& box) {
-		return mroot->matchbox(box);
+	bool addvolume( const volume_t& vol ) {
+		return mroot->addvolume( vol );
+	}
+	template<typename mvol_t>
+	poctree_node matchvolume( const mvol_t& vol ) {
+		return mroot->matchvolume( vol );
+	}
+	uint64_t update() {
+		return mroot->update( mroot );
+	}
+	uint64_t hash() {
+		return mroot->hash( true );
+	}
+	poctree_node search( const volume_t& vol ) {
+		return mroot->search( vol );
 	}
 };
 

@@ -21,7 +21,7 @@ int _lch( void ) {
 
 		c.purge();
 
-	} catch( std::exception& e ) {
+	} catch( const std::exception& e ) {
 #ifdef _DEBUG
 		std::cerr << e.what() << std::endl;
 #endif // ~_DEBUG

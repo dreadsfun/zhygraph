@@ -50,9 +50,11 @@ void xml_configuration::fill(di::component_registry & c)
 		for (const shared& s : m_pdi->plugins().shared()) {
 			try {
 				di::plugin::load(s.lib());
+				std::cout << "loaded plugin: " << s.lib() << std::endl;
 			}
-			catch (const di::library_failed_to_load& e) {
+			catch (const di::library_load_error& e) {
 				std::cerr << e.what() << std::endl;
+				di::plugin::showpluginerror( e.what() );
 			}
 		}
 	}

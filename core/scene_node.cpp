@@ -129,6 +129,12 @@ void scene_node_base::traverse_breadth(i_node_visitor& v ) {
 	}
 }
 
+void scene_node_base::traverse_depth( const i_node_visitor& v ) const {
+}
+
+void scene_node_base::traverse_breadth( const i_node_visitor& v ) const {
+}
+
 bool scene_node_base::is_root( void ) const {
 	return !m_parent;
 }
@@ -148,7 +154,7 @@ bool scene_node_base::changed(bool recursive) const
 		bool completed() const override { return mresult; }
 		void visit(i_scene_node*) override {}
 		void visit(const i_scene_node* n) const override {
-			mresult = mresult && n->transform()
+		//	mresult = mresult && n->transform()
 		}
 	private:
 		bool& mresult;
@@ -158,6 +164,7 @@ bool scene_node_base::changed(bool recursive) const
 		_dirty_check visitor(r);
 		this->traverse_depth(visitor);
 	}
+	return true;
 }
 
 void scene_node_base::load( type_manager_ptr p, bool async ) {

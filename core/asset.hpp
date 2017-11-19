@@ -3,8 +3,8 @@
 #include <vector>
 #include "export.hpp"
 #define TYPE_SEPARATOR_TOKEN '@'
-#define PATH_SEPARATOR_TOKEN '.'
-#define SEPARATOR_TOKENS std::string( "@." )
+#define PATH_SEPARATOR_TOKEN ':'
+#define SEPARATOR_TOKENS std::string( "@:" )
 #define INCOMPLETE_TOKEN '*'
 class asset_url {
 #pragma region types
@@ -25,6 +25,7 @@ private:
 		bool is_complete( void ) const;
 		size_t get_incomplete_index( void ) const;
 		std::string format( void ) const;
+		std::string format( char pathsep ) const;
 		const std::string& get_name( void ) const;
 		void set_name( const std::string& v );
 		asset_path make_complete( const asset_path& p ) const;
@@ -55,6 +56,7 @@ public:
 	CORE_SHARED const std::string& get_name( void ) const;
 	CORE_SHARED void set_name( const std::string& v );
 	CORE_SHARED std::string get_path( void ) const;
+	CORE_SHARED std::string get_path( char pathsep ) const;
 	CORE_SHARED void set_type( const std::string& v );
 	CORE_SHARED void set_path( const std::string& v );
 	CORE_SHARED std::string format( void ) const;
@@ -212,8 +214,8 @@ public:
 #pragma endregion
 };
 
-#include "../di_rtlib/define_dependency.hpp"
-#include "../di_rtlib/define_attribute.hpp"
+#include <di_rtlib/define_dependency.hpp>
+#include <di_rtlib/define_attribute.hpp>
 #include "logger.hpp"
 class asset_manager_base
 	: public i_asset_manager, public di::component {

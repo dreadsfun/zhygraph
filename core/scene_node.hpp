@@ -332,11 +332,11 @@ public:
 	virtual CORE_SHARED void set_parent( i_scene_node* n ) override;
 	virtual CORE_SHARED void traverse_depth(i_node_visitor& v ) override;
 	virtual CORE_SHARED void traverse_breadth(i_node_visitor& v ) override;
-	virtual void traverse_depth(const i_node_visitor& v) const override;
-	virtual void traverse_breadth(const i_node_visitor& v) const override;
+	virtual CORE_SHARED void traverse_depth(const i_node_visitor& v) const override;
+	virtual CORE_SHARED void traverse_breadth(const i_node_visitor& v) const override;
 	virtual CORE_SHARED bool is_root( void ) const override;
 	virtual CORE_SHARED void update( node_subscription& ns ) override;
-	virtual bool changed(bool recursive) const override;
+	virtual CORE_SHARED bool changed(bool recursive) const override;
 
 private:
 	virtual CORE_SHARED void load( type_manager_ptr p, bool async ) override sealed;

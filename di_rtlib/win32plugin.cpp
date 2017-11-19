@@ -20,10 +20,14 @@ public:
 				reason = estr;
 				LocalFree( estr );
 			}
-			throw library_failed_to_load( file, reason );
+			throw library_load_error( file, reason );
 		}
 	}
 };
+
+void plugin::showpluginerror( const std::string& message ) {
+	MessageBoxA( NULL, message.c_str(), "Plugin Error", MB_ICONERROR | MB_OK );
+}
 
 plugin::library_ptr plugin::_create_library( const std::string& file ) {
 	return std::make_unique< win32library >( file );

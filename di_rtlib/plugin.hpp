@@ -28,6 +28,8 @@ public:
 		return r;
 	}
 
+	static DI_SHARED void showpluginerror( const std::string& message );
+
 private:
 	static DI_SHARED library_ptr _create_library( const std::string& file );
 };

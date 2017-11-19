@@ -57,8 +57,8 @@ public:
 	CORE_SHARED scene_tree( i_logger* l );
 	CORE_SHARED bool is_loaded( void ) const;
 	CORE_SHARED void build( const scene& s, const nodes& ns );
-	CORE_SHARED void traverse_depth( node_visitor_ptr v );
-	CORE_SHARED void traverse_breadth( node_visitor_ptr v );
+	CORE_SHARED void traverse_depth( i_node_visitor& v );
+	CORE_SHARED void traverse_breadth( i_node_visitor& v );
 	CORE_SHARED const std::string& get_name( void ) const;
 	CORE_SHARED scene_node_ptr get_root( void );
 

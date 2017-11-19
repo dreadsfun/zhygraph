@@ -28,6 +28,7 @@ private:
 		virtual void visit( i_scene_node* n ) override {
 			n->update( m_ns );
 		}
+		virtual void visit( const i_scene_node* n ) const override { }
 	};
 
 protected:
@@ -39,9 +40,9 @@ public:
 	virtual node_subscription create_subscription( void ) = 0;
 
 	void process_scene( i_scene_node* root ) {
-		static std::shared_ptr< _node_subscriptor > _ns = std::make_shared< _node_subscriptor >();
-		_ns->set_subscription( this->create_subscription() );
+		_node_subscriptor _ns;
+		_ns.set_subscription( this->create_subscription() );
 		root->traverse_depth( _ns );
-		_process_scene( root, _ns->get_subscription() );
+		_process_scene( root, _ns.get_subscription() );
 	}
 };

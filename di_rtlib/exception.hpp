@@ -90,10 +90,10 @@ public:
 	}
 };
 
-class library_failed_to_load
+class library_load_error
 	: public named_element_exception {
 public:
-	library_failed_to_load( const std::string& name, const std::string& reason = "" )
+	library_load_error( const std::string& name, const std::string& reason = "" )
 		: named_element_exception( name, "" ) {
 		m_what = "library named \"" + name + "\" failed to load" + ( reason.empty() ? "" : ", reason: " + reason );
 	}

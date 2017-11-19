@@ -5,7 +5,8 @@ namespace di {
 meta_class class_registry::get_meta_class( const std::string& name ) {
 	meta_class r;
 	auto fit = instance->m_classes.find( name );
-	if( fit == instance->m_classes.end() ) throw class_not_found( name );
+	if( fit == instance->m_classes.end() )
+		throw class_not_found( name );
 	r = fit->second;
 	return r;
 }

@@ -40,6 +40,10 @@ std::string asset_url::get_path( void ) const {
 	return m_path.format();
 }
 
+std::string asset_url::get_path( char pathsep ) const {
+	return m_path.format( pathsep );
+}
+
 void asset_url::set_type( const std::string & v ) {
 	m_type = _trim( v, SEPARATOR_TOKENS );
 }
@@ -202,7 +206,7 @@ private:
 	std::string url_to_path( const asset_url& u ) {
 		std::string p = u.get_path();
 		for( size_t i = 0; i < p.length(); ++i ) {
-			if( p [ i ] == '.' ) {
+			if( p [ i ] == PATH_SEPARATOR_TOKEN ) {
 				p [ i ] = '/';
 			}
 		}
@@ -264,11 +268,15 @@ size_t asset_url::asset_path::get_incomplete_index( void ) const {
 }
 
 std::string asset_url::asset_path::format( void ) const {
+	return this->format( PATH_SEPARATOR_TOKEN );
+}
+
+std::string asset_url::asset_path::format( char pathsep ) const {
 	std::string r;
 	if( !m_path.empty() ) {
 		r = m_path.front();
 		for( size_t i = 1; i < m_path.size(); ++i ) {
-			r += "." + m_path[ i ];
+			r += pathsep + m_path[ i ];
 		}
 	}
 	return r;
@@ -393,7 +401,9 @@ void asset_manager_base::_insert_asset( const asset_url & url ) {
 	}
 	asset_ptr nass = this->create_asset( tmp );
 	nass->get_state().exchange( asset_state::initializing );
-	asset_url metaurl( url.format() + "_meta" );
+	std::string formattedurl = url.format();
+	formattedurl += ".meta";
+	asset_url metaurl( formattedurl );
 	if( m_streamer->check_asset( metaurl ) ) {
 		asset_params prs( m_streamer->load_data( metaurl ) );
 		if( prs.parse() ) {

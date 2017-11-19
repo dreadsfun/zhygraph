@@ -47,7 +47,7 @@ public:
 
 class i_log_channel {
 public:
-	virtual void log( const std::string& m ) const = 0;
+	virtual void log( priority p, const std::string& m ) const = 0;
 };
 
 #define debug( m ) m_logger->log( priority::debug, m, typeid( *this ).name() );

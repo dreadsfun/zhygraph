@@ -1,6 +1,6 @@
 #pragma once
-#include "../core/graphics.hpp"
-#include "../core/scene_node.hpp"
+#include <core/graphics.hpp>
+#include <core/scene_node.hpp>
 #include "ogl_asset.hpp"
 #include "material_library.hpp"
 class mesh_renderer_node
@@ -27,7 +27,8 @@ private:
 	virtual void update( node_subscription& ns ) override;
 };
 
-#include "../di_rtlib/define_attribute.hpp"
+#include <array>
+#include <di_rtlib/define_attribute.hpp>
 class camera_node
 	: public scene_node_base {
 private:
@@ -48,10 +49,13 @@ private:
 	glm::mat4 m_projection_matrix;
 	glm::mat4 m_view_projection_matrix;
 
+	std::array<glm::vec3, 8> mbasepoints;
+
 public:
 	glm::mat4 get_mvp( const glm::mat4& model );
 	const glm::mat4& get_projection( void ) const;
 	void begin_screen( int width, int height );
+	const std::array<glm::vec3, 8>& basepoints() const;
 
 private:
 	virtual bool _load( type_manager_ptr tm, bool async ) override;

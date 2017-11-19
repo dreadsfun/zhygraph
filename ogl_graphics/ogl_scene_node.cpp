@@ -79,6 +79,10 @@ void camera_node::begin_screen( int width, int height ) {
 		static_cast< int >( m_viewport_width * width ), static_cast< int >( m_viewport_height * height ) );
 }
 
+const std::array<glm::vec3, 8>& camera_node::basepoints() const {
+	return mbasepoints;
+}
+
 bool camera_node::_load( type_manager_ptr tm, bool async ) {
 	_update_to_projection_mode();
 	return true;
@@ -91,9 +95,29 @@ void camera_node::update( node_subscription & ns ) {
 void camera_node::_update_to_projection_mode( void ) {
 	if( m_projection_mode.get_value() == "perspective" ) {
 		m_projection_matrix = glm::perspective< float >( m_field_of_view, m_aspect_ratio, m_near_clip, m_far_clip );
+
+		float y = 2 * tan( m_field_of_view ) / m_near_clip;
+		float x = y * m_aspect_ratio;
+
+		mbasepoints[ 0 ].x = mbasepoints[ 1 ].x = -x / 2;
+		mbasepoints[ 0 ].y = mbasepoints[ 3 ].y = y / 2;
+		mbasepoints[ 2 ].x = mbasepoints[ 3 ].x = x / 2;
+		mbasepoints[ 1 ].y = mbasepoints[ 2 ].y = -y / 2;
+		mbasepoints[ 0 ].z = mbasepoints[ 1 ].z = mbasepoints[ 2 ].z = mbasepoints[ 3 ].z = -m_near_clip;
+
+		float yf = 2 * tan( m_field_of_view ) / m_far_clip;
+		float xf = yf * m_aspect_ratio;
+
+		mbasepoints[ 4 ].x = mbasepoints[ 5 ].x = -xf / 2;
+		mbasepoints[ 4 ].y = mbasepoints[ 7 ].y = yf / 2;
+		mbasepoints[ 6 ].x = mbasepoints[ 7 ].x = xf / 2;
+		mbasepoints[ 5 ].y = mbasepoints[ 6 ].y = -yf / 2;
+		mbasepoints[ 4 ].z = mbasepoints[ 5 ].z = mbasepoints[ 6 ].z = mbasepoints[ 7 ].z = -m_far_clip;
+
 	} else {
 		m_projection_matrix = glm::ortho< float >( m_left, m_right, m_bottom, m_top, m_near_clip, m_far_clip );
 	}
+
 }
 
 #include <di_rtlib/register_class.hpp>

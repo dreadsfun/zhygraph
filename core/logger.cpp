@@ -47,7 +47,7 @@ private:
 		_write_log( s, p, m.substr( 0, m.length() - nlc ) );
 
 		for( const i_log_channel* c : m_channels ) {
-			c->log( s.str() );
+			c->log( p, s.str() );
 		}
 	}
 
@@ -74,7 +74,7 @@ typedef std::unique_lock< std::mutex > unique_lock;
 class stdout_channel
 	: public i_log_channel, public di::component {
 public:
-	virtual void log( const std::string& m ) const override {
+	virtual void log( priority, const std::string& m ) const override {
 		unique_lock lck ( cout_lock );
 		std::cout << m;
 	}
@@ -83,6 +83,17 @@ private:
 	static std::mutex cout_lock;
 };
 std::mutex stdout_channel::cout_lock;
+
+#include <Windows.h>
+class win32messagebox
+	: public i_log_channel, public di::component {
+public:
+	virtual void log( priority p, const std::string& m ) const override {
+		if( p == priority::error || p == priority::fatal ) {
+			MessageBoxA( NULL, m.c_str(), "Error Log", MB_OK | MB_ICONERROR );
+		}
+	}
+};
 
 #include <di_rtlib/define_attribute.hpp>
 #include <fstream>
@@ -105,7 +116,7 @@ public:
 		m_fstream.open( m_file.get_value() );
 	}
 
-	virtual void log( const std::string& m ) const override {
+	virtual void log( priority, const std::string& m ) const override {
 		{
 			unique_lock lck( m_stream_lock );
 			m_fstream << m;
@@ -118,6 +129,7 @@ public:
 register_class( logger );
 register_class( stdout_channel );
 register_class( file_channel );
+register_class( win32messagebox );
 
 log_stream::log_stream( log_stream && m )
 	: m_owner( m.m_owner ),

@@ -164,4 +164,42 @@ if get_key_down(keys.a):
 
 A \textit{py\_api/transform.py} fájlban található a \textit{transform} osztály, ami a virtuális tér csúcsaihoz tartozó transzformációs funkciókat foglalja magába.
 
+A funkciók legnagyobb része a csúcsokat leíró paraméterek manipulálására jött létre. Ezek a paraméterek az orientáció, skálázás és a pozíció. A funkciók tovább bonthatóak az alapján, hogy milyen koordináta-rendszerben operálnak. Ez lehet "világ", tehát az abszolút bázis, vagy "lokális", tehát a csúcs szülõjéhez viszonyított rendszerben értelmezett. Bizonyos esetekben különbözõ funkciók állnak rendelkezésre a két viszonyítási rendszer használatára, bizonyos esetekben pedig paraméterként adhatjuk meg a kívánt bázist:
+
+\begin{python}
+class coordinate_space(Enum):
+  world = 0
+  local = 1
+\end{python}
+
+Továbbá, a paraméterek közvetlen eléréséhez rendelkezésre állnak lekérdezõ ("getter") és beállító ("setter") funkciók. Így például a pozícióhoz kapcsolódó funkciók a következõképpen alakulnak:
+
+\begin{python}
+@property
+local_position(self)
+
+@local_position.setter
+local_position(self, pos)
+
+@property
+get_position(self)
+
+@position.setter
+set_position(self, pos)
+\end{python}
+
+A további paraméterekre, az orientációra (\textit{rotation}) és skálázásra (\textit{scale}) vonatkozó funkciók is ezen analógia alapján kerültek kialakításra.
+
+A további funkciók különbözõ térbeli transzformációkat, számításokat valósítanak meg, mint például egy tetszõleges pont vagy vektor lokális bázisból, abszolút bázisba történõ (vagy fordítva) konvertálása, illetve pont körüli forgatás, vagy eltolás:
+
+\begin{python}
+transform_position(self, pos):
+...
+inverse_transform_direction(self, dirc)
+...
+translate(self, dirc, space = coordinate_space.world)
+...
+rotate_around(self, cent, axis, angle, look = False)
+\end{python}
+
 \SubSection{Megjelenítési funkciók}

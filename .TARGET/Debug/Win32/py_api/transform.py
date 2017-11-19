@@ -49,6 +49,7 @@ class transform(cppapi_object):
     def get_position(self):
         return lib.transform_get_position(self._handle)
 
+    @position.setter
     def set_position(self, pos):
         lib.transform_set_position(self._handle, prvec3(pos))
 
@@ -56,6 +57,7 @@ class transform(cppapi_object):
     def get_rotation(self):
         pass
 
+    @rotation.setter
     def set_rotation(self, rot):
         pass
 
