@@ -266,11 +266,11 @@ public:
 		}
 
 		glm::vec3 inverse_transform_position( const glm::vec3& p ) {
-			return glm::vec3( this->get_local_matrix() * glm::vec4( p, 1.0f ) );
+			return glm::vec3( glm::transpose( this->get_world_matrix() ) * glm::vec4( p, 1.0f ) );
 		}
 
 		glm::vec3 inverse_transform_direction( const glm::vec3& d ) {
-			return glm::normalize( glm::vec3( glm::transpose( this->get_world_matrix() ) * glm::vec4( d, 0.0f ) ) );
+			return glm::vec3( glm::transpose( this->get_world_matrix() ) * glm::vec4( d, 0.0f ) );
 		}
 
 		glm::vec3 transform_position( const glm::vec3& p ) {
@@ -278,7 +278,7 @@ public:
 		}
 
 		glm::vec3 transform_direction( const glm::vec3& d ) {
-			return glm::normalize( glm::vec3( glm::inverse( glm::transpose( this->get_world_matrix() ) ) * glm::vec4( d, 0.0f ) ) );
+			return glm::vec3( this->get_world_matrix() * glm::vec4( d, 0.0f ) );
 		}
 
 		void set_up( const glm::vec3& u ) {

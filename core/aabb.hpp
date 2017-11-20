@@ -75,14 +75,14 @@ public:
 	}
 	void size(const vec3& v) {
 		msize = v;
-		mdirty = true;
+		mdirty.set();
 	}
 	const vec3& mid() const {
 		return mmid;
 	}
 	void mid(const vec3& v) {
 		mmid = v;
-		mdirty = true;
+		mdirty.set();
 	}
 };
 

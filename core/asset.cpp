@@ -457,7 +457,7 @@ void asset_manager_base::_unload_asset( asset_ptr a ) {
 	}
 }
 
-void asset_manager_base::_resolve_asset( const asset_url & aurl ) { 
+void asset_manager_base::_resolve_asset( const asset_url& aurl ) { 
 	if( aurl.get_type() == this->get_type() ) {
 		const std::list< asset_url >& final_urls = _possible_matches(aurl, m_search_urls.get_values());
 		for( const asset_url& a : final_urls ) {
@@ -478,7 +478,7 @@ void asset_manager_base::_init( void ) {
 	}
 }
 
-void asset_manager_base::_create_loader_thread( asset_ptr a, const i_asset_listener * l ) {
+void asset_manager_base::_create_loader_thread( asset_ptr a, const i_asset_listener* l ) {
 	std::thread(
 		[ this ]( asset_ptr a, const i_asset_listener* l ) {
 		_load_asset( a );
@@ -488,31 +488,29 @@ void asset_manager_base::_create_loader_thread( asset_ptr a, const i_asset_liste
 	}, a, l ).detach();
 }
 
-std::list<asset_url> asset_manager_base::_possible_matches(const asset_url& base, const string_vector& search)
-{
+std::list<asset_url> asset_manager_base::_possible_matches( const asset_url& base, const string_vector& search ) {
 	std::list<asset_url> result;
 
-	if (base.is_complete()) {
-		result.push_back(base);
+	if( base.is_complete() ) {
+		result.push_back( base );
 	}
 
-	for (const std::string& sp : search) {
-		if (!sp.empty()) {
-			if (base.is_complete()) {
+	for( const std::string& sp : search ) {
+		if( !sp.empty() ) {
+			if( base.is_complete() ) {
 				asset_url nurl = base;
-				nurl.path().insert_front_part(sp);
-				result.push_back(nurl);
-			}
-			else {
-				result.push_back(base.make_complete(asset_url(sp)));
+				nurl.path().insert_front_part( sp );
+				result.push_back( nurl );
+			} else {
+				result.push_back( base.make_complete( asset_url( sp ) ) );
 			}
 		}
 	}
 
-	return move(result);
+	return move( result );
 }
 
-std::shared_ptr<i_asset> asset_manager_base::load_asset( const asset_url & url ) {
+std::shared_ptr<i_asset> asset_manager_base::load_asset( const asset_url& url ) {
 	std::shared_ptr< i_asset > r = this->get_asset( url );
 	if( r ) {
 		_load_asset( r );
@@ -522,7 +520,7 @@ std::shared_ptr<i_asset> asset_manager_base::load_asset( const asset_url & url )
 	return r;
 }
 
-std::shared_ptr<i_asset> asset_manager_base::load_asset( const std::string & name ) {
+std::shared_ptr<i_asset> asset_manager_base::load_asset( const std::string& name ) {
 	std::shared_ptr< i_asset > r = this->get_asset( name );
 	if( r ) {
 		_load_asset( r );
@@ -532,7 +530,7 @@ std::shared_ptr<i_asset> asset_manager_base::load_asset( const std::string & nam
 	return r;
 }
 
-asset_ptr asset_manager_base::load_asset( const asset_url & url, const i_asset_listener * l ) {
+asset_ptr asset_manager_base::load_asset( const asset_url& url, const i_asset_listener* l ) {
 	asset_ptr r = this->get_asset( url );
 	if( r ) {
 		_create_loader_thread( r, l );
@@ -542,7 +540,7 @@ asset_ptr asset_manager_base::load_asset( const asset_url & url, const i_asset_l
 	return r;
 }
 
-asset_ptr asset_manager_base::load_asset( const std::string & name, const i_asset_listener * l ) {
+asset_ptr asset_manager_base::load_asset( const std::string& name, const i_asset_listener* l ) {
 	asset_ptr r = this->get_asset( name );
 	if( r ) {
 		_create_loader_thread( r, l );
@@ -552,7 +550,7 @@ asset_ptr asset_manager_base::load_asset( const std::string & name, const i_asse
 	return r;
 }
 
-void asset_manager_base::unload_asset( const asset_url & url ) {
+void asset_manager_base::unload_asset( const asset_url& url ) {
 	asset_ptr a = this->get_asset( url );
 	if( a ) {
 		_unload_asset( a );
@@ -561,7 +559,7 @@ void asset_manager_base::unload_asset( const asset_url & url ) {
 	}
 }
 
-void asset_manager_base::unload_asset( const std::string & name ) { 
+void asset_manager_base::unload_asset( const std::string& name ) { 
 	asset_ptr a = this->get_asset( name );
 	if( a ) {
 		_unload_asset( a );
@@ -595,7 +593,7 @@ std::shared_ptr<i_asset> asset_manager_base::get_asset(const asset_url& url) {
 	return r;
 }
 
-std::shared_ptr<i_asset> asset_manager_base::get_asset( const std::string & name ) {
+std::shared_ptr<i_asset> asset_manager_base::get_asset( const std::string& name ) {
 	std::shared_ptr< i_asset > r;
 	for( const auto& assp : m_asset_map ) {
 		if( assp.first.get_name() == name ) {

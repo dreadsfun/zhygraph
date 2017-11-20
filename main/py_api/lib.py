@@ -1,9 +1,8 @@
+from vector_proxy import *
 from ctypes import *
 import os
 
 os.environ['PATH'] = os.path.dirname(__file__) + '\\..' + ';' + os.environ['PATH']
-
-from vector_proxy import *
 
 lib = cdll.LoadLibrary('cAPI.dll')
 

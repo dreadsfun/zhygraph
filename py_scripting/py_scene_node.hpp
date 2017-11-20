@@ -11,4 +11,7 @@ private:
 	virtual bool _load( type_manager_ptr tm, bool async );
 	virtual void _unload( type_manager_ptr p );
 	virtual void update( node_subscription& ns ) override;
+
+public:
+	void callupdatescript(std::string& error);
 };

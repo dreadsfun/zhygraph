@@ -1,0 +1,64 @@
+<scene-graph>
+	<nodes>
+		<node name="camera" class="camera_node">
+			<attribute name="projection_mode" value="perspective"/>
+			<attribute name="aspect_ratio" value="1.33333"/>
+			<attribute name="field_of_view" value="0.33333"/>
+			<attribute name="near_clip" value="0.1"/>
+			<attribute name="far_clip" value="500"/>
+		</node>
+		
+		<node name="n1" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@tent.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n11" class="py_scene_node">
+			<attribute name="script_url" value="script@camera.py"/>
+		</node>
+		
+		<node name="n111" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@cone.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n112" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@cube.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n1121" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@cylinder.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n12" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@icosphere.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n13" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@landscape.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n14" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@monkey.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n141" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@sphere.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="n142" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@torus.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+	</nodes>
+	
+	<scenes>
+		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
+	</scenes>
+</scene-graph>

@@ -108,6 +108,9 @@ private:
 					m_windowing->get_input_manager()->update();
 
 					const auto& scns = m_scene_manager->get_loaded();
+
+					m_graphics->begin_frame();
+
 					for( const auto& pp : scns ) {
 						// Graphic system processing every loaded scene
 						m_graphics->update_scene( pp.second->get_root().get() );
@@ -115,6 +118,8 @@ private:
 						if( m_scripting )
 							m_scripting->update_scene( pp.second->get_root().get() );
 					}
+
+					m_graphics->end_frame();
 
 					m_graphics_context->swap_buffers();
 					m_graphics_context->clear_back_buffer();

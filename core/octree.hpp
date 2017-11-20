@@ -27,12 +27,12 @@ class octree_node {
 private:
 	using volume_t = t;
 	using volume_list_t = std::list< volume_t >;
-	using poctree_node = octree_node*;
 	aabb mbox;
-	poctree_node mchildren[8];
+	poctree_node<volume_t> mchildren[8];
 	volume_list_t mvolumes;
 	size_t mmaxvolume;
 	uint64_t mvolumehash;
+
 public:
 	octree_node() {
 		_rawrst();
@@ -50,8 +50,9 @@ public:
 					r += mchildren[ i ]->hash( true );
 		return r;
 	}
-	uint64_t update( octree_node* treatasroot ) {
+	uint64_t update( poctree_node<volume_t> treatasroot ) {
 		assert( treatasroot );
+		uint64_t modified = 0;
 		for( auto it = mvolumes.begin(); it != mvolumes.end(); )
 			if( it->changed() && !it->containedin( mbox ) ) {
 				// volume cannot be reinserted to this node, dont worry
@@ -60,21 +61,24 @@ public:
 				treatasroot->addvolume( *it );
 				mvolumehash -= it->hash();
 				it = mvolumes.erase( it );
+				modified++;
 			} else {
 				++it;
 			}
 
 		for( uint8_t i = 0; i < 8; ++i )
 			if( mchildren[ i ] )
-				mchildren[ i ]->update();
+				modified += mchildren[ i ]->update( treatasroot );
+
+		return modified;
 	}
 	
 	template<typename mvol_t>
-	poctree_node matchvolume(const mvol_t& vol) {
-		const poctree_node r = this;
+	poctree_node<volume_t> matchvolume(const mvol_t& vol) {
+		poctree_node<volume_t> r = this;
 		if (vol.containedin(mbox)) {
 			for (uint8_t i = 0; i < 8; ++i) {
-				const poctree_node cc = mchildren[i];
+				poctree_node<volume_t> cc = mchildren[i];
 
 				if (cc != nullptr) 
 					cc = cc->matchvolume(vol);
@@ -89,9 +93,9 @@ public:
 			return nullptr;
 		}
 	}
-	poctree_node search( const volume_t& vol ) const {
-		poctree_node r = this->matchvolume( vol );
-		for( volume_t& v : mvolumes ) {
+	poctree_node<volume_t> search( const volume_t& vol ) {
+		poctree_node<volume_t> r = this->matchvolume( vol );
+		for( volume_t& v : r->mvolumes ) {
 			if( v.equals( vol ) ) {
 				return r;
 			}
@@ -139,9 +143,9 @@ public:
 					*/
 					std::bitset<3> bidx(i);
 					vec3 tmpmid = {
-						(bidx.test(0) ? 1 : -1) * mbox.size().x() / 2,
-						(bidx.test(2) ? -1 : 1) * mbox.size().y() / 2,
-						(bidx.test(1) ? -1 : +1) * mbox.size().z() / 2
+						(bidx.test(0) ? 1 : -1) * mbox.size().x / 2,
+						(bidx.test(2) ? -1 : 1) * mbox.size().y / 2,
+						(bidx.test(1) ? -1 : +1) * mbox.size().z / 2
 					};
 					/*
 					here a temporary bounding box is created, which would be the bounding box of the
@@ -151,9 +155,10 @@ public:
 					that the volume is inserted into the smallest possible successor of the node
 					*/
 					tmpbox.mid(tmpmid);
-					tmpbox.size(mbox.size() / 2);
+					glm::vec3 tmpsize( mbox.size().x / 2, mbox.size().y / 2, mbox.size().z / 2 );
+					tmpbox.size( tmpsize );
 					if (vol.containedin(tmpbox)) {
-						poctree_node nn = new octree_node(tmpbox, mmaxvolume);
+						poctree_node<volume_t> nn = new octree_node(tmpbox, mmaxvolume);
 						mchildren[i] = nn;
 						return nn->addvolume(vol);
 					}
@@ -176,6 +181,15 @@ public:
 			return false;
 		}
 	}
+
+	void volumes( volume_list_t& outlist, bool recursive ) const {
+		std::copy( mvolumes.begin(), mvolumes.end(), std::back_inserter( outlist ) );
+		if( recursive )
+			for( uint8_t i = 0; i < 8; ++i )
+				if( mchildren[ i ] )
+					mchildren[ i ]->volumes( outlist, true );
+	}
+
 private:
 	void _rawrst() {
 		for (uint8_t i = 0; i < 8; ++i) {
@@ -197,20 +211,20 @@ template<typename t>
 class octree {
 private:
 	using volume_t = t;
-	poctree_node mroot;
+	poctree_node<volume_t> mroot;
 
 public:
 	octree( const aabb& box ) {
 		mroot = new octree_node< volume_t >( box );
 	}
-	poctree_node root() {
+	poctree_node<volume_t> root() {
 		return mroot;
 	}
 	bool addvolume( const volume_t& vol ) {
 		return mroot->addvolume( vol );
 	}
 	template<typename mvol_t>
-	poctree_node matchvolume( const mvol_t& vol ) {
+	poctree_node<volume_t> matchvolume( const mvol_t& vol ) {
 		return mroot->matchvolume( vol );
 	}
 	uint64_t update() {
@@ -219,7 +233,7 @@ public:
 	uint64_t hash() {
 		return mroot->hash( true );
 	}
-	poctree_node search( const volume_t& vol ) {
+	poctree_node<volume_t> search( const volume_t& vol ) {
 		return mroot->search( vol );
 	}
 };

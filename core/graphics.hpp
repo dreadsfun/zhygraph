@@ -5,6 +5,8 @@ class i_graphics {
 public:
 	virtual bool initialize( void ) = 0;
 	virtual void update_scene( i_scene_node* root ) = 0;
+	virtual void begin_frame() = 0;
+	virtual void end_frame() = 0;
 };
 
 class i_window_closed_listener {

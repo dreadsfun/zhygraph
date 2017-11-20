@@ -96,7 +96,9 @@ void camera_node::_update_to_projection_mode( void ) {
 	if( m_projection_mode.get_value() == "perspective" ) {
 		m_projection_matrix = glm::perspective< float >( m_field_of_view, m_aspect_ratio, m_near_clip, m_far_clip );
 
-		float y = 2 * tan( m_field_of_view ) / m_near_clip;
+		float twotanfovpertwo = 2 * tan( m_field_of_view / 2 );
+
+		float y = twotanfovpertwo * m_near_clip;
 		float x = y * m_aspect_ratio;
 
 		mbasepoints[ 0 ].x = mbasepoints[ 1 ].x = -x / 2;
@@ -105,7 +107,7 @@ void camera_node::_update_to_projection_mode( void ) {
 		mbasepoints[ 1 ].y = mbasepoints[ 2 ].y = -y / 2;
 		mbasepoints[ 0 ].z = mbasepoints[ 1 ].z = mbasepoints[ 2 ].z = mbasepoints[ 3 ].z = -m_near_clip;
 
-		float yf = 2 * tan( m_field_of_view ) / m_far_clip;
+		float yf = twotanfovpertwo * m_far_clip;
 		float xf = yf * m_aspect_ratio;
 
 		mbasepoints[ 4 ].x = mbasepoints[ 5 ].x = -xf / 2;

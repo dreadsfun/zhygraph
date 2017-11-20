@@ -210,6 +210,10 @@ public:
 		return std::hash<std::string>()( mmeshnode->get_name() );
 	}
 
+	mesh_renderer_node* node() {
+		return mmeshnode;
+	}
+
 private:
 	aabb _transformbox( const aabb& box, mesh_renderer_node* pmeshnode ) const {
 		return aabb( pmeshnode->get_transform().transform_position( box.mid() ), pmeshnode->get_transform().transform_direction( box.size() ) );
@@ -335,18 +339,32 @@ private:
 	component_dependency( m_type_manager, i_asset_type_manager );
 	component_attribute( m_lighting_enabled, bool, true );
 	component_attribute( m_use_visibility_check, bool, true );
+	component_attribute( m_octree_root_size, float, std::numeric_limits<float>::max() );
 	context_guard_ptr m_guard;
 	program_pool m_program_pool;
 	mesh_renderer_dispatcher m_mesh_renderer;
-	octree<meshnodevolume> moctree;
+	octree<meshnodevolume>* moctree { nullptr };
+
+	struct {
+		struct {
+			uint64_t verticecount { 0 };
+			uint64_t indicecount { 0 };
+			uint64_t drawnmeshnodecount { 0 };
+			uint64_t discardedmeshnodecount { 0 };
+			uint64_t subscribedmeshnodecount { 0 };
+		} lastframe;
+	} mstatistics;
 
 public:
 	ogl_graphics( void )
-		: m_mesh_renderer( &m_program_pool ),
-		moctree(aabb(glm::vec3(), 
-			glm::vec3(std::numeric_limits<float>::max()))) { }
+		: m_mesh_renderer( &m_program_pool ) { }
 
 private:
+	virtual void initialize_component( void ) override {
+		if( m_use_visibility_check )
+			moctree = new octree<meshnodevolume>( aabb( glm::vec3( .0f ), glm::vec3( m_octree_root_size ) ) );
+	}
+
 	virtual bool initialize( void ) override {
 		info( "entering ogl graphics implementation..." );
 		bool r = true;
@@ -380,19 +398,21 @@ private:
 				// update the octree first, so the volumes already inside get refreshed
 				// this spares some checks, if there are volumes that will be inserted in this update
 				// as new volumes are not changed for sure
-				moctree.update();
+				moctree->update();
 
 				for( auto b = mrs.first; b != mrs.second; ++b ) {
+					mstatistics.lastframe.subscribedmeshnodecount++;
+
 					mesh_renderer_node* cmeshnode = static_cast< mesh_renderer_node* >( b->second );
 					assert( cmeshnode );
 					asset::mesh_ptr cmesh = cmeshnode->get_mesh();
 					if( cmesh ) {
 						meshnodevolume cvolume( cmesh, cmeshnode );
 						// see if this volume is in the tree
-						poctree_node<meshnodevolume> containernode = moctree.search( cvolume );
+						poctree_node<meshnodevolume> containernode = moctree->search( cvolume );
 						if( !containernode ) {
 							// if it is not, add it
-							moctree.addvolume( cvolume );
+							moctree->addvolume( cvolume );
 						}
 					}
 				}
@@ -403,24 +423,55 @@ private:
 				// search subscribed meshrenderers in the subtree given by the match
 				for( auto cam = cameranoderange.first; cam != cameranoderange.second; ++cam ) {
 					cameranodevolume cameravolume( static_cast< camera_node* >( cam->second ) );
-					poctree_node<meshnodevolume> subnode = moctree.matchvolume( cameravolume );
+
+					// this gives the smallest octree node, that contains the camera frustum/box
+					poctree_node<meshnodevolume> subnode = moctree->matchvolume( cameravolume );
 
 					if( subnode ) {
 						// this means, that there is meshrenderer that should be dispatched
 						// based on spatial orientation of the current camera and the meshrenderers
-						for( )
+						std::list<meshnodevolume> visiblenodes;
+						subnode->volumes( visiblenodes, true );
+
+						// create a range for the dispatcher function that contains only this camera
+						node_subscription::node_range_iterator_pair singlecam;
+						singlecam.first = cam;
+						singlecam.second = cam;
+						// iterator range is [) (closed-open range), so the second value is not included
+						// thus must be one more than the first, for the first to be included...
+						singlecam.second++;
+
+						// render this camera
+						for( auto cvisiblenode = visiblenodes.begin(); cvisiblenode != visiblenodes.end(); ++cvisiblenode ) {
+							// TODO this will yield incorrect stats with multiple cameras
+							mstatistics.lastframe.drawnmeshnodecount++;
+							m_mesh_renderer.dispatch( cvisiblenode->node(), singlecam );
+						}
 					}
 				}
-			}
-
-			for( auto b = mrs.first; b != mrs.second; ++b ) {
-				m_mesh_renderer.dispatch( static_cast< mesh_renderer_node* >( b->second ), crs );
+			} else {
+				// visibility check is disabled, just try to render everything
+				for( auto b = mrs.first; b != mrs.second; ++b ) {
+					mstatistics.lastframe.subscribedmeshnodecount++;
+					mstatistics.lastframe.drawnmeshnodecount++;
+					m_mesh_renderer.dispatch( static_cast< mesh_renderer_node* >( b->second ), cameranoderange );
+				}
 			}
 		}
 	}
 
 	virtual void update_scene( i_scene_node* root ) override {
 		this->process_scene( root );
+	}
+
+	virtual void begin_frame() {
+		memset( &mstatistics, 0, sizeof( mstatistics ) );
+	}
+
+	virtual void end_frame() {
+		mstatistics.lastframe.discardedmeshnodecount = mstatistics.lastframe.subscribedmeshnodecount - mstatistics.lastframe.drawnmeshnodecount;
+
+	//	sinfo << "subscribed renderers: " << mstatistics.lastframe.subscribedmeshnodecount << " drawn renderers: " << mstatistics.lastframe.drawnmeshnodecount;
 	}
 };
 

@@ -21,5 +21,9 @@ void py_scene_node::update( node_subscription& ns ) {
 	if( m_loaded ) ns.subscribe_as( "script", this );
 }
 
+void py_scene_node::callupdatescript( std::string& error ) {
+	mscript->callupdatescript( error );
+}
+
 #include <di_rtlib\register_class.hpp>
 register_class( py_scene_node );
