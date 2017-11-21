@@ -15,9 +15,9 @@ class prvec3(Structure):
                 ('z', c_float)]
 
     def __init__(self,v3):
-        self.x = v3.x
-        self.y = v3.y
-        self.z = v3.z
+        self.x = c_float(v3.x)
+        self.y = c_float(v3.y)
+        self.z = c_float(v3.z)
 
 class prvec4(Structure):
     _fields_ = [('x', c_float),

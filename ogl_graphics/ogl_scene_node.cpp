@@ -98,8 +98,8 @@ void camera_node::_update_to_projection_mode( void ) {
 
 		float twotanfovpertwo = 2 * tan( m_field_of_view / 2 );
 
-		float y = twotanfovpertwo * m_near_clip;
-		float x = y * m_aspect_ratio;
+		float x = twotanfovpertwo * m_near_clip;
+		float y = x * m_aspect_ratio;
 
 		mbasepoints[ 0 ].x = mbasepoints[ 1 ].x = -x / 2;
 		mbasepoints[ 0 ].y = mbasepoints[ 3 ].y = y / 2;
@@ -107,8 +107,8 @@ void camera_node::_update_to_projection_mode( void ) {
 		mbasepoints[ 1 ].y = mbasepoints[ 2 ].y = -y / 2;
 		mbasepoints[ 0 ].z = mbasepoints[ 1 ].z = mbasepoints[ 2 ].z = mbasepoints[ 3 ].z = -m_near_clip;
 
-		float yf = twotanfovpertwo * m_far_clip;
-		float xf = yf * m_aspect_ratio;
+		float xf = twotanfovpertwo * m_far_clip;
+		float yf = xf * m_aspect_ratio;
 
 		mbasepoints[ 4 ].x = mbasepoints[ 5 ].x = -xf / 2;
 		mbasepoints[ 4 ].y = mbasepoints[ 7 ].y = yf / 2;

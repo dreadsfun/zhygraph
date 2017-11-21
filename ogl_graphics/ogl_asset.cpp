@@ -278,6 +278,7 @@ void mesh::post_load( void ) {
 		glGenBuffers( 1, &m_buffer_names.position );
 		glBindBuffer( GL_ARRAY_BUFFER, m_buffer_names.position );
 		glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * 3 * m_positions.size(), &m_positions[ 0 ], GL_STATIC_DRAW );
+		mvertexcount = m_positions.size();
 		m_positions.clear();
 	}
 
@@ -316,8 +317,14 @@ void mesh::post_load( void ) {
 			glGenBuffers( 1, &cind );
 			glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cind );
 			glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * m_indices[ i ].size(), &m_indices[ i ][ 0 ], GL_STATIC_DRAW );
+			mindexcount += m_indices[ i ].size();
+
+			// leave this, as draw uses the size info
+			//m_indices[ i ].clear();
 		}
 	}
+	// leave this, as draw uses the size info
+	//m_indices.clear();
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 	glBindBuffer( GL_ARRAY_BUFFER, 0 );
@@ -329,12 +336,22 @@ bool mesh::unload( std::string & err ) {
 	memset( &m_buffer_names.position, 0, sizeof( GLuint ) * 5 );
 	m_buffer_names.indices.clear();
 	m_buffer_names.vaos.clear();
+	mindexcount = 0;
+	mvertexcount = 0;
 	return true;
 }
 
 const aabb& mesh::boundingvolume() const
 {
 	return mboundingvolume;
+}
+
+size_t mesh::index_count() const {
+	return mindexcount;
+}
+
+size_t mesh::vertex_count() const {
+	return mvertexcount;
 }
 
 void mesh::_create_vaos( void ) {

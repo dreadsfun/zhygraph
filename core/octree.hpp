@@ -133,6 +133,8 @@ public:
 			if (initch) {
 				aabb tmpbox;
 				for (uint8_t i = 0; i < 8; ++i) {
+					// check uninitialized child only
+					if( mchildren[ i ] ) continue;
 					/*
 					iterate over the child indices, and generate the index bit mask
 					if we look at the front of the node's bounding box the axes are aligned as follows:

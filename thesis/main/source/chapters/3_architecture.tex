@@ -2,7 +2,21 @@
 
 \Section{Magas szintû áttekintés}
 
-A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov} ábrán láthatunk egy leegyszerûsített komponens diagramot. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/highlevelsystemov1.eps, width=13.65cm, height=11.1cm}
+\caption{A keretrendszer komponensei}
+\label{fig:highlevelov1}
+\end{figure}
+
+A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov1} és \myref{fig:highlevelov2} ábrákon láthatjuk a rendszer komponenseinek összefoglaló diagramját. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/highlevelsystemov2.eps, width=13.65cm, height=13.505cm}
+\caption{A keretrendszer komponensei}
+\label{fig:highlevelov2}
+\end{figure}
 
 \subsubsection{Fájl útvonalak}
 A továbbiakban szerepelni fognak az említett koncepciókat és funkciókat megvalósító programkódok forrásainak elérési útvonala. Az útvonalakat egy egyszerûsített formában láthatjuk, mint például: \textit{core/multi\_thread}. Ennek értelmezéséhez a következõket szükséges figyelembe venni:

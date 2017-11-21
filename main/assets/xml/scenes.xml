@@ -37,18 +37,78 @@
 			<attribute name="materials" value="alduin"/>
 		</node>
 		
-		<node name="n13" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@landscape.obj"/>
+		<node name="ls1" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls1.obj"/>
 			<attribute name="materials" value="alduin"/>
 		</node>
 		
-		<node name="n14" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@monkey.obj"/>
+		<node name="ls2" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls2.obj"/>
 			<attribute name="materials" value="alduin"/>
 		</node>
 		
-		<node name="n141" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@sphere.obj"/>
+		<node name="ls3" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls3.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls4" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls4.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls5" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls5.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls6" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls6.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls7" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls7.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls8" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls8.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls9" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls9.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls10" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls10.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls11" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls11.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls12" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls12.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls13" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls13.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls14" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls14.obj"/>
+			<attribute name="materials" value="alduin"/>
+		</node>
+		
+		<node name="ls15" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@ls15.obj"/>
 			<attribute name="materials" value="alduin"/>
 		</node>
 		
@@ -59,6 +119,6 @@
 	</nodes>
 	
 	<scenes>
-		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . n13 . n14 n141 . n142"/>
+		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . . n142 ls1 ls2 ls3 ls4 ls5 ls6 ls7 ls8 ls9 ls10 ls11 ls12 ls13 ls14 ls15"/>
 	</scenes>
 </scene-graph>

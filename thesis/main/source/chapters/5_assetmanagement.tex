@@ -17,13 +17,14 @@ A legalapvetõbb igény a redundancia megszüntetésével kapcsolatban, hogy a tartal
 
 A követelmény teljesítéséhez szükséges továbbá, hogy a tartalom adatstruktúra támogassa a fájlokkal történõ asszociációt és az egyedi azonosítást. A fájl-asszociáció létrejöhet a fájl elérési útvonalának tárolásával, az egyedi azonosítás pedig egy tetszõleges azonosító bevezetésével. Az azonosító jelen esetben egy ember által olvasható formátum lesz, annak érdekében, hogy a késõbbiekben az adatstruktúra példány elérését is lehetõvé tegye.
 
-Az elsõ lépés az adat redundancia megelõzésében, a nyílvántartó rendszernek közölt adatok szûrése: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban, elõszõr ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét. A következõ lehetõség a redundancia megelõzésére akkor kap szerepet ha a kliens nem az egyedi azonosító, hanem egy fájl elérési útvonalával kérelmezi a betöltést. Ebben az esetben a rendszernek nincs lehetõsége az egyedi azonosítót ellenõrizni. 
+Jelen rendszer esetében az azonosítás megvalósítása egy speciális "útvonal-struktúra", mely implementációja a \textit{core/asset} útvonalon, az \textit{asset\_url} osztályban található. Azért nem hagyományos, például Windows operációs rendszer specifikus útvonal formátumot haszálunk, hogy a struktúra támogassa a fájl-rendszer és a platform absztrakcióját, ezzel lehetõvé téve például hálózati alapú betöltést, akár különbözõ platformok között is.
 
-A megoldást egy egyszerû és gyorsan futtatható \textit{hasítófüggvény} jelenti. A hasítófüggvények olyan függvények, melyek lehetõvé teszik egy változó hosszúságú bemenõ adatból (jelen esetben egy fájlból) történõ fix, az adott algoritmusra jellemzõ hosszúságú kimenetet generálni. A legelterjedtebb hasító algoritmusok közé tartoznak az SHA algoritmus család tagjai \cite{wiki_hash}. Az SHA-1 algoritmus kriptográfiai jelentõsége napjainkban csökkent, hiszen ki van téve az úgy nevezett \textit{ütközési támadások}nak \cite{sha1_collision}. Azonban ez nem befolyásolja az algoritmus kompetenciáját abban az esetben ha fájlok egyenlõségét kívánjuk vizsgálni. Ilyen célokra például a verzió követõ rendszerek is használják.
+Az útvonal struktúra a "tartalom\_típus@könyvtár1:könyvtár2:név.kiterjesztés" formátumot követi, például egy geometriai objektumra történõ hivatkozás a következõképpen néz ki:
+\begin{xml}
+<attribute name="mesh_url" value="mesh@icosphere.obj"/>
+\end{xml}
 
-Abban az esetben tehát, ha nem áll rendelkezésre az entitást egyedileg azonosító adat, a megadott elérési útvonalon található fájlból készíthetünk egy "kivonatot" a hasító algoritmus segítségével, ami egyedi az adott fájl tartalmára vonatkozólag (ahhoz, hogy $\frac{1}{10^{18}}$ legyen a valószínûsége az ütközésnek, $1,71 * 10^{15}$ különbözõ bemeneti adattal kell dolgozni a 160 bit hosszúságú SHA-1 esetén \cite{hash_collision_probs}). A kivonattal pedig már egyszerûen ellenõrízhetjük, hogy megtalálható-e már a kért adat a memóriában. Ehhez azonban el kell tárolni az adatstruktúrában a kivonatot a késõbbi ellenõrzéshez.
-
-További optimalizációs lehetõség, hogy minden betölteni kívánt fájl mellé egy meta-fájlt hozunk létre, melyben eltároljuk a hasító algoritmus korábbi eredményét, ezzel tovább spórolva a fájl olvasás és a hasítás erõforrás igényein. Ebben az esetben viszont ellenõriznünk kell, hogy a meta-fájlba írt kivonat helyes-e még, hiszen a fájl megváltozhat idõközben. Ehhez azonban elegendõ lehet a fájl és a meta-fájl írási idõpontjának összehasonlítása.
+Az elsõ lépés az adat redundancia megelõzésében, a nyílvántartó rendszernek közölt adatok szûrése: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban, elõszõr ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét.
 
 \Section{Hatékony tartalom elérés biztosítása}
 A korábbiakban már hozzáadtunk egy egyedi azonosítót a tartalom adatstruktúrához, a kliensek fõleg ezen keresztül érhetik majd el a kívánt objektumokat. Annak érdekében, hogy az elérés sebessége megfelelõ legyen, az objektumokat összepárosítjuk az egyedi azonosítójukkal egy, úgy nevezett \textit{hasítótáblában}.
@@ -32,34 +33,82 @@ A hasítótáblák olyan, asszociatív adatstruktúrák, melyekben a kulcsok egy hasító
 
 A hasítótábla kulcs típusa az egyedi azonosító típusa lesz (\textit{string}), az érték típusa pedig az adatstruktúra \textit{referenciatípusa}. Mivel nincs szükség a kulcsok rendezésére, valamint általában az objektumok elérése gyakoribb lesz, mint a beillesztésük, a hasítótábla egy rendezetlen változatát választjuk, ezzel spórolva a rendezés költségét. A C++ nyelv például biztosít ilyen adatstruktúrát az \textit{std::unordered\_map<T>} osztály formájában. A rendezetlen hasítótábla elem beillesztésének és elérésének idõkomplexitása átlagos esetben: $O(1)$, legrosszabb esetben: $O(size())$, ahol size() az aktuális táblaméret \cite{unordered_map}.
 
+Ezt a módszert láthatjuk megvalósítva a \textit{core/asset} útvonalon, az \textit{asset\_manager\_base} osztályban. Az osztály definiál egy tábla típust az egyszerû használat érdekében, illetve deklarál egy adattagot ezzel a típussal:
+
+\begin{cpp}
+typedef std::unordered_map< asset_url, asset_ptr > asset_url_map;
+...
+asset_url_map m_asset_map;
+\end{cpp}
+
+A \textit{get\_asset} függvény azon változatában, amelyik \textit{asset\_url} példányt (tehát a speciális útvonal struktúra egy példányát) vár paraméterül, láthatjuk a hasítótáblában történõ keresést:
+
+\begin{cpp}
+const auto& alternatives = _possible_matches(url, m_search_urls.get_values());
+auto fit = m_asset_map.end();
+for (auto alternative = alternatives.begin(); alternative != alternatives.end()
+  && fit == m_asset_map.end(); ++alternative)
+  fit = m_asset_map.find(*alternative);
+...
+\end{cpp}
+
+A konkrét keresést a \textit{m\_asset\_map.find} kifejezés végzi. A megvalósítás kiegészül azzal a technikával, hogy megengedjük a tartalom fájlok nem pontos elérési útvonalával történõ hivatkozást, és elõre definiált keresési útvonalakon próbálunk a feltételeknek megfelelõ objektumot találni.
+
 \Section{Nem használt tartalom kisöprése}
 \label{section:gclist}
-Annak érdekében, hogy a rendszer memóriafoglalását egy bizonyos szint alatt tartsuk, illetve, hogy feleslegesen ne tartsunk fent foglalást, azokat az objektumokat, amelyekre nincsen hivatkozás egy szemétgyûjtõ listára fogjuk helyezni. A szemétgyûjtõ listáról pedig bizonyos idõközönként egy algoritmus kiválasztja azokat az objektumokat, melyek erõforrásai felszabadításra kerülnek. 
+Annak érdekében, hogy a rendszer memóriafoglalását egy bizonyos szint alatt tartsuk, illetve, hogy feleslegesen ne tartsunk fent foglalást, biztosítanunk kell a lehetõséget, hogy azokat az objektumokat melykre nincsen már külsõ hivatkozás felszabadítsuk.
 
-Ehhez szükséges az objektumokra aktívan jelen levõ \textit{referenciák} (hivatkozások) számontartása. Ezt egy "csomagoló" osztállyal érjük el, aminek egyetlen szerepe van: az általa hivatkozott tartalom objektumra jelenlevõ referenciák számlálása. A csomagoló osztály - az adatstruktúránkkal ellentétben - másolható, ez teszi lehetõvé, hogy az alrendszeren kívül, vagy az alrendszeren belül különbözõ kódrészek úgy osszák meg az adott objektumot, hogy azt nem másolják le, viszont a referenciák számát mindig számontartsuk. 
+Ehhez szükséges az objektumokra aktívan jelen levõ \textit{referenciák} (hivatkozások) számontartása. A C++ környezet biztosít úgynevezett automatikus vagy "okos" mutatókat, jelen esetben a \textit{std::shared\_ptr} struktúra adta lehetõségeket fogjuk kihasználni. Ez az osztály - az adatstruktúránkkal ellentétben - másolható, ez teszi lehetõvé, hogy az alrendszeren kívül, vagy az alrendszeren belül különbözõ kódrészek úgy osszák meg az adott objektumot, hogy azt nem másolják le, viszont a referenciák számát mindig számontartsuk. 
 
-Ugyan biztosít hasonló struktúrát a C++ környezet a \textit{std::shared\_ptr<T>} osztály formájában, ennek elsõdleges feladata a referenciaszámláló nullára csökkenéskor történõ automatikus és azonnali meghívása az úgy nevezett \textit{callable, deleter} objektumnak. Az alap mûködési mechanizmus értelmében, ennek következménye, hogy a menedzselt objektum memóriája (a \textit{destruktor} hívása után) egyszerûen felszabadul \cite{shared_ptr}. Jelen esetben, azonban nem szeretnénk ha a az objektum azonnal megszûnne, amikor a referenciák száma nullára csökken. Ehelyett, a nyílvántartó rendszer értesítést kap arról, hogy egy objektumra már nincsen hivatkozás, ezzel lehetõséget adva neki, hogy egy szemétgyûjtõ listára helyezze azt. 
+A referencia-számlált mutató mûködési mechanizmusa szerint, a struktúra másolásakor a referencia-számláló növekszik eggyel, a struktúra megszüntetésekor pedig csökken eggyel, ha pedig nullára csökken akkor felszabadítja az általa kezelt memória területet. Esetünkben soha nem fog nullára csökkeni az alkalmazás futása során a referencia-számláló, hiszen ahogy láttuk a hasító tábla is ilyen mutatókon (\textit{asset\_ptr}) keresztül hivatkozik az objektumokra. A megoldás így az, hogy azt nevezzük nem-referált tartalom objektumnak, amely referencia-számlálójának értéke megegyezik az alrendszer által fenntartott referenciák számával. Más szóval, akkor, ha nincs a tartalom rendszeren kívül aktív referencia.
 
-Ennek az indirekciónak akkor van jelentõsége, amikor egy kliens kód nem sokáig tart fent referenciákat az általa használt objektumokra, viszont gyakran kívánja elérni õket. Ez azt eredményezheti, hogy egy adott objektum referenciaszámlálója hamar nullára csökken, viszont rövidesen ezután a kliens ismét el akarja érni az objektumot. Ha az objektumok kisöprése azonnali lenne, az aktuális lekérés egy ismételt betöltést és feldolgozást jelentene. Azonban ha az objektum még megtalálható a szemétgyûjtõ listán egy bizonyos ideig, akkor onnan ismét a referált objektumok listájába léphet. Természetesen ezzel nem szûrhetõ ki az összes \textit{"cache-miss"} (azon esetek, amikor egy kért adat nem található meg a gyors elérésû tárolóban, ezért egy lassabb eljárással kell betölteni), de jelentõsen csökkenthetõ a számuk.
+Ezt a mechanizmust valósítja meg az \textit{asset\_manager\_base} osztály, \textit{unload\_unreferenced} függvénye:
 
-A szemétgyûjtõ listáról egy aszinkron eljárás szabadítja fel a kiválasztott objektumokat, a következõ algoritmus szerint:
-Az eljárás elsõ lépésként ellenõrzi, hogy a maximális (konfigurálható) memóriahasználatot túllépi-e az alrendszer által, digitális tartalomnak allokált memóriafoglalás. Ha nem akkor az eljárás azonnal visszatér, hiszen ha nincs szükség a memória felszabadítására, akkor az az érdekünk, hogy minél több objektum maradjon betöltve. Ha a memória limitet meghaladja a foglalás, akkor szintén egy konfigurálható paraméter dönti el a következõ lépést:
+\begin{cpp}
+for( const auto& pp : m_asset_map ) {
+    if( pp.second.use_count() == manager_ref_list::manager_ref_count ) {
+    _unload_asset( pp.second );
+  }
+}
+\end{cpp}
 
-\begin{itemize}
-\item A \textit{"Legkevesebb felszabadított objektum"} elnevezésû eljárási mód lényege, hogy arra törekedjen az algoritmus, hogy a lehetõ legkevesebb objektum felszabadításával elégítse ki a memóriafoglalási követelményeket. Ebbõl egyenesen következik, hogy mindig a legnagyobb memóriafoglalású objektumokat fogja felszabadítani elsõként. Optimalizációs lehetõség, hogy a listán lévõ objektumok, memóriafoglalás alapján történõ rendezése \textbf{elõtt}, megvizsgáljuk, hogy lehetséges-e egyáltalán kellõ mennyiségû memóriát felszabadítani a listán található objektumok kisöprésével. Hiszen, például ha a listán lévõ objektumok mindegyikének felszabadításával sem elégítjük ki a memória követelményeket, akkor errõforrást pazarlunk egy esetleges rendezéssel, melynek végeredménye egyébként is az összes objektum felszabadítása lenne.
-\item A \textit{"Legnagyobb megtartott objektumok"} elnevezésû eljárási mód lényege, hogy arra törekedjen az algoritmus, hogy a lehetõ legnagyobb objektumokat hagyja betöltve, hiszen azok újratöltési ideje valószínûleg nagyobb mint a kis helyet foglaló objektumoké. Ebbõl következik, hogy minél több és kisebb objektumok kisöprése lesz a cél. Az elõzõ eljárási módban leírt optimalizációs lehetõség alkalmazható ezen esetben is.
-\end{itemize}
+A \textit{manager\_ref\_list} egy felsorolás típus, amiben fel vannak sorolva az aktuális belsõ-hivatkozás tételek. Jelen esetben ennek egyetlen eleme, a hasítótáblához tartozó tétel:
 
-A két eljárási mód közötti döntés, annak a mérlegelését követeli, hogy egy adott implementációval sok, kisebb objektum vagy pedig kevés, nagyobb objektum be- illetve "kitöltése" a hatékonyabb. A mérési eredményekkel betekintést nyerhetünk ebbe a problémába a \textit{"Futtatási tesztek és mérési eredmények"} címû fejezetben.
+\begin{cpp}
+enum manager_ref_list {
+  asset_map = 0,
+  manager_ref_count
+};
+\end{cpp}
+
+Ezzel a kialakítással pedig, a \textit{manager\_ref\_count} kifejezés értéke a listán szereplõ tételek száma lesz.
 
 \Section{Szálbiztonság megvalósítása}
-A tartalom nyílvántartó rendszer terve törekszik a párhuzamosítási lehetõségek kihasználására. Láthattuk például, hogy a szemétgyûjtõ listáról történõ felszabadítás is egy külön szálon történik. Ezen kívül szeretnénk ha a tartalmak betöltése is megvalósulhatna aszinkron módon, annak érdekében, hogy egy esetlegesen idõigényes töltési folyamat ne akadályozza a rendszer más eljárásait. A párhuzamosítás az elõnyeivel együtt, hordoz magában bizonyos veszélyeket, a hibák megelõzésének lehetõségeit tárgyaljuk ebben a fejezetben.
+A tartalom nyílvántartó rendszer terve törekszik a párhuzamosítási lehetõségek kihasználására. Szeretnénk ha a tartalmak betöltése megvalósulhatna aszinkron módon, annak érdekében, hogy egy esetlegesen idõigényes töltési folyamat ne akadályozza a rendszer más eljárásait. A párhuzamosítás az elõnyeivel együtt, hordoz magában bizonyos veszélyeket, ezért a hibák megelõzésének lehetõségeit tárgyaljuk ebben a fejezetben.
 
 A \textit{memória versengés} azt a problémát írja le, amikor egy megoszott memóriaterületet akar elérni valós idõben, \textbf{párhuzamosan}, két különbözõ, egymástól független futási egység (jelen esetben \textit{szálak}).
 
-A memória versengés problémájának ki van téve a tartalom objektum \textit{állapot leíró változó}ja, hiszen egy szál ha el akarja érni az adott objektumot, az ellenõrizni fogja, hogy az állapota \textit{"betöltött"}-e, és ha nem akkor betöltést fog kezdeményezni. Eközben természetesen elõfordulhat, hogy egy másik szál már éppen a betöltést végzi. Ilyenkor van esély rá, hogy amikor az ellenõrzést végzõ szál lekérdezi az objektum állapotát akkor még \textit{"betöltetlen"}-t lát, viszont egy másik szál már elkezdte az objektum betöltését, azonban még nem állította át az állapotot \textit{"betöltés alatt"}-ra. Ekkor a második szál is el fogja kezdeni az objektum betöltését, ezzel további, specifikálatlan viselkedést produkálva a programban.
+A memória versengés problémájának ki van téve a tartalom objektum \textit{állapot leíró változója}, hiszen egy szál ha el akarja érni az adott objektumot, az ellenõrizni fogja, hogy az állapota \textit{"betöltött"}-e, és ha nem akkor betöltést fog kezdeményezni. Eközben természetesen elõfordulhat, hogy egy másik szál már éppen a betöltést végzi. Ilyenkor van esély rá, hogy amikor az ellenõrzést végzõ szál lekérdezi az objektum állapotát akkor még \textit{"betöltetlen"}-t lát, viszont egy másik szál már elkezdte az objektum betöltését, azonban még nem állította át az állapotot \textit{"betöltés alatt"}-ra. Ekkor a második szál is el fogja kezdeni az objektum betöltését, ezzel további, specifikálatlan viselkedést produkálva a programban.
 
 Egy primitív változó (nem összetett, több primitívbõl álló kompozit) védelme megoldható az úgy nevezett atomi struktúrával. A C++ környezet ezt az \textit{std::atomic<T>} osztály formájában biztosítja. Egy atomi mûvelet azt jelenti ebben az esetben, hogy ha egy szál értéket ad a változónak, miközben egy másik szál olvassa azt, a viselkedés, tehát a mûveletek sorrendje, jól definiált \cite{atomic}.
+
+A tartalom objektum állapotát leíró változó deklarációja ezek alapján a következõképpen alakul:
+
+\begin{cpp}
+std::atomic< asset_state > m_state { asset_state::created };
+\end{cpp}
+
+Az állapot ellenõrzésére és beállítására láthatunk példát az \textit{asset\_manager\_base} osztály, \textit{\_unload\_asset} függvényében:
+
+\begin{cpp}
+asset_state exp = asset_state::loaded;
+if( a->get_state().compare_exchange_strong( exp, asset_state::unloading ) ) {
+  sinfo << "unloading asset \"" << a->get_path() << "\"";
+  a->pre_unload();
+...
+\end{cpp}
+
+A \textit{compare\_exchange\_strong} hívás mûködésének lényege, hogy az atomi változó értékét összehasonlítja egy várt értékkel (\textit{exp}). Ha két érték megegyezik, akkor az atomi változó értéke beállításra kerül a várt értékre és igazzal tér vissza. Ha két érték nem egyezik meg, akkor a várt érték helyére írja az aktuális értéket és hamissal tér vissza. Az egész mûvelet \textit{atomi}, tehát a változó értéke nem változtatható meg a kiolvasási és kicserélési mûveletek között \cite{CES}.
 
 A többi komplex struktúra, mint például a tartalom eléréshez használt hasítótábla megvédhetõ a kölcsönös kizárást megvalósító struktúrákkal. A C++ esetén ezt az \textit{std::mutex} osztály foglalja magába, mely a következõ birtoklási szemantikát biztosítja:
 
@@ -68,15 +117,3 @@ A többi komplex struktúra, mint például a tartalom eléréshez használt hasítótábl
 \item Amíg egy szál birtokolja a \textit{mutex} objektumot, minden más szál blokkolódik (a \textit{"lock"} hívás esetén), vagy hamis visszatérési értéket kap (a \textit{"try\_lock"} hívás esetén) ha megpróbálják birtokba venni a \textit{mutex} objektumot.
 \item Egy hívó szál nem birtokolhatja a \textit{mutex} objektumot mielõtt, meghívná a \textit{"lock"} vagy \textit{"try\_lock"} valamelyikét \cite{mutex}.
 \end{itemize}
-
-\Section{Memória statisztika vezetése}
-Annak érdekében, hogy a rendszer kielégíthesse a memóriafoglalási követelményeket illetve, hogy mérési adatokkal szolgálhasson a futtatási tesztek során, memória statisztikát szükséges vezetnie.
-
-A nyílvántartó alrendszer által foglalt memória a következõ értékekbõl tevõdik össze:
-\begin{itemize}
-\item A nyílvántartó alrendszer \textbf{objektum} által közvetlenül foglalt memória mérete. Ebbe beletartozik minden adattag, számláló és a használt referenciák méretei is. Függ attól, hogy hány különbözõ objektumról van nyílvántartás, hiszen a hasítótáblába belekerül az objektum egyedi azonosítója, illetve a referenciák is foglalnak egy bizonyos méretû memóriát.
-\item A létrehozott tartalom objektumok mérete. Ide tartozik minden adattag, amit a korábbi fejezetekben bevezettünk az adatstruktúrába: az egyedi azonosító, a fájl elérési útvonala és a 160 bites szignatúra. Valamint további, itt nem említett adattagok. Ez a méret nem kifejezetten változékony, egy fájl elérési útvonalára jellemzõen operációs rendszeri limit van, az egyedi azonosítóról feltételeztük, hogy ember által olvasható, tehát a hossza kényelmi okokból, \textit{"szubjektívan limitált"}. A szignatúra hossza pedig minden esetben állandó.
-\item A létrehozott tartalom objektumok által tárolt, valós digitális-tartalom mérete. A programtól független adat méretek, például különbözõ felbontású textúrák esetén, széles intervallumon változhat a szükséges memória. Ide tartozik a három-dimenziós geometriai alakzatok csúcspont leíró adatai, koordináták, normál-vektorok értékei is.
-\end{itemize}
-
-Ezeket az adatokat külön-külön, és összesítve is tudnia kell szolgáltatni a rendszernek, annak érdekében, hogy pontos képet kapjunk az alkalmazás memória aktivitásáról, illetve az alkalmazott algoritmusok memória hatékonyságáról.

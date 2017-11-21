@@ -337,13 +337,18 @@ private:
 
 private:
 	component_dependency( m_type_manager, i_asset_type_manager );
+	component_dependency( m_windowing, i_windowing_library );
 	component_attribute( m_lighting_enabled, bool, true );
 	component_attribute( m_use_visibility_check, bool, true );
 	component_attribute( m_octree_root_size, float, std::numeric_limits<float>::max() );
+	component_attribute( m_stat_update_interval, double, 1.0 );
 	context_guard_ptr m_guard;
 	program_pool m_program_pool;
 	mesh_renderer_dispatcher m_mesh_renderer;
 	octree<meshnodevolume>* moctree { nullptr };
+
+	double mlasttimepoint { 0.0 };
+	bool mbuildoctree { false };
 
 	struct {
 		struct {
@@ -361,6 +366,7 @@ public:
 
 private:
 	virtual void initialize_component( void ) override {
+		mbuildoctree = m_use_visibility_check;
 		if( m_use_visibility_check )
 			moctree = new octree<meshnodevolume>( aabb( glm::vec3( .0f ), glm::vec3( m_octree_root_size ) ) );
 	}
@@ -404,19 +410,23 @@ private:
 				for( auto b = mrs.first; b != mrs.second; ++b ) {
 					mstatistics.lastframe.subscribedmeshnodecount++;
 
-					mesh_renderer_node* cmeshnode = static_cast< mesh_renderer_node* >( b->second );
-					assert( cmeshnode );
-					asset::mesh_ptr cmesh = cmeshnode->get_mesh();
-					if( cmesh ) {
-						meshnodevolume cvolume( cmesh, cmeshnode );
-						// see if this volume is in the tree
-						poctree_node<meshnodevolume> containernode = moctree->search( cvolume );
-						if( !containernode ) {
-							// if it is not, add it
-							moctree->addvolume( cvolume );
+					if( mbuildoctree ) {
+						mesh_renderer_node* cmeshnode = static_cast< mesh_renderer_node* >( b->second );
+						assert( cmeshnode );
+						asset::mesh_ptr cmesh = cmeshnode->get_mesh();
+						if( cmesh ) {
+							meshnodevolume cvolume( cmesh, cmeshnode );
+							// see if this volume is in the tree
+							poctree_node<meshnodevolume> containernode = moctree->search( cvolume );
+							if( !containernode ) {
+								// if it is not, add it
+								moctree->addvolume( cvolume );
+							}
 						}
 					}
 				}
+
+				mbuildoctree = false;
 
 				// iterate over cameras
 				// generate camera volumes
@@ -446,6 +456,8 @@ private:
 						for( auto cvisiblenode = visiblenodes.begin(); cvisiblenode != visiblenodes.end(); ++cvisiblenode ) {
 							// TODO this will yield incorrect stats with multiple cameras
 							mstatistics.lastframe.drawnmeshnodecount++;
+							mstatistics.lastframe.indicecount += cvisiblenode->node()->get_mesh()->index_count();
+							mstatistics.lastframe.verticecount += cvisiblenode->node()->get_mesh()->vertex_count();
 							m_mesh_renderer.dispatch( cvisiblenode->node(), singlecam );
 						}
 					}
@@ -455,7 +467,10 @@ private:
 				for( auto b = mrs.first; b != mrs.second; ++b ) {
 					mstatistics.lastframe.subscribedmeshnodecount++;
 					mstatistics.lastframe.drawnmeshnodecount++;
-					m_mesh_renderer.dispatch( static_cast< mesh_renderer_node* >( b->second ), cameranoderange );
+					mesh_renderer_node* mrendernode = static_cast< mesh_renderer_node* >( b->second );
+					mstatistics.lastframe.indicecount += mrendernode->get_mesh()->index_count();
+					mstatistics.lastframe.verticecount += mrendernode->get_mesh()->vertex_count();
+					m_mesh_renderer.dispatch( mrendernode, cameranoderange );
 				}
 			}
 		}
@@ -466,11 +481,24 @@ private:
 	}
 
 	virtual void begin_frame() {
-		memset( &mstatistics, 0, sizeof( mstatistics ) );
+		mstatistics.lastframe.discardedmeshnodecount =
+			mstatistics.lastframe.drawnmeshnodecount =
+			mstatistics.lastframe.indicecount =
+			mstatistics.lastframe.subscribedmeshnodecount =
+			mstatistics.lastframe.verticecount = 0;
 	}
 
 	virtual void end_frame() {
 		mstatistics.lastframe.discardedmeshnodecount = mstatistics.lastframe.subscribedmeshnodecount - mstatistics.lastframe.drawnmeshnodecount;
+
+		double ctimepoint = engine_time::elapsed_seconds();
+		if( m_windowing && ctimepoint - mlasttimepoint > m_stat_update_interval ) {
+			mlasttimepoint = ctimepoint;
+			i_render_window* window = m_windowing->get_render_window();
+			std::wstringstream ws;
+			ws << L"MeshNodes: " << mstatistics.lastframe.subscribedmeshnodecount << L" Discarded: " << mstatistics.lastframe.discardedmeshnodecount << L" Vertices: " << mstatistics.lastframe.verticecount << L" Indices: " << mstatistics.lastframe.indicecount;
+			m_windowing->get_render_window()->set_caption( ws.str() );
+		}
 
 	//	sinfo << "subscribed renderers: " << mstatistics.lastframe.subscribedmeshnodecount << " drawn renderers: " << mstatistics.lastframe.drawnmeshnodecount;
 	}

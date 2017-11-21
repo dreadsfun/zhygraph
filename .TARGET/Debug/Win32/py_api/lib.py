@@ -33,6 +33,8 @@ capi.transform_transform_position.restype = prvec3
 capi.transform_transform_direction.restype = prvec3
 capi.transform_get_up.restype = prvec3
 
+capi.transform_translate.argtypes = [c_longlong, prvec3, c_int]
+
 # scene_node class' restypes
 capi.scene_node_get_class_string.restype = c_char_p
 capi.scene_node_find.restype = c_longlong

@@ -99,13 +99,14 @@ public:
 
 		glm::mat4 _calculate_local_transform( void ) {
 			glm::mat4 trans;
-			trans[ 3 ] = glm::vec4( m_position, 1.0f );
+			trans = glm::translate( trans, m_position );
 			glm::mat4 rot( m_rotation );
 			glm::mat4 sc;
 			sc[ 0 ][ 0 ] = m_scale.x;
 			sc[ 1 ][ 1 ] = m_scale.y;
 			sc[ 2 ][ 2 ] = m_scale.z;
-			return trans * rot * sc;
+			//return trans * rot * sc;
+			return sc * rot * trans;
 		}
 
 	public:
@@ -233,13 +234,11 @@ public:
 		}
 
 		void translate( const glm::vec3& dir, space s ) {
-			glm::vec4 tp( dir, 1.0f );
 			if( s == space::self ) {
-				tp = glm::vec4( this->transform_direction( dir ), 1.0f );
+				m_position += dir;
+			} else {
+				m_position += this->transform_direction( dir );
 			}
-			glm::mat4 trans;
-			trans[ 3 ] = tp;
-			m_position = glm::vec3( trans * glm::vec4( m_position, 1.0f ) );
 			_set_dirty();
 		}
 

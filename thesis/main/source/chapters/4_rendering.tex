@@ -56,7 +56,33 @@ Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúc
 
 Egy bonyolultabb objektum (\myref{fig:factory}) - mely 123550 csúccsal és 237252 oldallal rendelkezik - helyigénye a következõképpen alakul: $123550*448+237252*96=$ bit, ami $78126592/8=9765824$ bájt azaz $9765,8$ kilobájt.
 
-Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut. 
+Az \textit{ogl\_graphics/ogl\_asset} útvonalon található az \textit{ogl\_mesh} osztály megvalósítása, aminek felelõssége a tárgyalt adatok tárolása:
+
+\begin{cpp}
+private:
+  std::vector< glm::vec3 > m_positions;
+  std::vector< glm::vec2 > m_uvs;
+  std::vector< glm::vec3 > m_normals;
+  std::vector< glm::vec3 > m_tangents;
+  std::vector< glm::vec3 > m_bitangents;
+  std::vector< std::vector< GLuint > > m_indices;
+  std::vector< GLenum > m_topologies;
+...
+\end{cpp}
+
+Az \textit{std::vector} standard C++ típus jellemzõje, hogy a tárolt objektumokat folytonos memóriaterületen helyezi el. Ez fontos tulajdonság az OpenGL szempontjából, hiszen a grafikus memóriába történõ feltöltés csak folytonos memóriaterületrõl lehetséges. 
+
+A számolásokat háromszög alakú oldalakat feltételezve végeztük el, annak érdekében azonban, hogy megtudjunk jeleníteni más formában tárolt geometriai objektumokat, vagy objektum-részeket, tároljuk az egyes geometria részekhez tartozó topológiákat is. Ezek lehetnek pontok, vonalak, háromszögek vagy egyéb sokszögek.
+
+Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut.
+
+Például a megvalósított textúra objektum esetén (ogl\_graphics/ogl\_asset texture osztály), a textúra adat videómemóriába történõ feltöltése a következõképpen történik:
+
+\begin{cpp}
+glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &m_data[ 0 ] );
+\end{cpp}
+
+A \textit{GL\_RGBA} érték határozza meg, elsõ esetben a feltöltendõ adat formátumát, második esetben pedig a feltöltés utáni "belsõ" formátumot. Ennél a lépésnél a \textit{m\_data} változó már tartalmazza a dekódolt, kitömörített textúra adatát.
 
 A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 texel méretû, négyzet alakú textúrát. Ilyen jellegû textúra gyakori lehet ismétlõdõ textúrázásnál, falak vagy természetes talajok megjelenítése esetén (\myref{fig:landscape} ábra). Ekkor a textúra mérete egyértelmûen adódik: A texelek száma $512^2=262144$, a tároláshoz szükséges méret pedig $1048,5$ kilobájt.
 
@@ -89,6 +115,16 @@ Csoportosíthatunk továbbá a dinamika szempontjából:
 \item Dinamikusnak nevezzük az oktális fát, ha az abban tárolt objektumok fizikai paraméterei megváltozhatnak, és ezzel a fa belsõ struktúrája is módosításra kerülhet. Hátránya, hogy szükséges a program szintjén kezelni ezeket az eseteket, ami akkor is okozhat teljesítménybeli különbséget a statikus fával szemben, ha a fa struktúrája végül soha nem változik meg. Elõnye természetesen, hogy a benne tárolt objektumok fizikai paraméterei tetszõlegesen változtathatóak.
 \end{itemize}
 
+A megvalósított oktális fa (\textit{core/octree}) egy tér alapú, dinamikus fa, amelynek a gyökér eleméhez egy véges, kocka alakú térrészt rendelünk. A felosztás során a térrész középpontját tekintjük a gyermek térrészek közös pontjának, így nyolc egyenlõ, szintén kocka alakú térrészt kapunk. A további felosztások pedig rekurzívan történnek a gyermek elemekre.
+
+Az implementáció fõ struktúrája az \textit{octree\_node} osztály-sablon, aminek típus paramétere egy \textit{tértípus}. Azért elõnyös ez az absztrakció, mert tetszõleges struktúrában, tetszõleges módon definiált objektumokkal válik használhatóvá az oktális fa. Ennek a típusnak a következõ funkciókat kell megvalósítania:
+
+\begin{itemize}
+\item \textit{containedin(box)} igazzal tér vissza ha a tértípus adott példányát magába foglalja a megadott térrész, hamisat egyébként. A fába történõ beillesztéshez szükséges, hiszen az eljárás során azt vizsgáljuk, hogy a fának melyik az a legkisebb csúcsa, ami magába foglalja a térrészt.
+\item \textit{equals(volume)} paraméterül kap egy másik tértípus példányt, és igazzal kell visszatérnie ha azzal megegyezik, hamissal egyébként. A fában történõ kereséshez szükséges, hiszen valamilyen módon el kell tudnunk dönteni, hogy a keresett példányt találtuk meg a fában vagy nem.
+\item \textit{changed} igazzal tér vissza, ha megváltozott a példány valamely fizikai paramétere. A fa dinamikus funkciójához szükséges, azokat a példányok, melyek azt jelzik, hogy változás történt a helyzetükben, esetlegesen újra el kell helyezni a fában.
+\end{itemize}
+
 \subsubsection{Beillesztés oktális fába}
 
 Tekintsünk egy statikus oktális fát, tér alapú, kocka felosztással. Adott tehát egy $R_0$ \textit{tengelyekhez igazított} kocka (a kocka élei párhuzamosak illetve merõlegesek az $x,y,z$ tengelyekre) és annak geometriai középpontja $O_0$, ezek fogják jelenteni a fa gyökér elemét. Adott továbbá egy $W_0$ tetszõleges térbeli alakzat $V={v_0,v_1,\ldots,v_n}$ csúccsal és $F={V^{n_0}_0, V^{n_1}_1,\ldots,V^{n_y}_f}$ oldallal, úgy, hogy $N={n_0,n_1,\ldots,n_y}$ a különbözõ számú csúccsal rendelkezõ oldalak csúcsszáma, a $V^{n_i}_j$ pedig az alakzat $j$-edik oldala, $n_i$ csúccsal.
@@ -101,6 +137,53 @@ A beillesztés rekurzív algoritmusa a következõ:
 \end{enumerate}
 
 Az így kialakított algoritmus eredménye az lesz, hogy a megadott $W_0$ alakzatot azon facsúcs fogja tárolni, amely térrésze magába foglalja az alakzatot, és kiterjedése a legkisebb, azon térrészek közül, amelyek szintén magukba foglalják az alakzatot.
+
+Az algoritmus implementációja látható a \textit{octree\_node} osztály, \textit{addvolume} függvényben. Az implementáció egy érdekessége, hogy a beillesztés kezdetekor nem biztos, hogy létezik az a facsúcs, amibe be fogjuk illeszteni a megadott elemet. Az elsõ lépésben végigiterálunk a kezdõcsúcs gyermekein:
+
+\begin{cpp}
+...
+bool initch = false;
+for (uint8_t i = 0; i < 8; ++i) {
+  if (mchildren[i] == nullptr) {
+    initch = true;
+  } else if (mchildren[i]->addvolume(vol)) {				
+    return true;
+  }
+}
+...
+\end{cpp}
+
+Azt vizsgáljuk, hogy van-e olyan gyermeke az adott csúcsnak, ami még nem lett létrehozva (\textit{nullptr} az értéke a gyermekre mutató változónak), és ha van ilyen, beállítunk egy jelzõ értéket (\textit{initch}). Eközben a már létrehozott gyermekekre megpróbáljuk a beillesztést, hiszen ha valamelyikük magába foglalja a megadott térrészt, akkor nem szükséges új gyermek csúcsokat inicializálni.
+
+Ha egyik gyermek sem tudta befogadni a térrészt, akkor azt vizsgáljuk meg, hogy a még nem létrehozottak közül van-e olyan, ami \textbf{betudná-e}, ha létre \textbf{lenne} hozva. Ezt úgy tesszük, hogy létrehozzuk azokat a struktúrákat amik leírnák az aktuálisan vizsgált gyermek térrészét, ha az létre lenne hozva, és megnézzük, hogy abba bele tudna-e kerülni a megadott elem:
+
+\begin{cpp}
+...
+aabb tmpbox;
+for (uint8_t i = 0; i < 8; ++i) {
+  if( mchildren[ i ] ) continue;
+
+  std::bitset<3> bidx(i);
+  vec3 tmpmid = {
+    (bidx.test(0) ? 1 : -1) * mbox.size().x / 2,
+    (bidx.test(2) ? -1 : 1) * mbox.size().y / 2,
+    (bidx.test(1) ? -1 : +1) * mbox.size().z / 2
+  };
+
+  tmpbox.mid(tmpmid);
+  glm::vec3 tmpsize( mbox.size().x / 2, mbox.size().y / 2, mbox.size().z / 2 );
+  tmpbox.size( tmpsize );
+  
+  if (vol.containedin(tmpbox)) {
+    poctree_node<volume_t> nn = new octree_node(tmpbox, mmaxvolume);
+    mchildren[i] = nn;
+    return nn->addvolume(vol);
+  }
+}
+...
+\end{cpp}
+
+A \textit{tmpbox} tárolja azt a térrészt, ami az adott gyermekhez tartozna. Ha ez az ideiglenesen létrehozott struktúra megfelelõnek bizonyul, akkor valóban létrehozásra kerül a gyermek ezzel a térrésszel, és ott folytatódik a rekurzív beillesztés.
 
 Az algoritmus szempontjából némi rugalmasságot jelent, hogy a fa bármely csúcsánál elkezdõdhet a rekurzió. Például ha valamilyen speciális esetben, további információk állnak rendelkezésünkre azt illetõen, hogy a beilleszteni kívánt objektum mely térrészekben helyezkedik el, akkor elegendõ lehet valamely közvetett vagy közvetlen gyermektõl kezdeni az algoritmust, a gyökér elem helyett.
 
@@ -118,6 +201,8 @@ A frissítés algoritmusa a következõ:
 \item Ha nem, akkor eltávolítjuk a csúcs listájáról az objektumot, és meghívjuk a hagyományos beillesztési eljárást rá, annak érdekében, hogy újra a megfelelõ csúcs listájára kerüljön. Láthattuk, hogy a beillesztési eljárás lehetõvé teszi, hogy a bejárást tetszõleges csúcsnál kezdeményezzük. Ebben az esetben különösen hasznosnak bizonyulhat ez a lehetõség, hiszen egy valós esetben az objektumok elmozdulása igen gyakori lehet, ami gyakori újraillesztést eredményezhet. Ehhez azonban szükség van valamilyen, az alkalmazási területre specifikus információra (például ha tudjuk elõre, hogy csak nagyon kis mértékben változik mindig az objektumok helyzete, akkor kezdhetjük az újraillesztést az eredeti csúcs szülõ csúcsánál).
 \item\label{laststep} Ezt a lépést egyszerûen az eljárás meghívása jelenti, rekurzívan az adott csúcs, gyermek csúcsaira, ezzel biztosítva, hogy a teljes fa (\textit{alfa}) frissítésre kerül.
 \end{enumerate}
+
+Az algoritmust megvalósítja az \textit{octree\_node} osztály \textit{update} funkciója. Az újraillesztés kezdõcsúcsa megadható paraméterben a funkciónak (\textit{treatasroot}). Egyébiránt a megvalósítás teljes mértékben követi az általános leírást.
 
 \subsection{Láthatósági lekérdezés oktális fával}
 \label{section:visibilityquery}
@@ -183,6 +268,31 @@ Perspektivikus projekció esetén a vetítés összetartó egyenesekkel történik. Az e
 \end{bmatrix}
 \]
 
+A kamera struktúrákat az úgynevezett \textit{camera\_node} valósítja meg, ami az \textit{ogl\_graphics/ogl\_scene\_node} útvonalon található meg. A tárgyalt paraméterek komponens attribútumokként jelennek meg az osztályban:
+
+\begin{cpp}
+component_attribute( m_projection_mode, std::string );
+...
+component_attribute( m_bottom, float );
+component_attribute( m_top, float );
+component_attribute( m_near_clip, float );
+component_attribute( m_far_clip, float );
+...
+\end{cpp}
+
+A két különbözõ típusú (ortogonális és perspektivikus) struktúrának nincs külön osztálya, a \textit{projection\_mode} paraméter dönti el, hogy hogyan kerül kiszámításra a projekciós transzformáció mátrixa:
+
+\begin{cpp}
+if( m_projection_mode.get_value() == "perspective" ) {
+  m_projection_matrix = glm::perspective< float >( 
+    m_field_of_view, m_aspect_ratio, m_near_clip, m_far_clip );
+...
+} else {
+  m_projection_matrix = glm::ortho< float >( 
+    m_left, m_right, m_bottom, m_top, m_near_clip, m_far_clip );
+}
+\end{cpp}
+
 \subsubsection{A nézõpont struktúrák elhelyezése az oktális fában}
 Láthattuk tehát a korábbi részekben, hogy hogyan tárolhatunk objektumokat egy oktális fában valamint, hogy milyen struktúrákkal reprezentáljuk a virtuális teret figyelõ objektumot. A következõkben azt vizsgáljuk meg, hogy hogyan alkalmazható a két adatstruktúra együttesen, a láthatósági vizsgálat megvalósítására.
 
@@ -231,11 +341,27 @@ H &= (x_{max},y_{min},z_{max})
  
  Az így definiált téglatest \textit{"magába foglalja"} a közelíteni kívánt alakzatot. A közelítés segítségével megtehetjük azt az optimalizációs lépést, hogy az alakzat minden csúcsa helyett, csak a téglatest négy csúcsát vizsgáljuk. Természetesen a láthatósági vizsgálat pontossága így degradálódik, azonban a legjobb esetben a "láthatatlanságot" megállapíthatjuk már a négy pont ellenõrzésével is.
  
- A közelítõ téglatesttel elértük, hogy némely esetekben már csak néhány mûvelet szükséges a láthatóság kizárásához. A végsõ lépés a láthatósági vizsgálat optimalizációjában, az oktális fa használata.
+ Ezen struktúra kiszámítását láthatjuk a geometria tartalom objektumok betöltése során is. Az \textit{ogl\_graphics/ogl\_asset} útvonalon, a \textit{mesh::load} funkció a geometriai alakzatban definiált pontokat tölti be a már látott tároló változókba, miközben számontartja, hogy melyik a "legkisebb" illetve a "legnagyobb" a pontok között.
  
- Tudjuk a korábban leírtak alapján, hogy a kamera struktúrákat egy-egy véges, zárt geometriai alakzat reprezentálja. Ennek elõnye, hogy bármely más kiterjedt alakzathoz hasonlóan, ezeket is elhelyezhetjük az oktális fában. Jelen esetben azonban nem a kamera tárolása lesz a cél, hanem azon legkisebb térrész meghatározása, amely tartalmazza a kamera alakzat minden pontját. Az oktális fa szokásos mûködése alapján, bejárjuk a fa csúcsait, és mindaddig haladunk rekurzívan a csúcsokhoz tartozó térrészeken, amíg meg nem találjuk azt a csúcsot, amelyhez tartozó térrész megfelel a feltételnek.
+ A közelítõ téglatesttel elértük, hogy némely esetben csupán néhány mûvelet szükséges a láthatóság kizárásához. A végsõ lépés a láthatósági vizsgálat optimalizációjában, az oktális fa használata.
  
- Ismerve az oktális fa szerkezetét, ez azt jelenti, hogy a látható objektumok kizárólag ebben a térrészben találhatóak. A további láthatósági vizsgálatok tehát, kizárólag azon objektumokat érintik, amik a megtalált csúcshoz, vagy annak valamely gyermekéhez tartozó térrészben tartózkodnak, ezzel jelentõsen csökkentve az ellenõrzõ mûveletek számát.
+ Tudjuk a korábban leírtak alapján, hogy a kamera struktúrákat egy-egy véges, zárt geometriai alakzat reprezentálja. Ennek elõnye, hogy bármely más kiterjedt alakzathoz hasonlóan, ezeket is elhelyezhetjük az oktális fában. Jelen esetben azonban nem a kamera tárolása lesz a cél, hanem azon legkisebb térrész meghatározása, amely tartalmazza a kamera alakzat minden pontját.
+ 
+ Ehhez elõször meg kell határoznunk a kamera struktúra pontjait, a kamera paraméterei alapján. A már említett \textit{camera\_node::\_update\_to\_projection\_mode} funkcióban történik a kamera alappontjainak kiszámítása is. Legyen $F_y$ a nézõpont horizontális nyílásszöge, $W_{near}, W_{far}, H_{near}, H_{far}$ rendre a közeli illetve távoli vágósík szélessége illetve magassága, valamint $R$ a vágósíkok oldalaránya. Ekkor teljesülnek a következõ összefüggések:
+ 
+ \begin{alignat*}{4}
+ &t := 2 * tan( F_y / 2)\\\\
+ &W_{near} = t * D_{near}\\
+ &W_{far} = t * D_{far}\\
+ &H_{near} = W_{near} * R\\
+ &H_{far} = W_{far} * R
+ \end{alignat*}
+ 
+ Ezek alapján a struktúra pontjainak koordinátái egyértelmûen adódnak, ha a fókusz pontot tekintjük az origónak. Az utolsó lépés az oktális fával történõ "egyeztetés" elõtt, hogy transzformáljuk a pontokat a kamera aktuális helyzetének megfelelõen.
+ 
+ Végül az oktális fa szokásos mûködése alapján, bejárjuk a fa csúcsait, és mindaddig haladunk rekurzívan a csúcsokhoz tartozó térrészeken, amíg meg nem találjuk azt a csúcsot, amely tartalmazza a meghatározott pontok mindegyikét és a lehetõ legkisebb az alfában.
+ 
+ A bejárás végeztével, ismerve az oktális fa szerkezetét megállapíthatjuk, hogy a látható objektumok mindegyike ebben a térrészben található. A további láthatósági vizsgálatok tehát, kizárólag azon objektumokat érintik, amik a megtalált csúcshoz, vagy annak valamely gyermekéhez tartozó térrészben tartózkodnak, ezzel jelentõsen csökkentve az ellenõrzõ mûveletek számát.
  
 \SubSection{GPU pufferek használata}
 
@@ -246,6 +372,18 @@ Az OpenGL korai verziói kizárólag az úgy nevezett \textit{"immediate"}, azaz köz
 A késõbbiekben bevezetésre kerültek a, már hatékonyabbnak bizonyuló, automatizált \textit{"fetch-stage"}-ek. Ez lehetõvé tette, hogy a szükséges adatok már nem "egyesével" kerültek a grafikus vezérlõhöz, hanem egy jól meghatározott fázisban, elõre definiált struktúrával. Ez azonban továbbra sem csökkentette a folyamatos másoláshoz szükséges erõforrás igényeket.
 
 A következõ lépés a teljes mértékben grafikus memóriához dedikált puffer objektumok bevezetése volt. Az OpenGL környezetben ilyen objektumok létrehozhatóak a \textit{glGenBuffers} hívással. A GPU pufferek használatának egy hátránya lehet, hogy a feltöltött adat késõbbi változtatása kevésbé intuitiív, mint ha a program memóriájában kezelnék azt. Ezt azonban jelentõsen kompenzálja a használatból eredõ teljesítmény növekedés. A pufferek használata lehetõvé teszi, hogy egyszer legyen szükséges az adatok struktúrájának definiálása és azok GPU memóriába való feltöltése. A továbbiakban pedig a rajzolási mûveletek közvetlenül a puffer adataiból fognak dolgozni.
+
+A már látott, geometriai adatokat tároló struktúrákból, a videómemóriába kerülnek a ponthalmazok, a \textit{mesh::post\_load} funkcióban. A \textit{post\_load} funkció kifejezetten arra a célra lett kialakítva a tartalom osztályok interfészében, hogy a sikeres, fájlból történõ betöltés után lehetõség legyen az adatok további kezelésére.
+
+\begin{cpp}
+...
+glGenBuffers( 1, &m_buffer_names.position );
+glBindBuffer( GL_ARRAY_BUFFER, m_buffer_names.position );
+glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * 3 * m_positions.size(), &m_positions[ 0 ], GL_STATIC_DRAW );
+...
+\end{cpp} 
+
+Az "utó-töltés" során generálásra kerülnek a videómemóriához rendelt puffer objektumok (\textit{glGenBuffers}), majd minden egyes adattár (pozíció adatok, normál vektor adatok stb.) feltöltésre kerül a \textit{glBufferData} hívás segítségével.
 
 \SubSection{Állapot átmenet optimalizáció OpenGL-ben}
 

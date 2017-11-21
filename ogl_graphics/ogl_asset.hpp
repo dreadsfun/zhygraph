@@ -60,6 +60,9 @@ private:
 
 	aabb mboundingvolume;
 
+	size_t mindexcount { 0 };
+	size_t mvertexcount { 0 };
+
 public:
 	mesh( const asset_url& url );
 	size_t get_submesh_count( void ) const;
@@ -68,6 +71,8 @@ public:
 	virtual void post_load( void ) override;
 	virtual bool unload( std::string& err ) override;
 	const aabb& boundingvolume() const;
+	size_t index_count() const;
+	size_t vertex_count() const;
 
 private:
 	void _create_vaos( void );

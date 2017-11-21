@@ -2,7 +2,9 @@ from py_api.cppapi_object import cppapi_object
 from py_api.vector import vec2, vec3, vec4
 from py_api.vector_proxy import prvec3
 from py_api.lib import capi
+from py_api.logger import debug
 from enum import Enum
+from ctypes import c_int
 
 class coordinate_space(Enum):
     world = 0
@@ -82,13 +84,13 @@ class transform(cppapi_object):
         return capi.transform_has_changed(self._handle)
 
     def translate(self, dirc, space = coordinate_space.world):
-        capi.transform_translate( self._handle, prvec3(dirc), space.value)
+        capi.transform_translate(self._handle, prvec3(dirc), space.value)
 
     def rotate_around(self, cent, axis, angle, look = False):
         capi.transform_rotate_around(self._handle, prvec3(cent),
                                     prvec3(axis), angle, look)
 
-    def rotate(self, eul, space):
+    def rotate(self, eul, space = coordinate_space.world):
         capi.transform_rotate(self._handle, prvec3(eul), space.value)
 
     def look_at(self, at, up):
