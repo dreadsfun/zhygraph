@@ -3,7 +3,7 @@
 		<node name="camera" class="camera_node">
 			<attribute name="projection_mode" value="perspective"/>
 			<attribute name="aspect_ratio" value="1.33333"/>
-			<attribute name="field_of_view" value="0.33333"/>
+			<attribute name="field_of_view" value="0.93333"/>
 			<attribute name="near_clip" value="0.1"/>
 			<attribute name="far_clip" value="500"/>
 		</node>

@@ -42,7 +42,7 @@ public:
 
 	void notify_ready( void ) {
 		{
-			std::lock_guard< std::mutex > lck( m_wait );
+			//std::lock_guard< std::mutex > lck( m_wait );
 			m_job_ready.exchange( true );
 		}
 		m_cv.notify_all();
@@ -125,7 +125,7 @@ public:
 			}
 			);
 		}
-		m_cv.notify_one();
+		m_cv.notify_all();
 		return jh;
 	}
 
@@ -141,7 +141,7 @@ public:
 			}
 			);
 		}
-		m_cv.notify_one();
+		m_cv.notify_all();
 		return jh;
 	}
 

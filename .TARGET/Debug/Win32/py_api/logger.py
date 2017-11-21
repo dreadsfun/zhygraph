@@ -1,14 +1,13 @@
-from lib import *
+from py_api.lib import capi
 
-class log:
-    def debug(msg):
-        lib.log_debug(msg.encode())
+def debug(msg):
+   capi.log_debug(msg.encode())
 
-    def info(msg):
-        lib.log_info(msg.encode())
+def info(msg):
+   capi.log_info(msg.encode())
 
-    def warn(msg):
-        lib.log_warn(msg.encode())
+def warn(msg):
+   capi.log_warn(msg.encode())
 
-    def error(msg):
-        lib.log_error(msg.encode())
+def error(msg):
+   capi.log_error(msg.encode())

@@ -30,6 +30,8 @@ public:
 
 		//PyObject* libmodule = PyImport_ImportModule( "py_api.lib" );
 		
+	//	PyImport_AddModule( "__import__" );
+
 		return true;
 	}
 

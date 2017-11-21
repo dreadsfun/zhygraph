@@ -110,6 +110,7 @@ bool mesh::load( const std::string & data, std::string & err ) {
 		aiProcess_CalcTangentSpace
 		| aiProcess_Triangulate
 		| aiProcess_SortByPType
+		| aiProcess_FixInfacingNormals
 	);
 
 	if( sc == nullptr ) {

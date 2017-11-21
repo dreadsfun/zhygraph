@@ -1,5 +1,5 @@
 from ctypes import *
-from vector import *
+from py_api.vector import *
 
 class prvec2(Structure):
     _fields_ = [('x', c_float),

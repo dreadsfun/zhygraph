@@ -17,6 +17,8 @@ public:
 	void callupdatescript(std::string& error);
 	void callinitscript(std::string& error);
 
+	static void printstacktrace(std::string& trace);
+
 private:
 	virtual bool load( const std::string& data, std::string& err ) override;
 	virtual bool unload( std::string& err ) override;

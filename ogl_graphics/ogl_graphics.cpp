@@ -374,6 +374,7 @@ private:
 			error( "failed to initialize mesh renderer subsystem" );
 			r = false;
 		}
+		glEnable( GL_DEPTH_TEST );
 		return r;
 	}
 
