@@ -5,7 +5,7 @@ Az alábbiakban a grafikus alrendszer néhány jellemzõje, a számítógépi grafika te
 \Section{Számítógépi grafika erõforrás igényei}
 A számítógépi grafika egy komplex területe az információs technológiáknak. Az alábbiakban láthatjuk részletezve, hogy milyen elvárásokkal néz szembe egy alkalmazás, ami három-dimenziós alakzatokat jelenít meg \textbf{valós} idõben.
 \SubSection{Számítási igény}
-Ismert, hogy annak érdekében, hogy az ember mozgóképnek érzékeljen, folyamatos sorban prezentált képeket, legalább 6 különbözõ képnek kell megjelennie másodpercenként. Ahhoz pedig, hogy a mozgóképet úgy érzékeljük, mintha az nem is képek sorozata lenne, hanem egy valójában egybefüggõ animáció, másodpercenként legalább 24 kép megjelenítésére van szükség. Általában ez a legalsó korlátja azoknak az alkalmazásoknak, melyek valósidejû grafikai szimulációkat futtatnak, de sok esetben ennél jóval több 30, vagy akár 60 is lehet a szükséges képek száma másodpercenként. Ennek oka, hogy a grafikai alkalmazások feladata jellemzõen nem kizárólag a képek megjelenítése. Esetünkben is szeretnénk ha az alkalmazás \textit{interaktív} lenne, tehát szkripteket futtatna, és azok által felhasználói beavatkozást tenne lehetõvé különbözõ bemeneti eszközökön keresztül. Ezen kívül még rengeteg feladata lehet egy ilyen alkalmazásnak, mint például a fizikai szimulációkhoz kapcsolódó számolások elvégzése, vagy a hang effektek létrehozása.
+Ismert, hogy annak érdekében, hogy az ember mozgóképnek érzékeljen folyamatos sorban prezentált képeket, legalább 6 különbözõ képnek kell megjelennie másodpercenként. Ahhoz pedig, hogy a mozgóképet úgy érzékeljük, mintha az nem képek sorozata lenne, hanem egy valójában egybefüggõ animáció, másodpercenként legalább 24 kép megjelenítésére van szükség. Általában ez a legalsó korlátja azoknak az alkalmazásoknak, melyek valósidejû grafikai szimulációkat futtatnak, de sok esetben ennél jóval több 30, vagy akár 60 is lehet a szükséges képek száma másodpercenként. Ennek oka, hogy a grafikai alkalmazások feladata jellemzõen nem kizárólag a képek megjelenítése. Esetünkben is szeretnénk ha az alkalmazás \textit{interaktív} lenne, tehát szkripteket futtatna, és azok által felhasználói beavatkozást tenne lehetõvé különbözõ bemeneti eszközökön keresztül. Ezen kívül még rengeteg feladata lehet egy ilyen alkalmazásnak, mint például a fizikai szimulációkhoz kapcsolódó számolások elvégzése, vagy a hang effektek létrehozása.
 
 Láthatjuk tehát, hogy annak érdekében, hogy az alkalmazásunk megfelelõ vizuális és \textit{reszponzivitási} élményt nyújtson, nem kezelhetjük könnyelmûen az egy konkrét kép létrehozására allokált idõt és egyéb erõforrásokat. Ha azt szeretnénk, hogy legalább 30 legyen a másodpercenként prezentált képek száma, egy alkalmazás iteráció (a rajzfelület törlésétõl az új kép megjelenítéséig eltelt idõ) nem tarthat tovább, mint $\frac{1}{30}$ másodperc.
 
@@ -43,13 +43,6 @@ Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatéko
 
 Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
 
-\begin{figure}[ht]
-\centering
-\epsfig{file=chapters/content/factory.eps, width=3.5cm, height=7cm}
-\caption{Geometria 123550 csúccsal és 237252 oldallal}
-\label{fig:factory}
-\end{figure}
-
 Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
 
 Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507*448+968*96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
@@ -74,15 +67,23 @@ Az \textit{std::vector} standard C++ típus jellemzõje, hogy a tárolt objektumoka
 
 A számolásokat háromszög alakú oldalakat feltételezve végeztük el, annak érdekében azonban, hogy megtudjunk jeleníteni más formában tárolt geometriai objektumokat, vagy objektum-részeket, tároljuk az egyes geometria részekhez tartozó topológiákat is. Ezek lehetnek pontok, vonalak, háromszögek vagy egyéb sokszögek.
 
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/factory.eps, width=3.5cm, height=7cm}
+\caption{Geometria 123550 csúccsal és 237252 oldallal}
+\label{fig:factory}
+\end{figure}
+
 Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut.
 
-Például a megvalósított textúra objektum esetén (ogl\_graphics/ogl\_asset texture osztály), a textúra adat videómemóriába történõ feltöltése a következõképpen történik:
+Például a megvalósított textúra objektum esetén (\textit{ogl\_graphics/ogl\_asset texture} osztály), a textúra adat videómemóriába történõ feltöltése a következõképpen történik:
 
 \begin{cpp}
-glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &m_data[ 0 ] );
+glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 
+  m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &m_data[ 0 ] );
 \end{cpp}
 
-A \textit{GL\_RGBA} érték határozza meg, elsõ esetben a feltöltendõ adat formátumát, második esetben pedig a feltöltés utáni "belsõ" formátumot. Ennél a lépésnél a \textit{m\_data} változó már tartalmazza a dekódolt, kitömörített textúra adatát.
+A \textit{GL\_RGBA} érték határozza meg, elsõ esetben a feltöltendõ adat formátumát, második esetben pedig a feltöltés utáni "belsõ" formátumot. Ennél a lépésnél az \textit{m\_data} változó már tartalmazza a dekódolt, kitömörített textúra adatát.
 
 A textúrák mérete rendkívül széles skálán változhat, tekintsünk most egy 512 texel méretû, négyzet alakú textúrát. Ilyen jellegû textúra gyakori lehet ismétlõdõ textúrázásnál, falak vagy természetes talajok megjelenítése esetén (\myref{fig:landscape} ábra). Ekkor a textúra mérete egyértelmûen adódik: A texelek száma $512^2=262144$, a tároláshoz szükséges méret pedig $1048,5$ kilobájt.
 
@@ -121,7 +122,7 @@ Az implementáció fõ struktúrája az \textit{octree\_node} osztály-sablon, aminek 
 
 \begin{itemize}
 \item \textit{containedin(box)} igazzal tér vissza ha a tértípus adott példányát magába foglalja a megadott térrész, hamisat egyébként. A fába történõ beillesztéshez szükséges, hiszen az eljárás során azt vizsgáljuk, hogy a fának melyik az a legkisebb csúcsa, ami magába foglalja a térrészt.
-\item \textit{equals(volume)} paraméterül kap egy másik tértípus példányt, és igazzal kell visszatérnie ha azzal megegyezik, hamissal egyébként. A fában történõ kereséshez szükséges, hiszen valamilyen módon el kell tudnunk dönteni, hogy a keresett példányt találtuk meg a fában vagy nem.
+\item \textit{equals(volume)} paramétere egy másik tértípus példány, igazzal kell visszatérnie ha azzal megegyezik, hamissal egyébként. A fában történõ kereséshez szükséges, hiszen valamilyen módon el kell tudnunk dönteni, hogy a keresett példányt találtuk-e meg a fában vagy sem.
 \item \textit{changed} igazzal tér vissza, ha megváltozott a példány valamely fizikai paramétere. A fa dinamikus funkciójához szükséges, azokat a példányok, melyek azt jelzik, hogy változás történt a helyzetükben, esetlegesen újra el kell helyezni a fában.
 \end{itemize}
 
@@ -138,7 +139,7 @@ A beillesztés rekurzív algoritmusa a következõ:
 
 Az így kialakított algoritmus eredménye az lesz, hogy a megadott $W_0$ alakzatot azon facsúcs fogja tárolni, amely térrésze magába foglalja az alakzatot, és kiterjedése a legkisebb, azon térrészek közül, amelyek szintén magukba foglalják az alakzatot.
 
-Az algoritmus implementációja látható a \textit{octree\_node} osztály, \textit{addvolume} függvényben. Az implementáció egy érdekessége, hogy a beillesztés kezdetekor nem biztos, hogy létezik az a facsúcs, amibe be fogjuk illeszteni a megadott elemet. Az elsõ lépésben végigiterálunk a kezdõcsúcs gyermekein:
+Az algoritmus implementációja látható az \textit{octree\_node} osztály, \textit{addvolume} függvényében. A megvalósítás egy érdekessége, hogy a beillesztés kezdetekor nem biztos, hogy létezik az a facsúcs, amibe be fogjuk illeszteni a megadott elemet. Az elsõ lépésben végigiterálunk a kezdõcsúcs gyermekein:
 
 \begin{cpp}
 ...
@@ -171,7 +172,10 @@ for (uint8_t i = 0; i < 8; ++i) {
   };
 
   tmpbox.mid(tmpmid);
-  glm::vec3 tmpsize( mbox.size().x / 2, mbox.size().y / 2, mbox.size().z / 2 );
+  glm::vec3 tmpsize( 
+    mbox.size().x / 2, 
+	mbox.size().y / 2,
+	mbox.size().z / 2 );
   tmpbox.size( tmpsize );
   
   if (vol.containedin(tmpbox)) {
@@ -187,7 +191,7 @@ A \textit{tmpbox} tárolja azt a térrészt, ami az adott gyermekhez tartozna. Ha e
 
 Az algoritmus szempontjából némi rugalmasságot jelent, hogy a fa bármely csúcsánál elkezdõdhet a rekurzió. Például ha valamilyen speciális esetben, további információk állnak rendelkezésünkre azt illetõen, hogy a beilleszteni kívánt objektum mely térrészekben helyezkedik el, akkor elegendõ lehet valamely közvetett vagy közvetlen gyermektõl kezdeni az algoritmust, a gyökér elem helyett.
 
-Az ilyen módon felépített struktúra hatékonyan használható különbözõ térbeli lekérdezésekhez. Ilyen lesz például a láthatósági lekérdezés, amit a \myref{section:visibilityquery} részben tárgyalunk. Fontos alkalmazási területe továbbá az oktális fának, a fizikai szimulációk során alkalmazott \textit{ütközési vizsgálatok} optimalizációja. Erre azon fontos tulajdonsága teszi alkalmassá a fát, hogy elõre ismert azon objektumok halmaza (egy facsúcs és a csúcs gyermekeinek listájában tárolt objektumok), amik között elõfordulhat ütközés, ezáltal jelentõsen csökkentve a vizsgálatok szükséges számát.
+Az ilyen módon felépített struktúra hatékonyan használható különbözõ térbeli lekérdezésekhez. Ilyen lesz például a láthatósági lekérdezés, amit a \myref{section:visibilityquery} részben tárgyalunk. Fontos alkalmazási területe továbbá az oktális fának a fizikai szimulációk során alkalmazott \textit{ütközési vizsgálatok} optimalizációja. Erre azon fontos tulajdonsága teszi alkalmassá a fát, hogy elõre ismert azon objektumok halmaza (egy facsúcs és a csúcs gyermekeinek listájában tárolt objektumok), amik között elõfordulhat ütközés, ezáltal jelentõsen csökkentve a vizsgálatok szükséges számát.
 
 \subsubsection{Dinamikus oktális fa}
 
@@ -229,8 +233,8 @@ Az ortogonális projekció egyedi paraméterei:
 
 A perspektivikus projekció egyedi paraméterei:
 \begin{itemize}
-\item A nézõpont, horizontális fél-nyílásszöge. Megadja a vágósíkok közepén, és a nézõponton átmenõ egyenes, valamint a nézõponton és a közeli (vagy távoli) vágósík, valamely függõleges oldalának közepén átmenõ egyenes által bezárt szöget. Az \myref{fig:perspective} ábrán, az $\overline{AB}$ és $\overline{AC}$ szakaszok által bezárt szög.
-\item Képernyõ méret aránya. A vetítési felület szélességének és magasságának aránya. Az \myref{fig:frustum} ábrán, a \textit{width} és \textit{height} aránya. Az ábrán a vetítési felület és a közeli vágósík egybe esik ($N=0$), de ez általában nem így van.
+\item A nézõpont, horizontális fél-nyílásszöge. Megadja a vágósíkok közepén, és a nézõponton átmenõ egyenes, valamint a nézõponton és a közeli (vagy távoli) vágósík, valamely függõleges oldalának közepén átmenõ egyenes által bezárt szöget. A \myref{fig:perspective} ábrán, az $\overline{AB}$ és $\overline{AC}$ szakaszok által bezárt szög.
+\item Képernyõ méret aránya. A vetítési felület szélességének és magasságának aránya. A \myref{fig:frustum} ábrán, a \textit{width} és \textit{height} aránya. Az ábrán a vetítési felület és a közeli vágósík egybe esik ($N=0$), de ez általában nem így van.
 \end{itemize}
 
 \begin{figure}[ht]
@@ -242,8 +246,8 @@ A perspektivikus projekció egyedi paraméterei:
 
 A két projekció típus közös paraméterei:
 \begin{itemize}
-\item Közeli vágósík távolsága. Megadja a nézõpont (ortogonális projekció esetén \textit{"nézõsík"}) és a közeli vágósík távolságát. Az \myref{fig:perspective} ábrán a \textit{z=near} távolság. Azon pontok, melyek ennél közelebb vannak a nézõponthoz (\textit{eye}), nem kerülnek megjelenítésre.
-\item Távoli vágósík távolsága. Megadja a nézõpont és a távoli vágósík távolságát. Az \myref{fig:perspective} ábrán a \textit{z} távolság. Azon pontok, melyek ennél távolabb esnek a nézõponttól, nem kerülnek megjelenítésre.
+\item Közeli vágósík távolsága. Megadja a nézõpont (ortogonális projekció esetén \textit{"nézõsík"}) és a közeli vágósík távolságát. A \myref{fig:perspective} ábrán a \textit{z=near} távolság. Azon pontok, melyek ennél közelebb vannak a nézõponthoz (\textit{eye}), nem kerülnek megjelenítésre.
+\item Távoli vágósík távolsága. Megadja a nézõpont és a távoli vágósík távolságát. A \myref{fig:perspective} ábrán a \textit{z} távolság. Azon pontok, melyek ennél távolabb esnek a nézõponttól, nem kerülnek megjelenítésre.
 \end{itemize}
 
 Ortogonális projekció esetén, a három-dimenziós térbõl, kettõ-dimenziós felületre történõ vetítés párhuzamos egyenesekkel történik. A leírt paraméterek egy "dobozt" határoznak meg, melyet úgy transzformálunk, hogy a középpontja, a kamera koordináta-rendszerének origójára essen. A transzformáció után, egység kockává skálázzuk az alakzatot, úgy, hogy a minimum pontja a $(-1,-1,-1)$ pontra, a maximum pontja pedig a $(1,1,1)$ pontra essen \cite{wiki_ortho}. A projekció ezen fajtája szögtartó, megõrzi az egyenesek párhuzamosságát, a szakaszok méretarányait valamint a területek arányát. \cite{math_ortho}. Ezen jellemzõk lehetõvé teszik, hogy pontos méréseket végezzünk a három-dimenziós tér vetületében, valamint, hogy pixel-helyesen jelenítsünk meg, például grafikus felhasználói felület elemeit (gombok, címkék). Az ortogonális projekció mátrix alakja:
@@ -268,7 +272,7 @@ Perspektivikus projekció esetén a vetítés összetartó egyenesekkel történik. Az e
 \end{bmatrix}
 \]
 
-A kamera struktúrákat az úgynevezett \textit{camera\_node} valósítja meg, ami az \textit{ogl\_graphics/ogl\_scene\_node} útvonalon található meg. A tárgyalt paraméterek komponens attribútumokként jelennek meg az osztályban:
+A tárgyalt kamera struktúrákat az úgynevezett \textit{camera\_node} valósítja meg, ami az \textit{ogl\_graphics/ogl\_scene\_node} útvonalon található meg. A tárgyalt paraméterek komponens attribútumokként jelennek meg az osztályban:
 
 \begin{cpp}
 component_attribute( m_projection_mode, std::string );
@@ -348,7 +352,6 @@ H &= (x_{max},y_{min},z_{max})
  Tudjuk a korábban leírtak alapján, hogy a kamera struktúrákat egy-egy véges, zárt geometriai alakzat reprezentálja. Ennek elõnye, hogy bármely más kiterjedt alakzathoz hasonlóan, ezeket is elhelyezhetjük az oktális fában. Jelen esetben azonban nem a kamera tárolása lesz a cél, hanem azon legkisebb térrész meghatározása, amely tartalmazza a kamera alakzat minden pontját.
  
  Ehhez elõször meg kell határoznunk a kamera struktúra pontjait, a kamera paraméterei alapján. A már említett \textit{camera\_node::\_update\_to\_projection\_mode} funkcióban történik a kamera alappontjainak kiszámítása is. Legyen $F_y$ a nézõpont horizontális nyílásszöge, $W_{near}, W_{far}, H_{near}, H_{far}$ rendre a közeli illetve távoli vágósík szélessége illetve magassága, valamint $R$ a vágósíkok oldalaránya. Ekkor teljesülnek a következõ összefüggések:
- 
  \begin{alignat*}{4}
  &t := 2 * tan( F_y / 2)\\\\
  &W_{near} = t * D_{near}\\
@@ -379,7 +382,8 @@ A már látott, geometriai adatokat tároló struktúrákból, a videómemóriába kerülne
 ...
 glGenBuffers( 1, &m_buffer_names.position );
 glBindBuffer( GL_ARRAY_BUFFER, m_buffer_names.position );
-glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * 3 * m_positions.size(), &m_positions[ 0 ], GL_STATIC_DRAW );
+glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * 3 * m_positions.size(),
+  &m_positions[ 0 ], GL_STATIC_DRAW );
 ...
 \end{cpp} 
 

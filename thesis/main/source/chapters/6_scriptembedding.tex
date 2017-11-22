@@ -6,7 +6,7 @@ Ebben a fejezetben láthatjuk, hogy milyen problémák merülhetnek fel egy konkrét 
 
 A Python egy széles körben elterjedt, magas szintû, általános célú programozási nyelv. A Python interpretált és dinamikusan tipizált környezete, azzal a céllal lett kialakítva, hogy minél olvashatóbb és minél kevesebb kóddal váljon lehetségessé kis és nagy alkalmazások készítése egyaránt. A nyelvnek automatikus memória kezelõ rendszere van és támogat különbözõ programozási paradigmákat, mint az objektum-orientált, imperatív vagy funkcionális programozás. A Python referencia implementációja a \textit{CPython} egy nyílt forráskódú szoftver \cite{python}.
 
-Mindezen tulajdonságok tökéletesen alkalmassá teszik a nyelvet, ahhoz, hogy a rigid, natív C++ környezetbe ágyazva, növeljük az alkalmazás rugalmasságát és skálázhatóságát. Az objektum-orientált paradigma támogatottsága lehetõvé teszi, hogy a C++ környezetben bevezetett stuktúrákkal ekvivalenseket hozzunk létre, ezzel jól átláthatóvá téve a funkcionális és adatkapcsolatot a nyelvek között. A nyelv interpretált jellege kiküszöböli a C++ fordítási és linkelési idejébõl származó korlátozásokat. Az automatikus memória kezelés pedig csökkenti a hibalehetõségeket és lehetõvé teszi, hogy a lehetõ legtöbb idõt fordítsunk az alkalmazáslogika kialakítására.
+Mindezen tulajdonságok tökéletesen alkalmassá teszik a nyelvet, ahhoz, hogy a rigid, natív C++ környezetbe ágyazva, növeljük az alkalmazás rugalmasságát és skálázhatóságát. Az objektum-orientált paradigma támogatottsága lehetõvé teszi, hogy a C++ környezetben bevezetett stuktúrákkal ekvivalenseket hozzunk létre, ezzel jól átláthatóvá téve a funkcionális- és az adatkapcsolatot a nyelvek között. A nyelv interpretált jellege kiküszöböli a C++ fordítási és linkelési idejébõl származó korlátozásokat. Az automatikus memória kezelés pedig csökkenti a hibalehetõségeket és lehetõvé teszi, hogy a lehetõ legtöbb idõt fordítsunk az alkalmazáslogika kialakítására.
 
 \Section{C/C++ hívása Python-ból}
 
@@ -123,7 +123,7 @@ Ahogy feltettük korábban, ennek a megközelítésnek a hátránya, hogy a C kód kevés
 \label{fig:ctypes}
 \end{figure}
 
-A \textit{ctypes} egy külsõ, funkció könyvtár, ami lehetõvé teszi, hogy natív, dinamikus vagy megosztott könyvtárak funkcióit hívjuk Pythonból, C kompatibils adat típusokkal.
+A \textit{ctypes} egy külsõ funkció könyvtár, ami lehetõvé teszi, hogy natív, dinamikus vagy megosztott könyvtárak funkcióit hívjuk Pythonból, C kompatibils adat típusokkal.
 
 A ctypes egy modulja a cdll, ami lehetõvé teszi, hogy tetszõleges dinamikus könyvtárakat töltsünk be az alkalmazás címterébe, Pythonon keresztül. Használata a következõ:
 
@@ -132,7 +132,7 @@ from ctypes import *
 lib = cdll.LoadLibrary('cAPI.dll')
 \end{python}
 
-A \textit{LoadLibrary} hívás eredménye egy DLL objektum, amin keresztül, innentõl kezdve elérhetõek a könyvtár exportált funkciói, amennyiben sikeres volt a betöltés.
+A \textit{LoadLibrary} hívás eredménye egy DLL objektum, amin keresztül innentõl kezdve elérhetõek a könyvtár exportált funkciói, amennyiben sikeres volt a betöltés.
 
 A \textit{cAPI.dll} könyvtárat úgy kell létrehoznunk, hogy a használni kívánt funkciók a C hívási szemantikát kövessék. Ezek alapján egy példa C funkció, amit Pythonból is hívhatunk a következõ képpen alakul:
 
@@ -161,14 +161,14 @@ A \textit{CAPI\_SHARED} kifejezés csupán arra szolgál, hogy a Visual C++ környez
 #endif // ~CAPI_SHARED
 \end{cpp}
 
-A Python nyelv oldalán, annyi lehet a felelõsségünk, hogy biztosítsuk az felhasznált natív funkciók típusbiztonságát. Erre a ctypes azt a lehetõséget biztosítja, hogy felsoroljuk a funkciók visszatérési értékének és paramétereinek a típusát. Ez gyakorlatilag egy leegyszerûsített módja a függvényszignatúra definiálásának:
+A Python nyelv oldalán, annyi lehet a felelõsségünk, hogy biztosítsuk a felhasznált natív funkciók típusbiztonságát. Erre a ctypes azt a lehetõséget biztosítja, hogy felsoroljuk a funkciók visszatérési értékének és paramétereinek a típusát. Ez gyakorlatilag egy leegyszerûsített módja a függvényszignatúra definiálásának:
 
 \begin{python}
 lib.log_debug.argtypes = [c_char_p]
 lib.log_debug.restype = c_int
 \end{python}
 
-A \textit{c\_char\_p} megfelelõje a karakter pointer (\textit{char*}) a C oldalon, a \textit{c\_int} típusé pedig az \textit{int}. Ezen, ctypes-ban definiált kifejezések biztosítják a kompatibilitást a C és és Python nyelvek típusai között. Az összes elérhetõ típus látható a \myref{fig:ctypes} ábrán.
+A \textit{c\_char\_p} megfelelõje a karakter pointer (\textit{char*}) a C oldalon, a \textit{c\_int} típusé pedig az \textit{int}. Ezen, ctypes-ban definiált kifejezések biztosítják a kompatibilitást a C és a Python típusai között. Az összes elérhetõ típus látható a \myref{fig:ctypes} ábrán.
 
 Ezek után a funkció egyszerûen hívható Pythonból a következõ képpen:
 
@@ -178,13 +178,13 @@ lib.log_debug('log test')
 
 \Section{Python hívása C++-ból}
 
-Az elõzõekben láthattuk, hogyan érhetünk el meglévõ C/C++ funckiókat Python-ból. Ennek a lehetõségnek az elõnyeit már ismerjük: nagy teljesítményû natív kód futtatását tesszük lehetõvé, egy rugalmas és letisztult környezetbõl. 
+Az elõzõekben láthattuk, hogyan érhetünk el meglévõ C/C++ funkciókat Python-ból. Ennek a lehetõségnek az elõnyeit már ismerjük: nagy teljesítményû natív kód futtatását tesszük lehetõvé, egy rugalmas és letisztult környezetbõl. 
 
-A beágyazás következõ lépése, hogy felcseréljük a két nyelv szerepét és most Python funkciókat hívjunk meg C++-ból. Erre azért van szükség mert szeretnénk elõre definiált függvényszignatúrákat definiálni, amikhez bizonyos funkciókat kötünk. Ilyen lesz például egy szkript frissítési funkciója: az alkalmazás frissítési köre a C++ oldalon található, azonban szeretnénk ha a szkriptek is reagálhatnának erre az \textit{eseményre}.
+A beágyazás következõ lépése, hogy felcseréljük a két nyelv szerepét és most Python funkciókat hívjunk meg C++-ból. Erre azért van szükség mert szeretnénk elõre megadott függvényszignatúrákat definiálni, amikhez bizonyos funkciókat kötünk. Ilyen lesz például egy szkript frissítési funkciója: az alkalmazás frissítési köre a C++ oldalon található, azonban szeretnénk ha a szkriptek is reagálhatnának erre az \textit{eseményre}.
 
-A cél tehát, hogy elõre meghatározzunk bizonyos pontokat a natív kód futásában, ahol lehetõséget adunk a szkriptek futtatására. Tipikus példa erre a korábban már ismertetett játék motor, a \textit{Unity3D} megoldása, a \textit{MonoBehaviour.Update()}. Ez a funkció képfrissítésenként egyszer hívódik meg minden szkriptben ahol engedélyezve van éa jellemzõen itt implementálják a szkriptek a játéklogika jelentõs részét \cite{monoupdate}.
+A cél tehát, hogy elõre meghatározzunk bizonyos pontokat a natív kód futásában, ahol lehetõséget adunk a szkriptek futtatására. Tipikus példa erre a korábban már ismertetett játék motor, a \textit{Unity3D} megoldása, a \textit{MonoBehaviour.Update()}. Ez a funkció képfrissítésenként egyszer hívódik meg minden szkriptben ahol engedélyezve van és jellemzõen itt implementálják a szkriptek a játéklogika jelentõs részét \cite{monoupdate}.
 
-Meghívhatunk Python funkciót C++-ból a \textit{PyRun\_SimpleString("update()")} segítségével. Ez azonban nem hatékony, hiszen ebben az esetben az interpreter minden híváskor feldolgozza és lefordítja a szkript szöveget. Egy sokkal hatékonyabb megoldás, ha közvetlenül a függvény objektumra vonatkozó referenciát kérünk el a Python környezettõl és azt használjuk a hívás végrehajtásához.
+Meghívhatunk Python funkciót C++-ból a \textit{PyRun\_SimpleString("update()")} segítségével. Ez azonban nem hatékony, hiszen ebben az esetben az interpreter minden híváskor feldolgozza és lefordítja a szkript szövegét. Egy sokkal hatékonyabb megoldás, ha közvetlenül a függvény objektumra vonatkozó referenciát kérünk el a Python környezettõl és azt használjuk a hívás végrehajtásához.
 
 A Python minden globálisan definiált függvényt, a környezet globális táblájában tárol. Így tehát, ha el tudjuk érni a globális táblát, akkor bármely ott definiált funkciót is használhatjuk. A Python környezet biztosít funkciókatt a globális tábla eléréséhez:
 
@@ -243,6 +243,6 @@ PyObject_CallObject(expression, NULL)
 \end{cpp}
 függvénnyel meghívjuk a kívánt funkciót. Ennek a hívásnak az elsõ paramétere maga a függvény objektum, ami már egy betöltött és lefordított funkció a Python környezetben így ennek ismételt hívása nem jelent plusz teljesítmény költséget. 
 
-Az utolsó kérdés a Python függvény meghívásával kapcsolatban, a paraméterek átadása. A \textit{CallObject} hívás második paramétere egy \textit{PyObject*} típusú változó, ahova egy változó elemszámú kompozit objektumot vár a függvény, aminek az elemeit végül a meghívni kívánt funkció kapja meg paraméterként. Ezen módja a paraméter átadásnak nagy fokú rugalmasságot enged meg, hiszen tetszõleges számú és típusú paramétert adhatunk át a függvénynek. Hátránya, hogy némi plusz teljesítmény költség merül fel, valamint a kompozit létrehozása nem minden esetben triviális.
+Az utolsó kérdés a Python függvény meghívásával kapcsolatban, a paraméterek átadása. A \textit{CallObject} hívás második paramétere egy \textit{PyObject*} típusú objektum, ahová egy változó elemszámú kompozit objektumot vár a függvény, aminek az elemeit végül a meghívni kívánt funkció kapja meg paraméterként. Ezen módja a paraméter átadásnak nagy fokú rugalmasságot enged meg, hiszen tetszõleges számú és típusú paramétert adhatunk át a függvénynek. Hátránya, hogy némi plusz teljesítmény költség merül fel, valamint a kompozit létrehozása nem minden esetben triviális.
 
 Jelen esetben arról beszélünk, hogy egy elõre meghatározott szignatúrájú függvényt szeretnénk meghívni. Ez azt jelenti, hogy a CallObject által nyújtott rugalmasságról lemondhatunk. A \textit{PyObject\_CallFunction(exp, format, [values])} funkció meghívja a megadott függvényt, úgy, hogy a \textit{format} karakterlánc típusú változóban felsorolt karaktereknek megfelelõ változókat vár, a \textit{values}, változó paraméterszámú argumentumba. Például, ha a $format="sii"$, akkor a \textit{values} helyére egy karakterlánc (\textbf{s}tring), és két egész szám (\textbf{i}nteger) értéket várunk \cite{callpython}.

@@ -1,9 +1,17 @@
 \Chapter{Problémakör}
 \label{Chap:problema}
 
-Sok helyen láthatunk példát arra, hogy egy-egy szkript nyelv segítségével az eredeti alkalmazást hogyan bõvíthetjük ki, új funkciókat bevezetve, vagy akár teljesen átalakítva a program mûködését. Egy tipikus fajátja az ilyen alkalmazásoknak az úgy nevezett \textit{játék motorok} (game engine). 
+Sok helyen láthatunk példát arra, hogy egy-egy szkript nyelv segítségével az eredeti alkalmazást hogyan bõvíthetjük ki, új funkciókat bevezetve, vagy akár teljesen átalakítva a program mûködését. Egy tipikus fajtája az ilyen alkalmazásoknak az úgynevezett \textit{játék motorok} (game engines). 
 
 A játék motor egy olyan szoftver keretrendszer, ami videójátékok készítésére lett tervezve. Egy játék motor segítségével általában különbözõ platformokra készíthetünk játékokat, mint konzolok, asztali számítógépek vagy mobileszközök. Egy játék motor funkcionalitásába jellemzõen beletartozik egy grafikus alrendszer, kettõ- és háromdimenziós képalkotásra, egy fizikai motor (ütközési vizsgálathoz), hang-kezelõ alrendszer, szkriptelési lehetõségek, mesterséges intelligencia, hálózati megoldások, memória- és szálkezelés valamint lokalizációt támogató funkciók \cite{gameengine}.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/Unity3D.eps, width=15.3cm, height=9.8cm}
+\caption{Unity3D szerkesztõ felülete \cite{unitypic}}
+\label{fig:unity3d}
+\end{figure}
+
 
 Egy új játék fejlesztése során a játék motor jelentõs része újra felhasználásra kerül eredeti változatban, vagy adaptálva az aktuális szükségletekhez, ezzel csökkentve a fejlesztési és hibajavítási idõt, valamint lehetõvé téve a különbözõ platformok támogatását.
 
@@ -11,8 +19,27 @@ Egy új játék fejlesztése során a játék motor jelentõs része újra felhasználásra 
 
 \subsubsection{Unity3D}
 
-A Unity egy teljeskörû játékmotor kettõ- és háromdimenziós grafika támogatással és szkriptelési lehetõségekkel. Hátránya lehet, hogy nem nyílt forráskódú, ezáltal a manuális hibajavítás nem eszközölhetõ a rendszer kódbázisában. A zárt rendszer továbbá, megkötéseket tesz a felhasználását illetõen is, új funkciók hozzáadása, saját kiterjesztése egyáltalán, vagy csak nagyon nehezen valósítható meg. A Unity elõnye más motorokkal szemben, hogy aránylag egyszerûen használható, gyorsan megtanulhatóak az elérhetõ funkciók használata.
+A Unity egy teljeskörû játékmotor kettõ- és háromdimenziós grafika támogatással és szkriptelési lehetõségekkel. Hátránya lehet, hogy nem nyílt forráskódú, ezáltal a manuális hibajavítás nem eszközölhetõ a rendszer kódbázisában. A zárt rendszer továbbá, megkötéseket tesz a felhasználását illetõen is, új funkciók hozzáadása, saját kiterjesztése egyáltalán, vagy csak nagyon nehezen valósítható meg. A Unity elõnye más motorokkal szemben, hogy aránylag egyszerûen használható és gyorsan megtanulható az elérhetõ funkciók használata.
+
+A szkriptelés a C\# nyelv egy kevésbé ismert, platformfüggetlen implementációjával a Mono-val valósul meg. Ezenkívül lehetõség van még a JavaScript használatára a játéklogika létrehozásához.
 
 \subsubsection{Unreal Engine}
 
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/unreal.eps, width=15.3cm, height=8.2715cm}
+\caption{Unreal Engine vizuális szkriptelés \cite{unitypic}}
+\label{fig:unreal}
+\end{figure}
+
 Az Unreal Engine a funkcionalitását tekintve szintén egy teljeskörû, egyébiránt igen nagy grafikus teljesítményû motor. Elõnye, hogy a forráskódja elérhetõ mindenki számára, rendszeres frissítésekkel együtt, illetve ingyenesen felhasználható nem kereskedelmi célokra.
+
+Az Unreal fejlesztési nyelve a C++, ami bizonyos szempontból hátrányt jelenthet, hiszen egy komplex, nagy technológiai tudást igénylõ nyelvrõl van szó. A motor nem biztosít hagyományos lehetõségeket, hanem úgynevezett \textit{vizuális szkriptelést} tesz lehetõvé a funkciók gyorsan iterálható és felhasználóbarát igénybevételére (\myref{fig:unreal} ábra).
+
+\SubSection{ZhyGraph}
+
+A megvalósítandó keretrendszer elsõdleges célja a gyors felhasználhatóság és a továbbfejlesztési lehetõségek biztosítása. Ennek érdekében a szoftver nyílt forráskódú és elérhetõvé tesz egy szkriptelési felületet, amit Pythonban, az egyik legnépszerûbb és legkönnyebben tanulható szkriptnyelvben valósítunk meg \cite{pythonpop}. A kódbázis C++ nyelven kerül implementálásra a teljesítménykritikus eljárásokra tekintettel. A platformfüggetlenség biztosított a C++ standard elemeinek felhasználásával, illetve a platformspecifikus kódrészek, interfészekkel történõ elrejtésével (az ablak kezelõ rendszer esetében például).
+
+A rendszer biztosít egy alacsonyszintû komponens kezelõ architektúrát, ami leegyszerûsíti az új alrendszerek bevezetését és használatát. A tartalom-kezelõ interfészek úgy kerülnek kialakításra, hogy további, tetszõleges adattípusokkal legyen bõvíthetõ az adat-orientált futási környezet, valamint bevezetésre kerülnek olyan alrendszer interfészek is, melyek kiterjesztése vagy megvalósítása további funkciókat adhat a rendszerhez.
+
+A szokványostól eltérõ módon a rendszer lehetõvé teszi szkript funkciók, konzolból történõ futtatását \textit{interaktívan} is, a hagyományos fájl alapú futtatás mellett. Ez lehetõvé teszi, hogy az alkalmazás logika fejlesztése még gördülékenyebb és tesztelhetõbb legyen.

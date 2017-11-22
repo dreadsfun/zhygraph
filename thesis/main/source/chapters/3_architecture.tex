@@ -9,7 +9,7 @@
 \label{fig:highlevelov1}
 \end{figure}
 
-A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov1} és \myref{fig:highlevelov2} ábrákon láthatjuk a rendszer komponenseinek összefoglaló diagramját. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
+A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov1} és \myref{fig:highlevelov2} ábrákon láthatjuk a rendszer komponenseinek összefoglaló diagramjait. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
 
 \begin{figure}[ht]
 \centering
@@ -64,7 +64,7 @@ __register_ ##clname ##__ { #clname }
 }
 \end{cpp}
 
-A \textit{register\_class} kifejezés jelenti a belépési pontot a reflektálás rendszerébe. Az ötlet az, hogy egy olyan osztályt definiálunk (\textit{class\_registrator}), ami a konstruktorában regisztrál egy osztályt, a megadott néven. A regisztráció során a névhez hozzárendelõdik egy funkció objektum (\textit{functor}), ami a regisztátor osztály típus paraméterébõl kerül kialakításra, úgy, hogy a funkció a megadott típust példányosítsa meghívásakor:
+A \textit{register\_class} kifejezés jelenti a belépési pontot a reflektálás rendszerébe. Az ötlet az, hogy egy olyan osztályt definiálunk (\textit{class\_registrator}), ami a konstruktorában regisztrál egy osztályt, a megadott néven. A regisztráció során a névhez hozzárendelõdik egy funkció objektum (\textit{functor}), ami a regisztrátor osztály típus paraméterébõl kerül kialakításra, úgy, hogy a funkció a megadott típust példányosítsa a meghívásakor:
 
 \begin{cpp}
 template< typename T >
@@ -85,12 +85,11 @@ A módszer elõnye, hogy az így reflektált osztályokat használni tudjuk anélkül, h
 
 \SubSection{Komponensek és függõségek}
 
-Ahhoz, hogy egy osztály részt vehessen a reflexióban, illetve a függõségek kezelésében, a \textit{component} osztályból kell örökölnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, illetve biztosítja, hogy kizárólag az osztályon belülrõl történjen függõség deklaráció.
+Ahhoz, hogy egy osztály részt vehessen a reflexió rendszerében, illetve a függõségek kezelésében, a \textit{component} osztályból kell örökölnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, ezenkívül biztosítja, hogy kizárólag az osztályon belülrõl történhessen függõség deklaráció.
 
-Az osztály függõségeit a \textit{di\_rtlib/define\_dependency.hpp} fájlban található makrókkal lehet deklarálni (illetve lehet a makrók használata nélkül is, de jelentõsen bonyolultabb lenne úgy). A technika hasonló a reflektálásnál leírthoz: egy olyan objektumot deklarálunk az osztályban, ami a konstruktorában "automatikusan" regisztrálja a megadott nevet és típust, mint az osztály egy függõsége. A késõbbiekben ezen a néven keresztül lehet majd injektálni az osztály által igényelt komponenst.
+Az osztály függõségeit a \textit{di\_rtlib/define\_dependency.hpp} fájlban található makrókkal lehet deklarálni (illetve lehetséges a makrók használata nélkül is, de jelentõsen bonyolultabbá tenné a megoldást). A technika hasonló a reflektálásnál leírthoz: egy olyan objektumot deklarálunk az osztályban, ami a konstruktorában "automatikusan" regisztrálja a megadott nevet és típust, mint az osztály egy függõségét. A késõbbiekben ezen a néven keresztül lehet majd injektálni az osztály által igényelt komponenst.
 
 \begin{cpp}
-...
 class asset_type_manager
   : public i_asset_type_manager, public di::component {
 private:
@@ -104,7 +103,6 @@ private:
 A reflexió lehetõségeit kihasználva, a rendszer biztosítja a komponensekre vonatkozó egyedi attribútumok deklarálását is. Az attribútumok olyan primitív értékek, vagy primitív értékek kollekciói (primitívnek tekintve a karakterláncot is), amik a komponens konfigurációban, a függõségek mellett injektálásra kerülhetnek. Az attribútumok deklarálására szintén létrejött egy "segédmakró", ami a \textit{di\_rtlib/define\_attribute.hpp} fájlban található.
 
 \begin{cpp}
-...
 class file_channel
   : public i_log_channel, public di::component {
 private:
@@ -115,18 +113,16 @@ private:
 
 \SubSection{Komponens konfiguráció}
 
-A rendszer különbözõ részei végül egy konfigurációs fájlban futnak össze. Jelen esetben ez az \textit{engine.conf} fájl, ami elengedethetetlen a keretrendszer futtatásához, automatikusan ezen a néven van keresve, közvetlenül a keretrendszer könyvtárában (önálló futtatás esetén, a futtatható állomány mellett).
+A rendszer különbözõ részei végül egy konfigurációs fájlban futnak össze. Jelen esetben ez az \textit{engine.conf} fájl, ami elengedhetetlen a keretrendszer futtatásához, automatikusan ezen a néven van keresve, közvetlenül a keretrendszer könyvtárában (önálló futtatás esetén, a futtatható állomány mellett).
 
-A konfigurációs fájl egy standard XML fájl, aminek a struktúráját egy \textit{XSD séma} írja le (\textit{di/di.xsd}). A gyökér elem minden esetben a \textit{DI} kifejezés, ennek közvetlen gyermekei lehetnek a \textit{plugins}, a \textit{components} és a \textit{wiring}.
+A konfigurációs fájl egy standard XML formátumú fájl, aminek a struktúráját egy \textit{XSD séma} írja le (\textit{di/di.xsd}). A gyökér elem minden esetben a \textit{DI} kifejezés, ennek közvetlen gyermekei lehetnek a \textit{plugins}, a \textit{components} és a \textit{wiring}.
 
 A \textit{plugins} tag alatt deklarálhatunk megosztott (dinamikusan linkelt) könyvtárakat, amiket a keretrendszer használni fog. Erre azért van szükség, mert a könyvtárak által reflektált osztályok és attribútumok csak akkor kerülnek regisztrálásra, ha azok be vannak töltve. Betöltés azonban nem történik automatikusan, hiszen nincs statikus kapcsolat a dinamikus könyvtárak és a futtatható állomány között.
 
 A \textit{components} tag alatt kell felsorolnunk minden komponenst, amit létre szeretnénk hozni. Egy komponens deklarációjához mindenképpen szükség van egy névre (\textit{name}) és egy osztályra (\textit{class}):
 
 \begin{xml}
-...
 <component name="graphics_context" class="win32gl_context"/>
-...
 \end{xml}
 
 A névvel a késõbbiekben hivatkozunk a komponensre, amikor ezen komponens függõségeit kívánjuk beállítani, vagy a komponenst szeretnénk átadni függõségként. Az osztály paraméternek egy reflektált osztálynak kell lennie, ezzel a dinamikus típussal lesz létrehozva a komponens.
@@ -134,55 +130,45 @@ A névvel a késõbbiekben hivatkozunk a komponensre, amikor ezen komponens függõsé
 A komponensek deklarációjakor állíthatjuk be a reflektált osztályban megadott attribútumokat is:
 
 \begin{xml}
-...
 <component name="material_library" class="material_library">
   <attribute name="material_file" value="text@materials"/>
 </component>
-...
 \end{xml}
 
-A \textit{wiring} rész alatt szereplhetnek az \textit{inject}, \textit{inject-one}, \textit{inject-slot} és az \textit{inject-all} tagok, melyek mindegyike a függõségek beállítására alkalmas, különbözõ szempontok szerint. 
+A \textit{wiring} rész alatt szerepelhetnek az \textit{inject}, \textit{inject-one}, \textit{inject-slot} és az \textit{inject-all} tagok, melyek mindegyike a függõségek beállítására alkalmas, különbözõ szempontok szerint. 
 
-Az \textit{inject} tagnak szükséges attribútumnak megadni egy fogadó komponenst, egy injektált komponenst, és azt, hogy a fogadó komponens mely függõsége az, amit felold ez az injekció (\textit{slot}).
+Az \textit{inject} tagnak szükséges attribútumként megadni egy fogadó komponenst, egy injektált komponenst, és azt, hogy a fogadó komponens mely függõsége az, amit felold ez az injekció (\textit{slot}).
 
 \begin{xml}
-...
 <inject receiver="engine_launcher" 
   slot="windowing" injection="windowing"/>
-...
 \end{xml}
 
-Az \textit{inject-one} tag arra való, hogy egy megadott komponens összes függõséget beállítsuk egy blokkon belül. A \textit{receiver} határozza meg a cél komponenst, a további \textit{inject} tagokkal pedig egy-egy függõséget oldhatunk fel, a válaszott komponensekkel (\textit{injection}).
+Az \textit{inject-one} tag arra való, hogy egy megadott komponens összes függõségét beállítsuk egy blokkon belül. A \textit{receiver} határozza meg a cél komponenst, a további \textit{inject} tagokkal pedig egy-egy függõséget oldhatunk fel, a válaszott komponensekkel (\textit{injection}).
 
 \begin{xml}
-...
 <inject_one receiver="resource_context_handle">
   <inject slot="windowing" injection="windowing"/>
   <inject slot="resource_context" injection="graphics_resource_context"/>
   <inject slot="main_context" injection="graphics_context"/>
 </inject_one>
-...
 \end{xml}
 
-Az \textit{inject-slot} taggal egy megadott elnevezésû függõséget állíthatunk be egyszerre az összes komponensben (amiben szerepel), egy megadott komponenssel. Például majd mindegyik komponens használja az üzenetküldõ komponenst, így célszerû egy taggal injektálni az összes függõséget:
+Az \textit{inject-slot} taggal egy megadott elnevezésû függõséget állíthatunk be egyszerre az összes komponensben (amiben szerepel). Például a legtöbb komponens használja az üzenetküldõ rendszert, így célszerû egy taggal injektálni az összes függõséget:
 
 \begin{xml}
-...
 <inject_slot slot="logger" injection="default_logger"/>
-...
 \end{xml}
 
 Az \textit{inject-all} taggal az injektálni kívánt komponenst rögzíthetjük, és azt sorolhatjuk fel, hogy mely komponensek, mely függõségeibe szeretnénk beállítani azt. Például ha csak a kiválasztott komponensekben szeretnénk beállítani az üzenetküldõ rendszert, nem az összesben:
 
 \begin{xml}
-...
 <inject_all injection="default_logger">
   ...
   <inject receiver="text_manager" slot="logger"/>
   <inject receiver="shader_manager" slot="logger"/>
   ...
 </inject_all>
-...
 \end{xml}
 
 \Section{Központi funkciók}
@@ -202,7 +188,7 @@ A gráfot irányítottnak tekintjük, hiszen a csúcsok között szülõ-gyermek viszonyt
 
 A csúcsok viszonya az úgy nevezett \textit{hierarchikus transzformációk} miatt lényeges. Ennek alap ötlete, hogy minden egyes csúcshoz tartozik egy transzformáció, ami leírja a csúcs helyzetét, orientációját és skálázását. A transzformációk bázisa azonban mindig az aktuális csúcs szülõjének koordinátarendszere, aminek a "valós" térbeli elhelyezkedését a saját transzformációja, és az õ szüleinek transzformáció lánca határozza meg, rekurzívan.
 
-A gyökér csúcs transzformációjához tartozó bázist tekintjük az abszolút bázisnak, amelyben a pontokat az úgy nevezett "világ" koordináták írnak le.
+A gyökér csúcs transzformációjához tartozó bázist tekintjük az abszolút bázisnak, amelyben a pontokat az úgynevezett "világ" koordináták írnak le.
 
 Ennek a rendszernek az elõnye, hogy a relatív transzformációk könnyedén modellezik a virtuális térben található objektumok kapcsolatát. Például tegyül fel, hogy el szeretnénk helyezni a térben egy lovat ábrázoló geometriát, valamint annak hátán egy lovast. A relatív transzformációk nélkül a lovas helyzetét is ugyanazon bázisban kellene meghatároznunk, mint a lóét, ami nem okozna problémát ha az objektumok között nem lenne semmilyen összefüggés. Jelen esetben, azonban nem egyszerûen egy lovat és egy lovast szeretnénk modellezni, hanem egy lovast, ami \textbf{rajta ül} egy lovon.
 
@@ -226,9 +212,9 @@ A \textit{core/octree} útvonalon található egy dinamikus oktális fa implementáci
 
 \SubSection{Rendszerüzenetek}
 
-Annak érdekében, hogy a különbözõ rendszerfunkciók mûkõdésérõl valósidejû információkat kapjunk, illetve, hogy az esetlegesen felmerülõ hibák rögzítésre kerülhessenek bevezetünk egy rendszerüzenet kezelõ rendszert.
+Annak érdekében, hogy a különbözõ rendszerfunkciók mûkõdésérõl valósidejû információkat kapjunk, illetve, hogy az esetlegesen felmerülõ hibák rögzítésre kerülhessenek bevezetünk egy üzenetküldõ rendszert.
 
-Az üzenet rendszer implementációja a \textit{core/logger} útvonalon található. A rendszer fõ osztálya a \textit{logger} osztály, amin keresztül elérhetõek a fõ funkciók. Az üzenetküldés alap funkciója a \textit{log} függvény, ami egy üzenetprioritást, egy üzenetet és az üzenet küldõ osztály nevét várja paraméterként.
+Az üzenet rendszer implementációja a \textit{core/logger} útvonalon található. A rendszer központi osztálya a \textit{logger} osztály, amin keresztül elérhetõek a fõ funkciók. Az üzenetküldés belépési pontja a \textit{log} függvény, ami egy üzenetprioritást, egy üzenetet és az üzenet küldõ osztály nevét várja paraméterként.
 
 Az üzenetek prioritásai a következõképpen alakulnak:
 
@@ -248,21 +234,23 @@ A rendszer úgy van megvalósítva, hogy tetszõleges számú \textit{csatorna} adható
 
 \Section{A tartalom nyílvántartó alrendszer}
 
-A textit{core/asset} útvonalon található minden osztály és funkció, ami a nyílvántartó rendszerhez szükséges. Ezek az osztályok alapul szolgálnak a konkrét tartalom típusok implementációihoz, amiket láthatunk majd az alrendszerek részletezésénél.
+A \textit{core/asset} útvonalon található minden osztály és funkció, ami a nyílvántartó rendszerhez szükséges. Ezek az osztályok alapul szolgálnak a konkrét tartalom típusok implementációihoz, amiket láthatunk majd az alrendszerek részletezésénél.
 
 \SubSection{Tartalom osztályok alapja}
 
-Minden tartalom típus õsosztálya a \textit{asset\_base} osztály, illetve az absztrakt interfész az \textit{i\_asset}. Az alap osztály tartalmaz néhány olyan adattagot, ami bármely tartalom típusra jellemzõ lehet. Ilyen a tartalom fájl útvonalát jelzõ tag (\textit{m\_path:asset\_url}), az objektum aktuális állapota (\textit{m\_state:asset\_state}), valamint egy egyedi konfigurációs objektum, ami egy-egy tartalomhoz kapcsolódó betöltési paraméterek tárolására alkalmas.
+Minden tartalom típus õsosztálya az \textit{asset\_base} osztály, illetve az absztrakt interfész az \textit{i\_asset}. Az alap osztály tartalmaz néhány olyan adattagot, ami bármely tartalom típusra jellemzõ lehet. Ilyen a tartalom fájl útvonalát jelzõ tag (\textit{m\_path:asset\_url}), az objektum aktuális állapota (\textit{m\_state:asset\_state}), valamint egy egyedi konfigurációs objektum, ami egy-egy tartalomhoz kapcsolódó betöltési paraméterek tárolására alkalmas.
 
 Az alaposztály publikus interfésze az említett tagok lekérdezése és/vagy beállítására szolgáltat funkciókat, illetve a tartalom, memóriába történõ betöltését lehet kezdeményezni rajta keresztül.
 
 \SubSection{Tartalom paraméterek}
 
-Egy tartalom fájl inicializálásakor a rendszer automatikusan ellenõrzi, hogy létezik-e a tartalomról adatokat szolgáltató \textit{meta-fájl}. A fájl elnevezési konvenciója a \textit{eredetinev\_meta} formát követi:
+Egy tartalom fájl inicializálásakor a rendszer automatikusan ellenõrzi, hogy létezik-e a tartalomról adatokat szolgáltató \textit{meta-fájl}. A fájl elnevezési konvenciója az \textit{eredetinev.meta} formát követi:
 
 \begin{cpp}
 ...
-asset_url metaurl( url.format() + "_meta" );
+std::string formattedurl = url.format();
+formattedurl += ".meta";
+asset_url metaurl( formattedurl );
 if( m_streamer->check_asset( metaurl ) ) {
   asset_params prs( m_streamer->load_data( metaurl ) );
   if( prs.parse() ) {
@@ -276,7 +264,7 @@ if( m_streamer->check_asset( metaurl ) ) {
 ...
 \end{cpp}
 
-Ha létezik a meta-fájl, az beolvasásra kerül, majd az adatot a \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
+Ha létezik a meta-fájl, az beolvasásra kerül, majd az adatot az \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
 
 A lehetséges paraméterek egyediek minden tartalom típusra. A textúrákra jellemzõ paraméter például a "szûrési" technika:
 
@@ -290,7 +278,7 @@ filter_mode=trilinear
 
 A tartalom nyílvántartás két lépcsõben történik. Az elsõ lépésben a különbözõ típusokat, és az azokhoz tartozó nyílvántartó objektumokat struktúráljuk. A következõ lépésben pedig, egy adott típushoz tartozó objektumokat rendszerezzük, mint például a textúrák.
 
-Az elsõ lépés megvalósításához kialakított interfész a \textit{i\_asset\_type\_manager}. 
+Az elsõ lépés megvalósításához kialakított interfész az \textit{i\_asset\_type\_manager}. 
 \begin{cpp}
 class i_asset_type_manager {
 public:
@@ -305,7 +293,7 @@ Az interfész implementációja egy injektálható komponens, ami a függõségein keres
 
 \SubSection{Tartalom nyílvántartó osztály}
 
-A nyílvántartó osztály interfésze az \textit{i\_asset\_manager}, melynek funkciói egy-egy tartalom betöltésére illetve felszabadítására vonatkoznak. Az interfész alap implementációja az \textit{asset\_manager\_base}. Ez implementálja az interfész minden funkcióját, a \textit{get\_type} híváson kívül, ami arra szolgál, hogy az adott tartalom típus nevét, karakterlánc formátumban adja meg. Ezen kívül az alap megvalósítás bevezet egy úgy tisztán virtuális függvényt:
+A nyílvántartó osztály interfésze az \textit{i\_asset\_manager}, melynek funkciói egy-egy tartalom betöltésére illetve felszabadítására vonatkoznak. Az interfész alap implementációja az \textit{asset\_manager\_base}. Ez valósítja meg az interfész minden funkcióját, a \textit{get\_type} híváson kívül, ami arra szolgál, hogy az adott tartalom típus nevét, karakterlánc formátumban adja meg. Ezen kívül az alap megvalósítás bevezet egy új tisztán virtuális függvényt:
 \begin{cpp}
 virtual asset_ptr create_asset( const asset_url& url ) = 0;
 \end{cpp}

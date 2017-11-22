@@ -7,14 +7,14 @@ Ebben a részben találhatunk információkat azt illetõen, hogy hogyan is kezdhetün
 \SubSection{Alacsony szintû konfiguráció}
 A \textit{main/engine.conf} útvonalon található fájl tartalmazza a rendszer különbözõ komponenseinek paramétereit, és azok függõségeit. Itt találhatóak továbbá a nyílvántartó rendszer számára biztosított tartalom-deklarációk is.
 
-Ahhoz, hogy egy tartalom, például egy textúra, felhasználható legyen a rendszer számára, szerepelnie kell az adott típus felsorolásában. Tegyük fel például, hogy a \textit{grass.png} nevû textúrát szeretnénk elérhetõvé tenni. Elsõ lépésként eltávolítjuk a fájl kiterjesztését, mert a pont karakter útvonal elválasztóként viselkedik az absztraktált fájlrendszerben.
+Ahhoz, hogy egy tartalom, például egy textúra felhasználható legyen a rendszer számára, szerepelnie kell az adott típus felsorolásában. Tegyük fel például, hogy a \textit{grass.png} nevû textúrát szeretnénk elérhetõvé tenni.
 
-Következõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
+Az elsõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
 
 \begin{xml}
 <component name="texture_manager" class="texture_manager">
   <attribute name="assets">
-    <insert value="texture@grass"/>
+    <insert value="texture@grass.png"/>
   </attribute>
 </component>
 \end{xml}
@@ -42,25 +42,25 @@ Az \textit{engine.log} a fájl útvonala, ahova az üzenetek kerülnek majd, ezen a 
 A további komponensek deklarációja és injektálása akkor lehet fontos ha a keretrendszert tovább kívánjuk fejleszteni.
 
 \SubSection{Anyag tulajdonságok deklarációja}
-A \textit{main/materials} útvonalon található fájlban láthatjuk az úgy nevezett \textit{material} deklarációkat. Ezek olyan objektumok, amik meghatározzák, hogy egy adott geometriai objektumot milyen grafikus "árnyékoló" programmal és milyen textúrákkal kell kirajzolni.
+A \textit{main/materials} útvonalon található fájlban láthatjuk az úgy nevezett \textit{material} deklarációkat. Ezek olyan struktúrák, amik meghatározzák, hogy egy adott geometriai objektumot milyen grafikus "árnyékoló" programmal és milyen textúrákkal kell kirajzolni.
 
 Például ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
 
 \begin{xml}
 <materials>
-	<material name="grass_texture">
-		<shader file="text@standardfs"/>
-	  <texture sampler="albedo_map" file="texture@grass"/>
+  <material name="grass_texture">
+   <shader file="text@standardfs"/>
+   <texture sampler="albedo_map" file="texture@grass"/>
   </material>
 </materials>
 \end{xml}
 
-A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgy nevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
+A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgynevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
 
 \SubSection{Virtuális tér fagráf definíciók}
 A \textit{main/scenes} fájlban kell leírni a már ismertetett virtuális fagráf szerkezetét. A fájl struktúrája úgy van kialakítva, hogy elsõ lépésben a használni kívánt facsúcsokat deklaráljuk egymástól függetlenül, majd azt írjuk le, hogy egy konkrét jeleneten belül milyen kapcsolatban vannak ezek a csúcsok.
 
-Képzeljük el ezt úgy, hogy egy gráfnak csak a pontjai adottak, az élei ismeretlenek és különbözõ gráfokat hozunk létre, különbözõ él-halmazok definiálásával. Azért elõnyös ez a megközelítés, mert elõfordulhatnak jelenetenként ismtélõdõ csúcsok, így azonban elegendõ egyszer definiálni õket.
+Képzeljük el ezt úgy, hogy egy gráfnak csak a pontjai adottak, az élei ismeretlenek és különbözõ gráfokat hozunk létre, különbözõ él-halmazok definiálásával. Azért elõnyös ez a megközelítés, mert elõfordulhatnak jelenetenként ismétlõdõ csúcsok, így azonban elegendõ egyszer definiálni õket.
 
 Egy példa a fájl tartalmára a következõ:
 
@@ -126,7 +126,7 @@ get_cursor_position()
 get_cursor_displacement()
 \end{python}
 
-A \textit{get\_key*} család funkciói, a paraméterben megadott billentyû lenyomását, míg a \textit{get\_button*} funkciók az egér gombjainak állapotát jelzik. Mindegyik funkció logikai igazat vagy hamisat ad vissza az állapotoktól függõen. Mindkét funkció csoportra igaz, hogy a \textit{down} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb lenyomásakor, a \textit{up} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb felengedésekor, az "irány" jelzés nélküli funkciók pedig mindaddig igazzal térnek vissza, amíg az ellenõrzött billentyû vagy gomb le van nyomva.
+A \textit{get\_key*} család funkciói, a paraméterben megadott billentyû lenyomását, míg a \textit{get\_button*} funkciók az egér gombjainak állapotát jelzik. Mindegyik funkció logikai igazat vagy hamisat ad vissza az állapotoktól függõen. Mindkét funkció csoportra igaz, hogy a \textit{down} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb lenyomásakor, az \textit{up} végzõdésüek pontosan egyszer térnek vissza igaz értékkel egy billentyû vagy gomb felengedésekor, az "irány" jelzés nélküli funkciók pedig mindaddig igazzal térnek vissza, amíg az ellenõrzött billentyû vagy gomb le van nyomva.
 
 A kurzor állapotához kapcsolódik a maradék két funkció: a \textit{position} a kurzor aktuális helyzetét adja meg két elemû, pixelben mért vektorban, relatíve a képernyõ helyzetéhez, úgy, hogy a képernyõ bal felsõ sarka az origó és jobbra illetve lefelé növekednek a tengelyek.
 

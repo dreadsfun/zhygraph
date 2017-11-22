@@ -1,7 +1,7 @@
 \Chapter{Digitális tartalom nyílvántartás}
 \label{chap:assetmanagement}
 \label{Chap:tartalom}
-A rendszer egy alapvetõ komponense, a tartalom nyílvántartó alrendszer. A következõkben láthatjuk mit nevezünk digitális tartalomnak, hogy milyen felelõsségei vannak egy ilyen alrendszernek és, hogy hogyan épül fel a futási környezetben használt, a tartalmat reprezentáló adatstruktúra.
+A rendszer egy alapvetõ komponense, a tartalom nyílvántartó alrendszer. A következõkben láthatjuk mit nevezünk digitális tartalomnak, hogy milyen felelõsségei vannak egy ilyen alrendszernek és hogy hogyan épül fel a futási környezetben használt, a tartalmat reprezentáló adatstruktúra.
 
 \Section{A digitális tartalom definiálása}
 \textit{Digitális tartalom}nak fogunk nevezni minden olyan adatot, ami közvetlenül nem szükséges a rendszer mûködéséhez, tehát a program futtatásához. Nem soroljuk ide a konfigurációs adatokat, hiszen azok általában elengedhetetlenek a program megfelelõ operálásához. Ide sorolunk minden olyan adatot, amit a rendszer a futása során valamilyen elõre leprogramozott módon feldolgoz és az így kinyert információt egy jól definiált módon felhasználja.
@@ -17,23 +17,23 @@ A legalapvetõbb igény a redundancia megszüntetésével kapcsolatban, hogy a tartal
 
 A követelmény teljesítéséhez szükséges továbbá, hogy a tartalom adatstruktúra támogassa a fájlokkal történõ asszociációt és az egyedi azonosítást. A fájl-asszociáció létrejöhet a fájl elérési útvonalának tárolásával, az egyedi azonosítás pedig egy tetszõleges azonosító bevezetésével. Az azonosító jelen esetben egy ember által olvasható formátum lesz, annak érdekében, hogy a késõbbiekben az adatstruktúra példány elérését is lehetõvé tegye.
 
-Jelen rendszer esetében az azonosítás megvalósítása egy speciális "útvonal-struktúra", mely implementációja a \textit{core/asset} útvonalon, az \textit{asset\_url} osztályban található. Azért nem hagyományos, például Windows operációs rendszer specifikus útvonal formátumot haszálunk, hogy a struktúra támogassa a fájl-rendszer és a platform absztrakcióját, ezzel lehetõvé téve például hálózati alapú betöltést, akár különbözõ platformok között is.
+Ebben az esetben az azonosítás megvalósítása egy speciális "útvonal-struktúra", mely implementációja a \textit{core/asset} útvonalon, az \textit{asset\_url} osztályban található. Azért nem hagyományos, például Windows operációs rendszer specifikus útvonal formátumot haszálunk, hogy a struktúra támogassa a fájl-rendszer és a platform absztrakcióját, ezzel lehetõvé téve például hálózati alapú betöltést, akár különbözõ platformok között is.
 
-Az útvonal struktúra a "tartalom\_típus@könyvtár1:könyvtár2:név.kiterjesztés" formátumot követi, például egy geometriai objektumra történõ hivatkozás a következõképpen néz ki:
+Az útvonal struktúra a "tartalom\_típus@könyvtár:név.kiterjesztés" formátumot követi, például egy geometriai objektumra történõ hivatkozás a következõképpen alakul:
 \begin{xml}
 <attribute name="mesh_url" value="mesh@icosphere.obj"/>
 \end{xml}
 
-Az elsõ lépés az adat redundancia megelõzésében, a nyílvántartó rendszernek közölt adatok szûrése: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban, elõszõr ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét.
+Ezek alapján a redundancia megelõzése a nyílvántartó rendszernek közölt adatok szûrését jelenti: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét.
 
 \Section{Hatékony tartalom elérés biztosítása}
-A korábbiakban már hozzáadtunk egy egyedi azonosítót a tartalom adatstruktúrához, a kliensek fõleg ezen keresztül érhetik majd el a kívánt objektumokat. Annak érdekében, hogy az elérés sebessége megfelelõ legyen, az objektumokat összepárosítjuk az egyedi azonosítójukkal egy, úgy nevezett \textit{hasítótáblában}.
+A korábbiakban már hozzáadtunk egy egyedi azonosítót a tartalom adatstruktúrához, a kliensek fõleg ezen keresztül érhetik majd el a kívánt objektumokat. Annak érdekében, hogy az elérés sebessége megfelelõ legyen, az objektumokat összepárosítjuk az egyedi azonosítójukkal egy úgynevezett \textit{hasítótáblában}.
 
-A hasítótáblák olyan, asszociatív adatstruktúrák, melyekben a kulcsok egy hasító algoritmussal kerülnek generálásra, azok pedig közvetlenül indexelik a belsõ tárolót, valamilyen, imeplementációtól függõ ütközés-kezelési stratégiával \cite{hash_table}.
+A hasítótáblák olyan asszociatív adatstruktúrák, melyekben a kulcsok egy hasító algoritmussal kerülnek generálásra, azok pedig közvetlenül indexelik a belsõ tárolót valamilyen, implementációtól függõ ütközés-kezelési stratégiával \cite{hash_table}.
 
 A hasítótábla kulcs típusa az egyedi azonosító típusa lesz (\textit{string}), az érték típusa pedig az adatstruktúra \textit{referenciatípusa}. Mivel nincs szükség a kulcsok rendezésére, valamint általában az objektumok elérése gyakoribb lesz, mint a beillesztésük, a hasítótábla egy rendezetlen változatát választjuk, ezzel spórolva a rendezés költségét. A C++ nyelv például biztosít ilyen adatstruktúrát az \textit{std::unordered\_map<T>} osztály formájában. A rendezetlen hasítótábla elem beillesztésének és elérésének idõkomplexitása átlagos esetben: $O(1)$, legrosszabb esetben: $O(size())$, ahol size() az aktuális táblaméret \cite{unordered_map}.
 
-Ezt a módszert láthatjuk megvalósítva a \textit{core/asset} útvonalon, az \textit{asset\_manager\_base} osztályban. Az osztály definiál egy tábla típust az egyszerû használat érdekében, illetve deklarál egy adattagot ezzel a típussal:
+Ezt a módszert láthatjuk megvalósítva az \textit{asset\_manager\_base} osztályban. Az osztály definiál egy tábla típust az egyszerû használat érdekében, illetve deklarál egy adattagot ezzel a típussal:
 
 \begin{cpp}
 typedef std::unordered_map< asset_url, asset_ptr > asset_url_map;
@@ -44,25 +44,27 @@ asset_url_map m_asset_map;
 A \textit{get\_asset} függvény azon változatában, amelyik \textit{asset\_url} példányt (tehát a speciális útvonal struktúra egy példányát) vár paraméterül, láthatjuk a hasítótáblában történõ keresést:
 
 \begin{cpp}
-const auto& alternatives = _possible_matches(url, m_search_urls.get_values());
+const auto& alternatives = 
+  _possible_matches(url, m_search_urls.get_values());
 auto fit = m_asset_map.end();
-for (auto alternative = alternatives.begin(); alternative != alternatives.end()
-  && fit == m_asset_map.end(); ++alternative)
+for (auto alternative = alternatives.begin(); 
+  alternative != alternatives.end() && 
+  fit == m_asset_map.end(); ++alternative)
   fit = m_asset_map.find(*alternative);
 ...
 \end{cpp}
 
-A konkrét keresést a \textit{m\_asset\_map.find} kifejezés végzi. A megvalósítás kiegészül azzal a technikával, hogy megengedjük a tartalom fájlok nem pontos elérési útvonalával történõ hivatkozást, és elõre definiált keresési útvonalakon próbálunk a feltételeknek megfelelõ objektumot találni.
+A konkrét keresést az \textit{m\_asset\_map.find} kifejezés végzi. A megvalósítás kiegészül azzal a technikával, hogy megengedjük a tartalom fájlok nem pontos elérési útvonalával történõ hivatkozást, és elõre definiált keresési útvonalakon próbálunk a feltételeknek megfelelõ objektumot találni.
 
 \Section{Nem használt tartalom kisöprése}
 \label{section:gclist}
 Annak érdekében, hogy a rendszer memóriafoglalását egy bizonyos szint alatt tartsuk, illetve, hogy feleslegesen ne tartsunk fent foglalást, biztosítanunk kell a lehetõséget, hogy azokat az objektumokat melykre nincsen már külsõ hivatkozás felszabadítsuk.
 
-Ehhez szükséges az objektumokra aktívan jelen levõ \textit{referenciák} (hivatkozások) számontartása. A C++ környezet biztosít úgynevezett automatikus vagy "okos" mutatókat, jelen esetben a \textit{std::shared\_ptr} struktúra adta lehetõségeket fogjuk kihasználni. Ez az osztály - az adatstruktúránkkal ellentétben - másolható, ez teszi lehetõvé, hogy az alrendszeren kívül, vagy az alrendszeren belül különbözõ kódrészek úgy osszák meg az adott objektumot, hogy azt nem másolják le, viszont a referenciák számát mindig számontartsuk. 
+Ehhez szükséges az objektumokra aktívan jelen levõ \textit{referenciák} (hivatkozások) számontartása. A C++ környezet biztosít úgynevezett automatikus vagy "okos" mutatókat, jelen esetben az \textit{std::shared\_ptr} struktúra adta lehetõségeket fogjuk kihasználni. Ez az osztály - az adatstruktúránkkal ellentétben - másolható, ez teszi lehetõvé, hogy az alrendszeren kívül, vagy az alrendszeren belül különbözõ kódrészek úgy osszák meg az adott objektumot, hogy azt nem másolják le, viszont a referenciák számát mindig számontartsuk. 
 
-A referencia-számlált mutató mûködési mechanizmusa szerint, a struktúra másolásakor a referencia-számláló növekszik eggyel, a struktúra megszüntetésekor pedig csökken eggyel, ha pedig nullára csökken akkor felszabadítja az általa kezelt memória területet. Esetünkben soha nem fog nullára csökkeni az alkalmazás futása során a referencia-számláló, hiszen ahogy láttuk a hasító tábla is ilyen mutatókon (\textit{asset\_ptr}) keresztül hivatkozik az objektumokra. A megoldás így az, hogy azt nevezzük nem-referált tartalom objektumnak, amely referencia-számlálójának értéke megegyezik az alrendszer által fenntartott referenciák számával. Más szóval, akkor, ha nincs a tartalom rendszeren kívül aktív referencia.
+A referencia-számlált mutató mûködési mechanizmusa szerint, a struktúra másolásakor a referencia-számláló növekszik eggyel, a struktúra megszüntetésekor pedig csökken eggyel, ha pedig nullára csökken akkor felszabadítja az általa kezelt memória területet. Esetünkben soha nem fog nullára csökkeni az alkalmazás futása során a referencia-számláló, hiszen ahogy láttuk a hasító tábla is ilyen mutatókon (\textit{asset\_ptr}) keresztül hivatkozik az objektumokra, ami mindig fent fog tartani egy referenciát. A megoldás így az, hogy azt nevezzük nem-referált tartalom objektumnak, amely referencia-számlálójának értéke megegyezik az alrendszer által fenntartott referenciák számával. Más szóval akkor, ha nincs a tartalom rendszeren kívül fenntartott aktív referencia.
 
-Ezt a mechanizmust valósítja meg az \textit{asset\_manager\_base} osztály, \textit{unload\_unreferenced} függvénye:
+Ezt a mechanizmust valósítja meg az \textit{unload\_unreferenced} függvény:
 
 \begin{cpp}
 for( const auto& pp : m_asset_map ) {
@@ -90,7 +92,7 @@ A \textit{memória versengés} azt a problémát írja le, amikor egy megoszott memór
 
 A memória versengés problémájának ki van téve a tartalom objektum \textit{állapot leíró változója}, hiszen egy szál ha el akarja érni az adott objektumot, az ellenõrizni fogja, hogy az állapota \textit{"betöltött"}-e, és ha nem akkor betöltést fog kezdeményezni. Eközben természetesen elõfordulhat, hogy egy másik szál már éppen a betöltést végzi. Ilyenkor van esély rá, hogy amikor az ellenõrzést végzõ szál lekérdezi az objektum állapotát akkor még \textit{"betöltetlen"}-t lát, viszont egy másik szál már elkezdte az objektum betöltését, azonban még nem állította át az állapotot \textit{"betöltés alatt"}-ra. Ekkor a második szál is el fogja kezdeni az objektum betöltését, ezzel további, specifikálatlan viselkedést produkálva a programban.
 
-Egy primitív változó (nem összetett, több primitívbõl álló kompozit) védelme megoldható az úgy nevezett atomi struktúrával. A C++ környezet ezt az \textit{std::atomic<T>} osztály formájában biztosítja. Egy atomi mûvelet azt jelenti ebben az esetben, hogy ha egy szál értéket ad a változónak, miközben egy másik szál olvassa azt, a viselkedés, tehát a mûveletek sorrendje, jól definiált \cite{atomic}.
+Egy primitív változó (nem összetett, több primitívbõl álló kompozit) védelme megoldható az úgy nevezett atomi struktúrával. A C++ környezet ezt az \textit{std::atomic<T>} osztály formájában biztosítja. Egy atomi mûvelet azt jelenti ebben az esetben, hogy ha egy szál értéket ad a változónak, miközben egy másik szál olvassa azt, a viselkedés, tehát a mûveletek sorrendje jól definiált \cite{atomic}.
 
 A tartalom objektum állapotát leíró változó deklarációja ezek alapján a következõképpen alakul:
 
@@ -102,13 +104,15 @@ Az állapot ellenõrzésére és beállítására láthatunk példát az \textit{asset\_mana
 
 \begin{cpp}
 asset_state exp = asset_state::loaded;
-if( a->get_state().compare_exchange_strong( exp, asset_state::unloading ) ) {
+if( a->get_state().compare_exchange_strong( 
+  exp, asset_state::unloading 
+  ) ) {
   sinfo << "unloading asset \"" << a->get_path() << "\"";
   a->pre_unload();
 ...
 \end{cpp}
 
-A \textit{compare\_exchange\_strong} hívás mûködésének lényege, hogy az atomi változó értékét összehasonlítja egy várt értékkel (\textit{exp}). Ha két érték megegyezik, akkor az atomi változó értéke beállításra kerül a várt értékre és igazzal tér vissza. Ha két érték nem egyezik meg, akkor a várt érték helyére írja az aktuális értéket és hamissal tér vissza. Az egész mûvelet \textit{atomi}, tehát a változó értéke nem változtatható meg a kiolvasási és kicserélési mûveletek között \cite{CES}.
+A \textit{compare\_exchange\_strong} hívás mûködésének lényege, hogy az atomi változó értékét összehasonlítja egy várt értékkel (\textit{exp}). Ha a két érték megegyezik, akkor az atomi változó értéke beállításra kerül a várt értékre és igazzal tér vissza. Ha a két érték nem egyezik meg, akkor a várt érték helyére írja az aktuális értéket és hamissal tér vissza. Az egész mûvelet \textit{atomi}, tehát a változó értéke nem változtatható meg a kiolvasási és kicserélési mûveletek között \cite{CES}.
 
 A többi komplex struktúra, mint például a tartalom eléréshez használt hasítótábla megvédhetõ a kölcsönös kizárást megvalósító struktúrákkal. A C++ esetén ezt az \textit{std::mutex} osztály foglalja magába, mely a következõ birtoklási szemantikát biztosítja:
 
