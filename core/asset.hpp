@@ -205,11 +205,16 @@ public:
 	CORE_SHARED void set_value( const std::string& name, const std::string& value );
 
 	template< typename T >
-	T get_( const std::string& name ) const {
+	T get_( const std::string& name, T def = T() ) const {
 		T val;
-		std::istringstream s( this->get_value( name ) );
-		s >> val;
-		return val;
+		const std::string& strv = this->get_value( name );
+		if( strv.empty() ) {
+			return def;
+		} else {
+			std::istringstream s( strv );
+			s >> val;
+			return val;
+		}
 	}
 #pragma endregion
 };

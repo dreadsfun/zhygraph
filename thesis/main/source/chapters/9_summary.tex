@@ -1,9 +1,15 @@
 \Chapter{Összefoglalás}
 
-Láthattuk, hogyan épül fel egy grafikai megjelenítés orientált keretrendszer, ami egy szkript interfészen keresztül teszi elérhetõvé a funkcióit. Ahogy a más, hasonló jellegû szoftverekkel történõ összehasonlításkor is kiderült, egy ilyen keretrendszernek számtalan bõvítési lehetõsége van.
+Láthattuk, hogyan épül fel egy grafikai megjelenítés orientált keretrendszer, ami egy szkript interfészen keresztül teszi elérhetõvé a funkcióit. A rendszernek számtalan fejlesztési lehetõsége van. Láthattuk, hogy a konfigurációs fájlok (\textit{scenes.xml, engine.conf}) mindegyike, egy ember által olvasható formátumban van tárolva. Ennek elõnye, hogy manuálisan is szerkeszthetõek a fájlok, és külsõ segédprogram nélkül is felhasználható a keretrendszer.
 
-Ugyan ebben az esetben kifejezetten a vizuális funkciókra fektettük a hansúlyt, a rendszer tovább bõvíthetõ fizikai szimulációt megvalósító motorral, hangfájlok feldolgozását végzõ alrendszerrel vagy akár mesterséges intelligencia funkciókkal is.
+Egy fontos fejlesztési irányt jelent azonban, egy olyan szerkesztõ program létrehozása, ami még inkább leegyszerûsíti az alkalmazások fejlesztését. A szerkesztõ program feladata lenne minden konfigurációs fájl betöltése, mentése és tartalmának vizualizációja. Például a felhasznált tartalom fájlok automatikus tipizálása, és regisztrálása úgy, hogy a felhasználónak csupán a szerkesztõ felületre kéne "húznia" a szükséges fájlokat.
 
-A tartalom nyílvántartó rendszer általános megvalósítása lehetõvé teszi, hogy egyszerûen hozzunk létre új tartalom típusokat, a szkript felület pedig szerkezeténél fogva bövíthetõ, hiszen a funkciói csupán a keretrendszer belsõ mûködését tükrözik.
+Biztosítana továbbá a rendszer egy térbeli szerkesztõ felületet, ahhol a geometriai objektumok elhelyezését, orientációját lehet beállítani intuitív módon.
 
-A funkciók bõvítésével természetes módon nõhet az alkalmazási területek skálája is, az említett komponensek hozzáadásával akár egy teljesértékû videójáték motorrá lenne fejleszthetõ a rendszer...
+A további fejlesztési lehetõségek jelentõs részét támogatja a rendszer jelenlegi struktúrája. A meglévõ komponens rendszer lehetõvé teszi egész alrendszerek beépítését és felhasználását, különösebb nehézségek nélkül.
+
+A tartalom objektumok alapjai és a szükséges interfészek is biztosítva vannak, így például továbbépíthetõ lenne a funkciók listája fizikai motorral, hangrendszerrel vagy mesterséges intelligenciát támogató modulokkal.
+
+A grafikus alrendszer videóprogramjai szintén általános módon kerülnek betöltésre és paraméterezésre, ami a szkript rendszer rugalmasságához hasonló módon támogatja a vizuális minõség továbbfejlesztését is.
+
+A kialakított szkriptrendszerrel pedig a meglévõ funkciók listája gyakorlatilag korlátlanul bõvíthetõ, hiszen ezek csupán a keretrendszer belsõ mûködését tükrözik.

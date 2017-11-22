@@ -388,16 +388,3 @@ glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * 3 * m_positions.size(),
 \end{cpp} 
 
 Az "utó-töltés" során generálásra kerülnek a videómemóriához rendelt puffer objektumok (\textit{glGenBuffers}), majd minden egyes adattár (pozíció adatok, normál vektor adatok stb.) feltöltésre kerül a \textit{glBufferData} hívás segítségével.
-
-\SubSection{Állapot átmenet optimalizáció OpenGL-ben}
-
-Az OpenGL környezetre specifikus a \textit{grafikai állapotgép} jelleg. Ez azt jelenti, hogy a futási környezet (\textit{GL context}) viselkedését, illetve a kiadott parancsok hatását, minden pillanatban egy bizonyos számú állapotváltozó határozza meg. Ilyenek például, az aktuális használatban lévõ \textit{tömb puffer}, az aktuális mélységi ellenõrzés (\textit{depth test}) állapota, vagy a stencil mûveletekhez tartozó funkció típusa.
-
-Ezen állapotok megváltoztatásához a legtöbb esetben a grafikus vezérlõre kiadott parancsra van szükség. Az ilyen parancsoknak azonban minden esetben van egy bizonyos plusz idõ költsége az általános függvény hívásokkal szemben, hiszen a mûveletek nem kizárólag a központi processzoron történõ számításokat eredményeznek, hanem külsõ hardver (GPU) "megszólítását" is. 
-
-Annak érdekében tehát, hogy az állapot átmenetek minél kevésbé terheljék az alkalmazást, egy belsõ állapottérre van szükség. Ez egyszerûen azt jelenti, hogy azokat a kontextus változókat, amiket használunk (vagy amelyeket \textit{gyakran} használunk), az alkalmazás memóriájában is eltároljuk. Az állapotváltozók így két helyen lesznek tárolva. Ennek hátránya lehet a szinkronizációból eredõ problémák. Az alkalmazás oldali állapottér bevezetésével biztosítanunk kell, hogy a továbbiakban az állapotváltozók \textbf{lekérdezése} és \textbf{beállítása} kizárólag ezen állapottéren keresztül történik. 
-
-Az állapottér jellemzõ mûvelete a lekérdezés és a beállítás mellett a \textit{feltöltés}. Ez a mûvelet jelenti a grafikus vezérlõ által tárolt állapottér frissítését, az alkalmazás oldali állapottér változóival.
-
-Ennek a kialakításnak az elõnye, hogy az állapotok frissítése az alkalmazás egy jól meghatározott pontján történik, így az abból származó teljesítmény költséggel könnyen lehet számolni, és ami a legfontosabb: az állapotváltozók frissítésére kizárólag akkor kerül sor, ha valóban történt változás az alkalmazás oldali állapottérben. Ennek ellenõrzése pedig kisebb költségekkel jár, mint folyamatos, szükségtelen frissítéseket végezni.
-

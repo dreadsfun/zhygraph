@@ -11,7 +11,7 @@ private:
 public:
 	shader_program( void );
 	shader_program( shader_program&& m );
-	shader_program( const shader_program& ) = delete;
+	shader_program( const shader_program& ) = default;
 	shader_program& set_vertex_program( GLuint v );
 	shader_program& set_fragment_program( GLuint v );
 	shader_program& link( void );

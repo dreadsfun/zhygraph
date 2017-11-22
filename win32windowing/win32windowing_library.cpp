@@ -6,6 +6,7 @@
 #include <di_rtlib/define_dependency.hpp>
 #include <core/windowing.hpp>
 #include <core/logger.hpp>
+#include <iostream>
 #define CLASS_NAME L"win32_eng_class"
 class win32display_device
 	: public i_display_device {
@@ -612,13 +613,13 @@ private:
 		} else {
 			r = wglCreateContext( tctx );
 		}
-
+		
 		if( share != 0 && wglShareLists( r, share ) == FALSE ) {
 			LPSTR err_msg = nullptr;
 			size_t s = FormatMessageA( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 				NULL, GetLastError(), MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), static_cast< LPSTR >( err_msg ), 0, NULL );
 
-			serror << "context sharing was requested, but was failed to set up:\n\t" << std::string( err_msg, s );
+			serror << "context sharing was requested, but failed to set up:\n\t" << std::string( err_msg, s );
 			LocalFree( err_msg );
 		}
 		return r;
@@ -657,6 +658,38 @@ private:
 
 			if( false_context != NULL ) {
 				_load_extensions( desktop_context, false_context );
+
+				if( glewIsExtensionSupported("wglEnumGpusNv") ) {
+					sinfo << "gpu enumeration is available, select device:";
+
+					HGPUNV gpuhnd;
+					std::vector<GPU_DEVICE> devices;
+					for( uint8_t i = 0; wglEnumGpusNV( i, &gpuhnd ); ++i ) {
+						devices.emplace_back();
+						devices.back().cb = sizeof( GPU_DEVICE );
+						wglEnumGpuDevicesNV( gpuhnd, i, &devices.back() );
+
+						sinfo << "device id: " << i << " name: " << devices.back().DeviceName << " description: " << devices.back().DeviceString;
+					}
+
+					uint8_t selected = 0;
+					bool invalid = true;
+
+					while( invalid ) {
+						sinfo << "enter valid device id:";
+						std::cin >> selected;
+
+						invalid = selected >= devices.size();
+					}
+
+					sinfo << "selected device: " << selected;
+
+				} else {
+					sinfo << "gpu enumeration is not available";
+				}
+
+
+
 				_set_pixelformat( m_hdc, false_desc );
 				m_glhdc = _create_gl_context( m_hdc, NULL );
 				r = m_glhdc != NULL && _load_extensions( m_hdc, m_glhdc );

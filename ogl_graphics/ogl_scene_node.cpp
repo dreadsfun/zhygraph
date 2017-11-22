@@ -21,6 +21,8 @@ bool mesh_renderer_node::_load( type_manager_ptr tm, bool async ) {
 		if( mmod != nullptr && mmod->texture().size() > 0 ) {
 			bool growtxmap = true;
 			for( const texture& t : mmod->texture() ) {
+				if( t.file().empty() ) continue;
+
 				asset::texture_ptr tptr = std::static_pointer_cast< asset::texture >( tmgr->get_asset( asset_url( t.file() ) ) );
 				if( tptr ) {
 					if( growtxmap ) {

@@ -202,4 +202,21 @@ translate(self, dirc, space = coordinate_space.world)
 rotate_around(self, cent, axis, angle, look = False)
 \end{python}
 
-\SubSection{Megjelenítési funkciók}
+\SubSection{Üzenetküldés}
+
+Ismerjük már a keretrendszer üzenetküldési lehetõségeit, a \textit{py\_api/logger.py} modul tartalmazza a funkciók hívásához szükséges, egyszerû definíciókat:
+
+\begin{python}
+debug(msg)
+info(msg)
+warn(msg)
+error(msg)
+\end{python}
+
+A funkciók mindegyike egy üzenetet vár, ami a natív üzenetküldõ rendszernek lesz továbbítva a megfelelõ prioritás szerint. Láthatjuk, hogy hiányzik a "fatal" prioritáshoz tartozó hívás, emögött az az elképzelés húzódik, hogy a magas szintû szkriptekben már nem fordulhat elõ olyan hiba, ami az alkalmazás futását közvetlenül akadályozhatná.
+
+\SubSection{Vektorok}
+
+Egyszerû struktúrákban biztosít vektor-algebrai funkciókat a \textit{py\_api/vector.py} útvonalon található modul. Biztosítottak a kettõ-, három- és négydimenziós vektorok, valamint az ezeken értelmezhetõ összeadás és kivonás valamint a számmal történõ szorzás és osztás mûveletei.
+
+A \textit{py\_api/vector\_proxy.py} modul tartalmazza a C-kompatibilitási struktúrákat, amik ahhoz szükségesek, hogy a C-ben és a Python-ban implementált funkciók között megtörténhessen a paraméterek átadása.

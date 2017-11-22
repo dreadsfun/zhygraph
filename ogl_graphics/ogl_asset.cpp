@@ -17,7 +17,7 @@ void texture::upload_data( void ) {
 		_set_filter_mode();
 		_set_wrap_mode();
 		_set_aniso();
-		if( this->get_load_param( "generate_mipmap" ) == "true" ) {
+		if( this->get_load_param( "generate_mipmap" ) != "false" ) {
 			glGenerateMipmap( GL_TEXTURE_2D );
 		}
 		m_data.clear();
@@ -27,6 +27,7 @@ void texture::upload_data( void ) {
 
 void texture::bind( unsigned int unit ) {
 	glActiveTexture( GL_TEXTURE0 + unit );
+	glBindTexture( GL_TEXTURE_2D, m_gl_name );;
 	this->upload_data();
 }
 
@@ -66,21 +67,17 @@ void texture::_set_filter_mode( void ) const {
 	if( fm == "point" ) {
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	}
-
-	if( fm == "bilinear" ) {
+	} else if( fm == "bilinear" ) {
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	}
-
-	if( fm == "trilinear" ) {
+	} else {
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	}
 }
 
 void texture::_set_aniso( void ) const {
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_params.get_< int >( "aniso_level" ) );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_params.get_< int >( "aniso_level", 2 ) );
 }
 
 

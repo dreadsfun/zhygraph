@@ -1,2 +1,138 @@
-\Chapter{Futtatási tesztek és mérési eredmények}
+\Chapter{Futtatási tesztek}
 \label{Chap:tesztek}
+
+\Section{Rendszerüzenetek}
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/error.eps, width=15.3cm, height=13.5cm}
+\caption{Az üzenetküldõ rendszer különbözõ csatornái}
+\label{fig:errorscreen}
+\end{figure}
+
+A legfontosabb formája a konfigurációs, adat vagy egyéb típusú hibák közlésének a rendszerüzenetek küldése. Egy-egy alkalmazás fejlesztése közben, ha valami a nem várt módon mûködik, mindig elsõdleges a rendszer mûködésének végigkövetése az üzenetek alapján.
+ 
+A teszthez létrehozásra került egy "konzol", valamint egy speciális hiba csatorna, a tárgyalt módon a komponens konfigurációban:
+
+\begin{xml}
+<component name="n_stdout_channel" class="stdout_channel"/>
+<component name="messagebox_channel" class="win32messagebox"/>
+
+...
+
+<inject_one receiver="default_logger">
+  <inject slot="channels" injection="n_stdout_channel"/>
+  <inject slot="channels" injection="n_file_channel"/>
+  <inject slot="channels" injection="messagebox_channel"/>
+</inject_one>
+\end{xml}
+
+A konzol csatorna már ismert, a kapott üzeneteket a standard kimenetre írja. Az új csatorna feladata pedig, hogy az \textit{error} vagy \textit{fatal} prioritású üzeneteket jelenítse meg egy felugró ablakban. Ez látható a \myref{fig:errorscreen} ábrán.
+
+Az ábrán megfigyelhetõ továbbá az üzenetek formázási módszere. Minden üzenetcsoport elõtt szerepel szögletes zárójelek között a \textit{szálazonosító} valamint az az osztály, ahonnan az üzenet származik. Annak érdekében, hogy ne váljon szükségessé újra és újra megjeleníteni a küldõ osztály és azonosító értékeket, az üzenetek csoportokba vannak osztva, és a fejléc csak akkor jelenik meg, ha az osztály vagy a szálazonosító megváltozik. Egy csoporton belül találhatóak a konkrét üzenetek, az egyes üzenetek elõtt pedig szintén szögletes zárójelben az egyes prioritásokhoz tartozó jelzések:
+
+\begin{description}
+\item "-" debug
+\item "+" info
+\item "!" warn
+\item "!!" error
+\item "!!!" fatal
+\end{description}
+
+A felugró ablakon található egy "OK" gomb, amivel bezárhatjuk az ablakot. Az alkalmazás futása ezután a hiba jellegétõl függõen megszakadhat vagy folytatódhat.
+
+\Section{Példa alkalmazás}
+
+A \textit{.TARGET/Debug/Win32} útvonalon elérhetõ minden szükséges fájl, egy példa alkalmazás futtatásához. A belépési pont, tehát a futtatható állomány a \textit{main.exe} fájl. A példa célja, hogy demonstrálja a keretrendszer legalapvetõbb funkcióit, tehát, hogy képes kizárólag konfigurációs fájlok alapján tetszõleges geometriai objektumokat betölteni és tetszõleges textúrával megjeleníteni, valamint szkript fájlokat betölteni és azokban egy elõre definiált funkciót meghívni, az interakció biztosításához.
+
+A keretrendszer elengedhetetlen konfigurációs fájlja, az \textit{engine.conf} megtalálható a futtatható állomány mellett. A felhasznált tartalom objektumok pedig az \textit{assets könyvtárban}, amin belül típusonként elkülönítve találhatók a szkript, xml, textúra, geometria és videóprogram fájlok.
+
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/testScene.eps, width=15cm, height=10.5cm}
+\caption{Egy egyszerû példa kompozíció}
+\label{fig:testscene}
+\end{figure}
+
+A jelenet felépítésében megtalálható három geometriai alakzat, egy égboltot reprezentáló objektum, egy kamera struktúra és egy szkriptet tartalmazó csúcs. Ehhez, a szükséges konfigurációs fájl (\textit{xml/scenes.xml}) a következõképpen alakul:
+
+\begin{xml}
+<node name="camera" class="camera_node">
+  <attribute name="projection_mode" value="perspective"/>
+  <attribute name="aspect_ratio" value="1.33333"/>
+  <attribute name="field_of_view" value="0.93333"/>
+  <attribute name="near_clip" value="0.1"/>
+  <attribute name="far_clip" value="500"/>
+</node>
+
+<node name="tent" class="mesh_renderer_node">
+  <attribute name="mesh_url" value="mesh@tent.obj"/>
+  <attribute name="materials" value="tent"/>
+</node>
+
+<node name="camera_control" class="py_scene_node">
+  <attribute name="script_url" value="script@camera.py"/>
+</node>
+
+<node name="ground" class="mesh_renderer_node">
+  <attribute name="mesh_url" value="mesh@landscape.obj"/>
+  <attribute name="materials" value="ground"/>
+</node>
+
+<node name="skybox" class="mesh_renderer_node">
+  <attribute name="mesh_url" value="mesh@skybox.obj"/>
+  <attribute name="materials" value="skybox"/>
+</node>
+
+<node name="cube" class="mesh_renderer_node">
+  <attribute name="mesh_url" value="mesh@cube.obj"/>
+  <attribute name="materials" value="tent"/>
+</node>
+
+<scenes>
+  <scene name="scene1" 
+    graph="camera tent camera_control ground skybox cube"/> 
+</scenes>
+\end{xml}
+
+A hivatkozott anyagtulajdonság objektumok megtalálhatóak a \textit{xml/materials.xml} fájlban. Ezek mindegyike egy árnyékoló programot használ, ami megtalálható a \textit{shader/standardfs.glsl} fájlban.
+
+A kamera struktúra irányítására jött létre egy egyszerû szkript fájl, ez a \textit{script/camera.py} útvonalon található:
+
+\begin{python}
+from py_api.scene_node import camera_node
+from py_api.input import input, keys, buttons
+from py_api.transform import transform, coordinate_space
+from py_api.vector import vec3
+
+maincamera = camera_node.find('camera')
+
+def update():
+  if input.get_key(keys.w):
+    maincamera.transform.translate(
+	  vec3(0.02, 0.0, 0.0), coordinate_space.local)
+
+  if input.get_key(keys.s):
+    maincamera.transform.translate(
+	  vec3(-0.02, 0.0, 0.0), coordinate_space.local)
+
+  if input.get_key(keys.a) or input.get_key(keys.left):
+    maincamera.transform.rotate(vec3(0.0, 0.0, -0.02))
+
+  if input.get_key(keys.d) or input.get_key(keys.right):
+    maincamera.transform.rotate(vec3(0.0, 0.0, 0.02))
+
+  if input.get_key(keys.up):
+    maincamera.transform.translate(
+	  vec3(0.0, -0.02, 0.0), coordinate_space.local)
+
+  if input.get_key(keys.down):
+    maincamera.transform.translate(
+	  vec3(0.0,0.02,0.0), coordinate_space.local)
+\end{python}
+
+A szkript elsõ részében importáljuk a szükséges modulokat a keretrendszer saját csomagjából (py\_api). Ezek a kamerastruktúrát leíró csúcs-osztály (camera\_node), a felhasználói bemenet kezelésére szolgáló osztályok és értékek (input, keys, buttons), a transzformációkhoz szükséges osztályok (transform, coordinate\_space) valamint egy három-dimenziós vektor struktúra.
+
+A következõ kifejezés megkeresi a virtuális fagráfban a megadott csúcsot, és hozzárendeli egy változóhoz, hiszen a keresés idõigényes eljárás, így nem lenne célszerû minden frissítéskor meghívni.
+
+Az \textit{update} funkció pedig a már tárgyalt "nyílás" a keretrendszer belsejébe, hiszen ez a funkció minden aktív szkriptben automatikusan meghívódik, minden alkalmazás iterációban pontosan egyszer. Így alkalmassá teszi a bemenetek lekezelésére és a kamerastruktúra helyzetének frissítésére: a \textit{W, A, S, D} billentyûkkel lehetséges elõre hátra mozgatni, illetve forgatni a kamerát, a fel és le nyilakkal pedig a magasságot tudjuk állítani.

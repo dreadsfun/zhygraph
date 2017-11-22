@@ -8,35 +8,35 @@
 			<attribute name="far_clip" value="500"/>
 		</node>
 		
-		<node name="n1" class="mesh_renderer_node">
+		<node name="tent" class="mesh_renderer_node">
 			<attribute name="mesh_url" value="mesh@tent.obj"/>
-			<attribute name="materials" value="alduin"/>
+			<attribute name="materials" value="tent"/>
 		</node>
 		
-		<node name="n11" class="py_scene_node">
+		<node name="camera_control" class="py_scene_node">
 			<attribute name="script_url" value="script@camera.py"/>
 		</node>
 		
-		<node name="n111" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@cone.obj"/>
-			<attribute name="materials" value="alduin"/>
+		<node name="ground" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@landscape.obj"/>
+			<attribute name="materials" value="ground"/>
 		</node>
 		
-		<node name="n112" class="mesh_renderer_node">
+		<node name="skybox" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@skybox.obj"/>
+			<attribute name="materials" value="skybox"/>
+		</node>
+		
+		<node name="cube" class="mesh_renderer_node">
 			<attribute name="mesh_url" value="mesh@cube.obj"/>
-			<attribute name="materials" value="alduin"/>
+			<attribute name="materials" value="tent"/>
 		</node>
 		
-		<node name="n1121" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@cylinder.obj"/>
-			<attribute name="materials" value="alduin"/>
-		</node>
-		
-		<node name="n12" class="mesh_renderer_node">
-			<attribute name="mesh_url" value="mesh@icosphere.obj"/>
-			<attribute name="materials" value="alduin"/>
-		</node>
-		
+		<!-- <node name="n12" class="mesh_renderer_node"> -->
+			<!-- <attribute name="mesh_url" value="mesh@icosphere.obj"/> -->
+			<!-- <attribute name="materials" value="alduin"/> -->
+		<!-- </node> -->
+		<!--
 		<node name="ls1" class="mesh_renderer_node">
 			<attribute name="mesh_url" value="mesh@ls1.obj"/>
 			<attribute name="materials" value="alduin"/>
@@ -116,9 +116,10 @@
 			<attribute name="mesh_url" value="mesh@torus.obj"/>
 			<attribute name="materials" value="alduin"/>
 		</node>
+		-->
 	</nodes>
 	
 	<scenes>
-		<scene name="scene1" graph="camera n1 n11 n111 . n112 n1121 . . . n12 . . n142 ls1 ls2 ls3 ls4 ls5 ls6 ls7 ls8 ls9 ls10 ls11 ls12 ls13 ls14 ls15"/>
+		<scene name="scene1" graph="camera tent camera_control ground skybox cube" /> 
 	</scenes>
 </scene-graph>

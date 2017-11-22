@@ -126,7 +126,8 @@ private:
 			serror << "failed to link program, vertex shader was \"" << vtx->get_path() << "\", fragment shader was \""
 				<< fragment->get_path() << "\"\n\t\treason: " << p.get_log();
 		} else {
-			m_programs.emplace_back( std::move( p ) );
+		//	m_programs.emplace_back( std::move( p ) );
+			m_programs.push_back( p );
 			r = &m_programs.back();
 			sinfo << "program inserted, vertex shader was \"" << vtx->get_path() << "\", fragment shader was \""
 				<< fragment->get_path() << "\"";
@@ -277,6 +278,12 @@ private:
 						}
 					}
 
+					GLint unit = 0;
+					GLint boundTex = 0;
+					glGetIntegerv( GL_ACTIVE_TEXTURE, &unit );
+					glGetIntegerv( GL_TEXTURE_BINDING_2D, &boundTex );
+
+
 					// draw this particular submesh to every provided camera
 					// this allows the submesh's state to be setup only once per game-loop
 					for( auto b = cams.first; b != cams.second; ++b ) {
@@ -380,7 +387,21 @@ private:
 			error( "failed to initialize mesh renderer subsystem" );
 			r = false;
 		}
+		
+		glFrontFace( GL_CCW );
+		glCullFace( GL_BACK );
+	//	glEnable( GL_CULL_FACE );
+
+		glEnable( GL_LINE_SMOOTH );
+		glEnable( GL_POLYGON_SMOOTH );
+
+		glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+		glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+
 		glEnable( GL_DEPTH_TEST );
+		glDepthFunc( GL_LEQUAL );
+		glClearDepth( 1.0f );
+
 		return r;
 	}
 

@@ -37,7 +37,6 @@ Ezt a módszert láthatjuk megvalósítva az \textit{asset\_manager\_base} osztályba
 
 \begin{cpp}
 typedef std::unordered_map< asset_url, asset_ptr > asset_url_map;
-...
 asset_url_map m_asset_map;
 \end{cpp}
 
@@ -109,7 +108,6 @@ if( a->get_state().compare_exchange_strong(
   ) ) {
   sinfo << "unloading asset \"" << a->get_path() << "\"";
   a->pre_unload();
-...
 \end{cpp}
 
 A \textit{compare\_exchange\_strong} hívás mûködésének lényege, hogy az atomi változó értékét összehasonlítja egy várt értékkel (\textit{exp}). Ha a két érték megegyezik, akkor az atomi változó értéke beállításra kerül a várt értékre és igazzal tér vissza. Ha a két érték nem egyezik meg, akkor a várt érték helyére írja az aktuális értéket és hamissal tér vissza. Az egész mûvelet \textit{atomi}, tehát a változó értéke nem változtatható meg a kiolvasási és kicserélési mûveletek között \cite{CES}.
