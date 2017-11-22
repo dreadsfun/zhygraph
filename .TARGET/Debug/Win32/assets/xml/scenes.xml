@@ -1,0 +1,39 @@
+<scene-graph>
+	<nodes>
+		<node name="camera" class="camera_node">
+			<attribute name="projection_mode" value="perspective"/>
+			<attribute name="aspect_ratio" value="1.33333"/>
+			<attribute name="field_of_view" value="0.93333"/>
+			<attribute name="near_clip" value="0.1"/>
+			<attribute name="far_clip" value="500"/>
+		</node>
+		
+		<node name="tent" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@tent.obj"/>
+			<attribute name="materials" value="tent"/>
+		</node>
+		
+		<node name="camera_control" class="py_scene_node">
+			<attribute name="script_url" value="script@camera.py"/>
+		</node>
+		
+		<node name="ground" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@landscape.obj"/>
+			<attribute name="materials" value="ground"/>
+		</node>
+		
+		<node name="skybox" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@skybox.obj"/>
+			<attribute name="materials" value="skybox"/>
+		</node>
+		
+		<node name="cube" class="mesh_renderer_node">
+			<attribute name="mesh_url" value="mesh@cube.obj"/>
+			<attribute name="materials" value="tent"/>
+		</node>
+	</nodes>
+	
+	<scenes>
+		<scene name="scene1" graph="camera tent camera_control ground skybox cube" /> 
+	</scenes>
+</scene-graph>
