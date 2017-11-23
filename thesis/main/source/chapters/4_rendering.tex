@@ -23,7 +23,7 @@ Egy csúcspont a következõ információkat tartalmazza általában, melyeknek szükség
 \item A csúcshoz rendelt normális, binormális és tangens vektor. Ezeknek a vektoroknak az objektum megvilágítási számításaiban van szerepe. Fontos, hogy a három vektor közül egyet elégséges tárolni, hiszen a másik kettõ minden esetben számítható belõle. Azonban a valósidejû kiszámítása ezeknek a vektoroknak értékes idõt vehet el a rajzolási folyamatok közben, tehát mérlegelni kell, hogy a memória használatot vagy a számítási idõt helyezzük elõtérbe. Ebben az esetben tároljuk a vektorok mindegyikét, tehát a helyigény: $3*3*32=288$ bit.
 \end{itemize}
 
-Nem a csúcspontra hanem a geometriára jellemzõ attribútum az \textit{oldalak} száma. Eddig a geometriai objektum csúcspontjait definiáltuk, ezek azonban nem elégségesek a geometria rekonstruálására, hiszen a csúcspontok tetszõleges módon köthetõek össze. Szükségünk van még arra az információra, hogy mely csúcsok alkotnak egy-egy \textit{sokszöget}, illetve a számítógépi grafikában jellemzõ \textit{háromszögeket}.
+Nem a csúcspontra hanem a geometriára jellemzõ attribútum a \textit{lapok} száma. Eddig a geometriai objektum csúcspontjait definiáltuk, ezek azonban nem elégségesek a geometria rekonstruálására, hiszen a csúcspontok tetszõleges módon köthetõek össze. Szükségünk van még arra az információra, hogy mely csúcsok alkotnak egy-egy \textit{sokszöget}, illetve a számítógépi grafikában jellemzõ \textit{háromszögeket}.
 
 \begin{figure}[ht]
 \centering
@@ -41,7 +41,7 @@ Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatéko
 \label{fig:indexedgraph}
 \end{figure}
 
-Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk: Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ az oldalak száma.
+Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk. Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ a lapok száma.
 
 Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
 
@@ -112,7 +112,7 @@ Az oktális fák csoportosíthatóak a tér felosztás jellege szerint:
 Csoportosíthatunk továbbá a dinamika szempontjából:
 
 \begin{itemize}
-\item Statikus az oktális fa, ha azt egyszer építjük fel, egy elõre meghatározott geometria (vagy pont) halmazból és nem változik a szerkezete az élettartama során. Ennek elõnye, hogy nem szükséges kezelni azokat az eseteket, melyek során a fában tárolt objektumok valamely fizikai paramétere (kiterjedése, pozíciója vagy orientációja) megváltozhat. Ez hasznos lehet akkor, ha van egy elõre ismert objektum halmaz, melynek elemeirõl tudjuk, hogy nem változtathatóak meg a paramétereik. Egy grafikai szimulációban, például egy videójátékban ilyenek lehetnek a hátteret alkotó geometriák, mint házak, nem animált fák stb.
+\item Statikus az oktális fa, ha azt egyszer építjük fel, egy elõre meghatározott geometria (vagy pont) halmazból és nem változik a szerkezete az élettartama során. Ennek elõnye, hogy nem szükséges kezelni azokat az eseteket, melyek során a fában tárolt objektumok valamely fizikai paramétere (kiterjedése, pozíciója vagy orientációja) megváltozhat. Ez hasznos lehet akkor, ha van egy elõre ismert objektum halmaz, melynek elemeirõl tudjuk, hogy nem változtathatóak meg a paramétereik. Egy grafikai szimulációban, például egy videójátékban ilyenek lehetnek a hátteret alkotó geometriák, mint házak, nem animált fák.
 \item Dinamikusnak nevezzük az oktális fát, ha az abban tárolt objektumok fizikai paraméterei megváltozhatnak, és ezzel a fa belsõ struktúrája is módosításra kerülhet. Hátránya, hogy szükséges a program szintjén kezelni ezeket az eseteket, ami akkor is okozhat teljesítménybeli különbséget a statikus fával szemben, ha a fa struktúrája végül soha nem változik meg. Elõnye természetesen, hogy a benne tárolt objektumok fizikai paraméterei tetszõlegesen változtathatóak.
 \end{itemize}
 

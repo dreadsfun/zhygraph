@@ -1,37 +1,37 @@
-\Chapter{Digitális tartalom nyílvántartás}
+\Chapter{Digitális tartalom nyilvántartás}
 \label{chap:assetmanagement}
 \label{Chap:tartalom}
-A rendszer egy alapvetõ komponense, a tartalom nyílvántartó alrendszer. A következõkben láthatjuk mit nevezünk digitális tartalomnak, hogy milyen felelõsségei vannak egy ilyen alrendszernek és hogy hogyan épül fel a futási környezetben használt, a tartalmat reprezentáló adatstruktúra.
+A rendszer egy alapvetõ komponense, a tartalom nyilvántartó alrendszer. A következõkben láthatjuk mit nevezünk digitális tartalomnak, hogy milyen felelõsségei vannak egy ilyen alrendszernek és hogy hogyan épül fel a futási környezetben használt, a tartalmat reprezentáló adatstruktúra.
 
 \Section{A digitális tartalom definiálása}
-\textit{Digitális tartalom}nak fogunk nevezni minden olyan adatot, ami közvetlenül nem szükséges a rendszer mûködéséhez, tehát a program futtatásához. Nem soroljuk ide a konfigurációs adatokat, hiszen azok általában elengedhetetlenek a program megfelelõ operálásához. Ide sorolunk minden olyan adatot, amit a rendszer a futása során valamilyen elõre leprogramozott módon feldolgoz és az így kinyert információt egy jól definiált módon felhasználja.
+\textit{Digitális tartalom}nak fogunk nevezni minden olyan adatot, ami közvetlenül nem szükséges a rendszer mûködéséhez, tehát a program futtatásához. Nem soroljuk ide a konfigurációs adatokat, hiszen azok általában elengedhetetlenek a program megfelelõ m¿ködéséhez. Ide sorolunk minden olyan adatot, amit a rendszer a futása során valamilyen elõre leprogramozott módon feldolgoz és az így kinyert információt egy jól definiált módon felhasználja.
 
 Ilyenek lesznek a három-dimenziós geometriai entitások, melyek adatai a futás során a grafikus kártyán kerülnek tárolásra, feldolgozásra, majd a képernyõn megjelenítésre. A textúra és shader-program adatokat, amelyeknek szintén a grafikai megjelenítésben lesz szerepük, valamint a szkript-programokat, melyek a rendszer interaktivitását hivatottak szolgálni, hasonlóképp, ilyen tartalomnak tekintünk.
 
 Egy digitális tartalom entitás, egy logikailag összetartozó adathalmaz. A rendszer megvalósítása szempontjából, az egyszerûség kedvéért egy, a fájlrendszeren jelen levõ fájlt tekintünk egy entitásnak, mely tartalmaz minden szükséges adatot a tartalom helyes betöltéséhez és feldolgozásához.
 
 \Section{Adat redundancia megelõzése}
-A tartalom nyílvántartó rendszer elsõ és legfontosabb szerepe az \textit{adat redundancia} kiküszöbölése. Jelen esetben akkor beszélhetünk adat-redundanciáról, ha egy entitás, illetve az azzal asszociált fájl a szükségesnél többször kerül betöltésre a merevlemezrõl (vagy a fájlrendszer szempontjából ekvivalensnek tekinthetõ adathordozóról) a memóriába, mint azt a rendszer igényelné a helyes futás érdekében.
+A tartalom nyilvántartó rendszer elsõ és legfontosabb szerepe az \textit{adat redundancia} kiküszöbölése. Jelen esetben akkor beszélhetünk adat-redundanciáról, ha egy entitás, illetve az azzal asszociált fájl a szükségesnél többször kerül betöltésre a merevlemezrõl (vagy a fájlrendszer szempontjából ekvivalensnek tekinthetõ adathordozóról) a memóriába, mint azt a rendszer igényelné a helyes futás érdekében.
 
 A legalapvetõbb igény a redundancia megszüntetésével kapcsolatban, hogy a tartalmat reprezentáló adatstruktúrát soha nem másoljuk le. Minden egyedi struktúra, a futási környezet szintjén is egyedi objektumot jelent a memóriában. Ha valamelyik belsõ vagy külsõ (\textit{kliens}) kódnak szüksége van egy objektumra, azok mindig konstans, vagy nem-konstans \textit{referenciákon} (pointereken) keresztül kerülnek megosztásra.
 
 A követelmény teljesítéséhez szükséges továbbá, hogy a tartalom adatstruktúra támogassa a fájlokkal történõ asszociációt és az egyedi azonosítást. A fájl-asszociáció létrejöhet a fájl elérési útvonalának tárolásával, az egyedi azonosítás pedig egy tetszõleges azonosító bevezetésével. Az azonosító jelen esetben egy ember által olvasható formátum lesz, annak érdekében, hogy a késõbbiekben az adatstruktúra példány elérését is lehetõvé tegye.
 
-Ebben az esetben az azonosítás megvalósítása egy speciális "útvonal-struktúra", mely implementációja a \textit{core/asset} útvonalon, az \textit{asset\_url} osztályban található. Azért nem hagyományos, például Windows operációs rendszer specifikus útvonal formátumot haszálunk, hogy a struktúra támogassa a fájl-rendszer és a platform absztrakcióját, ezzel lehetõvé téve például hálózati alapú betöltést, akár különbözõ platformok között is.
+Ebben az esetben az azonosítás megvalósítása egy speciális "útvonal-struktúra", mely implementációja a \textit{core/asset} útvonalon, az \textit{asset\_url} osztályban található. Azért nem hagyományos útvonal formátumot (például Windows operációs rendszer specifikus útvonal formátumot) használunk, hogy a struktúra támogassa a fájl-rendszer és a platform absztrakcióját, ezzel lehetõvé téve például hálózati alapú betöltést, akár különbözõ platformok között is.
 
 Az útvonal struktúra a "tartalom\_típus@könyvtár:név.kiterjesztés" formátumot követi, például egy geometriai objektumra történõ hivatkozás a következõképpen alakul:
 \begin{xml}
 <attribute name="mesh_url" value="mesh@icosphere.obj"/>
 \end{xml}
 
-Ezek alapján a redundancia megelõzése a nyílvántartó rendszernek közölt adatok szûrését jelenti: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét.
+Ezek alapján a redundancia megelõzése a nyilvántartó rendszernek közölt adatok szûrését jelenti: a rendszert használó kód (kliens) kérheti egy adott azonosítójú entitás betöltését. A rendszer azonban ellenõrzi, hogy adott azonosítóval van-e már betöltött entitás és ha igen, nem végez betöltést. Ezzel megspórolva az adat feldolgozásra szánt idõt és az entitás memóriaköltségét.
 
 \Section{Hatékony tartalom elérés biztosítása}
 A korábbiakban már hozzáadtunk egy egyedi azonosítót a tartalom adatstruktúrához, a kliensek fõleg ezen keresztül érhetik majd el a kívánt objektumokat. Annak érdekében, hogy az elérés sebessége megfelelõ legyen, az objektumokat összepárosítjuk az egyedi azonosítójukkal egy úgynevezett \textit{hasítótáblában}.
 
 A hasítótáblák olyan asszociatív adatstruktúrák, melyekben a kulcsok egy hasító algoritmussal kerülnek generálásra, azok pedig közvetlenül indexelik a belsõ tárolót valamilyen, implementációtól függõ ütközés-kezelési stratégiával \cite{hash_table}.
 
-A hasítótábla kulcs típusa az egyedi azonosító típusa lesz (\textit{string}), az érték típusa pedig az adatstruktúra \textit{referenciatípusa}. Mivel nincs szükség a kulcsok rendezésére, valamint általában az objektumok elérése gyakoribb lesz, mint a beillesztésük, a hasítótábla egy rendezetlen változatát választjuk, ezzel spórolva a rendezés költségét. A C++ nyelv például biztosít ilyen adatstruktúrát az \textit{std::unordered\_map<T>} osztály formájában. A rendezetlen hasítótábla elem beillesztésének és elérésének idõkomplexitása átlagos esetben: $O(1)$, legrosszabb esetben: $O(size())$, ahol size() az aktuális táblaméret \cite{unordered_map}.
+A hasítótábla kulcs típusa az egyedi azonosító típusa lesz (\textit{string}), az érték típusa pedig az adatstruktúra \textit{referenciatípusa}. Mivel nincs szükség a kulcsok rendezésére, valamint általában az objektumok elérése gyakoribb lesz, mint a beillesztésük, a hasítótábla egy rendezetlen változatát választjuk, ezzel spórolva a rendezés költségét. A C++ nyelv például biztosít ilyen adatstruktúrát az \textit{std::unordered\_map<T>} osztály formájában. A rendezetlen hasítótábla elem beillesztésének és elérésének idõkomplexitása átlagos esetben: $O(1)$, legrosszabb esetben: $O(size())$, ahol $size()$ az aktuális táblaméret \cite{unordered_map}.
 
 Ezt a módszert láthatjuk megvalósítva az \textit{asset\_manager\_base} osztályban. Az osztály definiál egy tábla típust az egyszerû használat érdekében, illetve deklarál egy adattagot ezzel a típussal:
 
@@ -85,7 +85,7 @@ enum manager_ref_list {
 Ezzel a kialakítással pedig, a \textit{manager\_ref\_count} kifejezés értéke a listán szereplõ tételek száma lesz.
 
 \Section{Szálbiztonság megvalósítása}
-A tartalom nyílvántartó rendszer terve törekszik a párhuzamosítási lehetõségek kihasználására. Szeretnénk ha a tartalmak betöltése megvalósulhatna aszinkron módon, annak érdekében, hogy egy esetlegesen idõigényes töltési folyamat ne akadályozza a rendszer más eljárásait. A párhuzamosítás az elõnyeivel együtt, hordoz magában bizonyos veszélyeket, ezért a hibák megelõzésének lehetõségeit tárgyaljuk ebben a fejezetben.
+A tartalom nyilvántartó rendszer törekszik a párhuzamosítási lehetõségek kihasználására. Szeretnénk, ha a tartalmak betöltése megvalósulhatna aszinkron módon, annak érdekében, hogy egy esetlegesen idõigényes töltési folyamat ne akadályozza a rendszer más eljárásait. A párhuzamosítás az elõnyeivel együtt, hordoz magában bizonyos veszélyeket, ezért a hibák megelõzésének lehetõségeit tárgyaljuk ebben a szakaszban.
 
 A \textit{memória versengés} azt a problémát írja le, amikor egy megoszott memóriaterületet akar elérni valós idõben, \textbf{párhuzamosan}, két különbözõ, egymástól független futási egység (jelen esetben \textit{szálak}).
 
