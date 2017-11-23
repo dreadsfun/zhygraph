@@ -38,13 +38,13 @@ exmpl_system(PyObject* self, PyObject* args) {
 }
 \end{cpp}
 
-Az ilyen formában kialakított funkcióknak a C/C++ oldalon mindig két paramétere van: a \textit{self} és az \textit{args}. A self paraméter a Pythonban (és egyéb objektum-orientált nyelvekben) azon objektumot jelenti, amire a funkcióhívás történt (implicit \textit{this pointer} a C++ nyelvben). Ez jelen esetben \textit{NULL} lesz, hiszen a funkció modul- és nem objektumszintû. Az args paraméter egy kompozit objektum, ez tárolja a funkciónak átadott minden egyéb paramétert. 
+Az ilyen formában kialakított funkcióknak a C/C++ oldalon mindig két paramétere van: a \textit{self} és az \textit{args}. A self paraméter a Pythonban (és egyéb objektum-orientált nyelvekben) azon objektumot jelenti, amire a funkcióhívás történt (implicit \textit{this pointer} a C++ nyelvben). Ez jelen esetben \textit{NULL} lesz, hiszen a funkció modul- és nem objektumszintû. Az \textit{args} paraméter egy kompozit objektum, ez tárolja a funkciónak átadott minden egyéb paramétert. 
 
-A Python nyelvben minden objektum közös õstípusa a \textit{PyObject}, legyen szó primitív értékekrõl vagy osztálypéldányokról. Így tehát az args változóban tárolt objektumok is mind PyObject típusúak, ezért használat elõtt konverzió szükséges a megfelelõ típusra. A kódrészletben látható \textit{PyArg\_ParseTuple} hívás feldolgozza a paraméterül kapott argumentum objektumot, ellenõrzi a paraméterek típusát és a megadott formátum alapján eltárolja az értéküket a kívánt memória címre.
+A Python nyelvben minden objektum közös õstípusa a \textit{PyObject}, legyen szó primitív értékekrõl vagy osztálypéldányokról. Így tehát az \textit{args} változóban tárolt objektumok is mind PyObject típusúak, ezért használat elõtt konverzió szükséges a megfelelõ típusra. A kódrészletben látható \textit{PyArg\_ParseTuple} hívás feldolgozza a paraméterül kapott argumentum objektumot, ellenõrzi a paraméterek típusát és a megadott formátum alapján eltárolja az értéküket a kívánt memóriacímre.
 
-A PyArg\_ParseTuple igaz értékkel tér vissza ha minden értéknek megfelelõ volt a típusa és sikeresen beírta az értéküket a megadott címekre. Hamis értékkel pedig akkor tér vissza, ha valamilyen nem megfelelõ argumentum listát kapott vagy a megadott formátum nem megfelelõ. \cite{extendpython}
+A \textit{PyArg\_ParseTuple} igaz értékkel tér vissza, ha minden értéknek megfelelõ volt a típusa és sikeresen beírta az értéküket a megadott címekre. Hamis értékkel pedig akkor tér vissza, ha valamilyen nem megfelelõ argumentum listát kapott vagy a megadott formátum nem megfelelõ \cite{extendpython}.
 
-A következõ lépésben létrehozzuk a modul, funkció tábláját és az inicializációs függvényét. Ahhoz, hogy a system funkciót meghívhassuk Pythonból, regisztrálnunk kell azt, a modul funkció táblájában:
+A következõ lépésben létrehozzuk a modul, funkció tábláját és az inicializációs függvényét. Ahhoz, hogy a \textit{system} funkciót meghívhassuk Pythonból, regisztrálnunk kell azt, a modul funkció táblájában:
 
 \begin{cpp}
 static PyMethodDef ExmplMethods[] = {
@@ -112,7 +112,7 @@ main(int argc, char *argv[]) {
 }
 \end{cpp}
 
-Ahogy feltettük korábban, ennek a megközelítésnek a hátránya, hogy a C kód kevésbé olvasható. Láthatóan a paraméterek felhasználása Python objektumokon keresztül történik, illetve egyéb Python specifikus hívást is kell tennünk a megfelelõ mûködés érdekében \cite{extendpython}. Nézzük meg, hogy milyen további lehetõségek állnak rendelkezésünkre a Python beágyazását illetõen.
+Ahogy feltettük korábban, ennek a megközelítésnek a hátránya, hogy a C kód kevésbé olvasható. Láthatóan a paraméterek felhasználása Python objektumokon keresztül történik, illetve egyéb Python-specifikus hívást is kell tennünk a megfelelõ mûködés érdekében \cite{extendpython}. Nézzük meg, hogy milyen további lehetõségek állnak rendelkezésünkre a Python beágyazását illetõen.
 
 \SubSection{Dinamikusan linkelt könyvtár és a ctypes}
 
@@ -186,7 +186,7 @@ A cél tehát, hogy elõre meghatározzunk bizonyos pontokat a natív kód futásában, 
 
 Meghívhatunk Python funkciót C++-ból a \textit{PyRun\_SimpleString("update()")} segítségével. Ez azonban nem hatékony, hiszen ebben az esetben az interpreter minden híváskor feldolgozza és lefordítja a szkript szövegét. Egy sokkal hatékonyabb megoldás, ha közvetlenül a függvény objektumra vonatkozó referenciát kérünk el a Python környezettõl és azt használjuk a hívás végrehajtásához.
 
-A Python minden globálisan definiált függvényt, a környezet globális táblájában tárol. Így tehát, ha el tudjuk érni a globális táblát, akkor bármely ott definiált funkciót is használhatjuk. A Python környezet biztosít funkciókatt a globális tábla eléréséhez:
+A Python minden globálisan definiált függvényt, a környezet globális táblájában tárol. Így tehát, ha el tudjuk érni a globális táblát, akkor bármely ott definiált funkciót használhatjuk. A Python környezet biztosít funkciókat a globális tábla eléréséhez:
 
 \begin{cpp}
 #include <Python.h>
@@ -245,4 +245,4 @@ függvénnyel meghívjuk a kívánt funkciót. Ennek a hívásnak az elsõ paramétere mag
 
 Az utolsó kérdés a Python függvény meghívásával kapcsolatban, a paraméterek átadása. A \textit{CallObject} hívás második paramétere egy \textit{PyObject*} típusú objektum, ahová egy változó elemszámú kompozit objektumot vár a függvény, aminek az elemeit végül a meghívni kívánt funkció kapja meg paraméterként. Ezen módja a paraméter átadásnak nagy fokú rugalmasságot enged meg, hiszen tetszõleges számú és típusú paramétert adhatunk át a függvénynek. Hátránya, hogy némi plusz teljesítmény költség merül fel, valamint a kompozit létrehozása nem minden esetben triviális.
 
-Jelen esetben arról beszélünk, hogy egy elõre meghatározott szignatúrájú függvényt szeretnénk meghívni. Ez azt jelenti, hogy a CallObject által nyújtott rugalmasságról lemondhatunk. A \textit{PyObject\_CallFunction(exp, format, [values])} funkció meghívja a megadott függvényt, úgy, hogy a \textit{format} karakterlánc típusú változóban felsorolt karaktereknek megfelelõ változókat vár, a \textit{values}, változó paraméterszámú argumentumba. Például, ha a $format="sii"$, akkor a \textit{values} helyére egy karakterlánc (\textbf{s}tring), és két egész szám (\textbf{i}nteger) értéket várunk \cite{callpython}.
+Jelen esetben arról beszélünk, hogy egy elõre meghatározott szignatúrájú függvényt szeretnénk meghívni. Ez azt jelenti, hogy a \textit{CallObject} által nyújtott rugalmasságról lemondhatunk. A \textit{PyObject\_CallFunction(exp, format, [values])} funkció meghívja a megadott függvényt, úgy, hogy a \textit{format} karakterlánc típusú változóban felsorolt karaktereknek megfelelõ változókat vár, a \textit{values}, változó paraméterszámú argumentumba. Például, ha a $format="sii"$, akkor a \textit{values} helyére egy karakterlánc (\textbf{s}tring), és két egész szám (\textbf{i}nteger) értéket várunk \cite{callpython}.

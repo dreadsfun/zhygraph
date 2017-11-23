@@ -160,7 +160,7 @@ Az \textit{inject-slot} taggal egy megadott elnevezésû függõséget állíthatunk be
 <inject_slot slot="logger" injection="default_logger"/>
 \end{xml}
 
-Az \textit{inject-all} taggal az injektálni kívánt komponenst rögzíthetjük, és azt sorolhatjuk fel, hogy mely komponensek, mely függõségeibe szeretnénk beállítani azt. Például ha csak a kiválasztott komponensekben szeretnénk beállítani az üzenetküldõ rendszert, nem az összesben:
+Az \textit{inject-all} taggal az injektálni kívánt komponenst rögzíthetjük, és azt sorolhatjuk fel, hogy mely komponensek, mely függõségeibe szeretnénk beállítani azt. Például, ha csak a kiválasztott komponensekben szeretnénk beállítani az üzenetküldõ rendszert, nem az összesben:
 
 \begin{xml}
 <inject_all injection="default_logger">
@@ -173,20 +173,20 @@ Az \textit{inject-all} taggal az injektálni kívánt komponenst rögzíthetjük, és a
 
 \Section{Központi funkciók}
 
-A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, a szálkezeléssel kapcsolatos funkciók, az idõmérésre használt osztályok, a rendszerüzenetek küldésére megvalósított funkciók, valamint a nyílvántartó rendszer alapjai is.
+A központi funkciók közé sorolunk minden olyan funkciót a rendszerben, ami nem tartozik szorosan egyik alrendszerhez sem, vagy több alrendszer által is felhasználásra kerül. Ide tartozik a már említett, virtuális teret reprezentáló fagráf, a szálkezeléssel kapcsolatos funkciók, az idõmérésre használt osztályok, a rendszerüzenetek küldésére megvalósított funkciók, valamint a nyilvántartó rendszer alapjai is.
 
 \SubSection{Virtuális tér fagráf}
 
-A virtuális tér elemeit, egy fagráfban tároljuk, tehát teljesülnek a következõk:
+A virtuális tér elemeit, egy fagráfban tároljuk, tehát teljesülnek a következõk.
 \begin{enumerate}
-\item A gráf összefüggõ és nem tartalmaz kört
-\item A gráfban egyszerû kör jön létre, ha hozzáadunk egy élt
-\item A gráf nem marad összefüggõ ha eltávolítunk egy élt
+\item A gráf összefüggõ és nem tartalmaz kört.
+\item A gráfban egyszerû kör jön létre, ha hozzáadunk egy élt.
+\item A gráf nem marad összefüggõ ha eltávolítunk egy élt.
 \end{enumerate}
 
 A gráfot irányítottnak tekintjük, hiszen a csúcsok között szülõ-gyermek viszonyt feltételezünk. Ezzel együtt teljesül az, hogy minden csúcsnak pontosan egy szülõje van, kivéve a gyökér elemet, aminek nincs szülõje. Továbbá minden csúcsnak tetszõleges számú gyermeke lehet.
 
-A csúcsok viszonya az úgy nevezett \textit{hierarchikus transzformációk} miatt lényeges. Ennek alap ötlete, hogy minden egyes csúcshoz tartozik egy transzformáció, ami leírja a csúcs helyzetét, orientációját és skálázását. A transzformációk bázisa azonban mindig az aktuális csúcs szülõjének koordinátarendszere, aminek a "valós" térbeli elhelyezkedését a saját transzformációja, és az õ szüleinek transzformáció lánca határozza meg, rekurzívan.
+A csúcsok viszonya az úgy nevezett \textit{hierarchikus transzformációk} miatt lényeges. Ennek alapötlete, hogy minden egyes csúcshoz tartozik egy transzformáció, ami leírja a csúcs helyzetét, orientációját és skálázását. A transzformációk bázisa azonban mindig az aktuális csúcs szülõjének koordinátarendszere, aminek a "valós" térbeli elhelyezkedését a saját transzformációja, és az õ szüleinek transzformáció lánca határozza meg, rekurzívan.
 
 A gyökér csúcs transzformációjához tartozó bázist tekintjük az abszolút bázisnak, amelyben a pontokat az úgynevezett "világ" koordináták írnak le.
 
@@ -230,17 +230,17 @@ Az üzenetek a \textit{log\_channel} interfészen keresztül kerülnek feldolgozásra
 
 A \textit{stdout\_channel} implementáció, ahogy az elnevezése sugallja, a standard kimenetre írja a kapott üzeneteket (\textit{std::cerr} a hiba és \textit{std::cout} a nem hiba üzenetek kimenete ). A másik megvalósítás a \textit{file\_channel}, ami pedig a példányosításkor megadott fájlba írja az üzeneteit.
 
-A rendszer úgy van megvalósítva, hogy tetszõleges számú \textit{csatorna} adható a rendszerhez, és mindegyik csatorna megkapja az összes küldött üzenetet, amivel aztán az implementációtól függõ mûvelet hajtódik végre.
+A rendszer úgy került megvalósításra, hogy tetszõleges számú \textit{csatorna} adható a rendszerhez, és mindegyik csatorna megkapja az összes küldött üzenetet, amivel aztán az implementációtól függõ mûvelet hajtódik végre.
 
-\Section{A tartalom nyílvántartó alrendszer}
+\Section{A tartalom nyilvántartó alrendszer}
 
-A \textit{core/asset} útvonalon található minden osztály és funkció, ami a nyílvántartó rendszerhez szükséges. Ezek az osztályok alapul szolgálnak a konkrét tartalom típusok implementációihoz, amiket láthatunk majd az alrendszerek részletezésénél.
+A \textit{core/asset} útvonalon található minden osztály és funkció, ami a nyilvántartó rendszerhez szükséges. Ezek az osztályok alapul szolgálnak a konkrét tartalom típusok implementációihoz, amiket láthatunk majd az alrendszerek részletezésénél.
 
 \SubSection{Tartalom osztályok alapja}
 
 Minden tartalom típus õsosztálya az \textit{asset\_base} osztály, illetve az absztrakt interfész az \textit{i\_asset}. Az alap osztály tartalmaz néhány olyan adattagot, ami bármely tartalom típusra jellemzõ lehet. Ilyen a tartalom fájl útvonalát jelzõ tag (\textit{m\_path:asset\_url}), az objektum aktuális állapota (\textit{m\_state:asset\_state}), valamint egy egyedi konfigurációs objektum, ami egy-egy tartalomhoz kapcsolódó betöltési paraméterek tárolására alkalmas.
 
-Az alaposztály publikus interfésze az említett tagok lekérdezése és/vagy beállítására szolgáltat funkciókat, illetve a tartalom, memóriába történõ betöltését lehet kezdeményezni rajta keresztül.
+Az alaposztály publikus interfésze az említett tagok lekérdezéséhez és/vagy beállításához biztosít funkciókat, illetve a tartalom, memóriába történõ betöltését lehet kezdeményezni rajta keresztül.
 
 \SubSection{Tartalom paraméterek}
 
@@ -274,9 +274,9 @@ filter_mode=trilinear
 ...
 \end{cpp}
 
-\SubSection{Tartalom típus nyílvántartó osztály}
+\SubSection{Tartalom típus nyilvántartó osztály}
 
-A tartalom nyílvántartás két lépcsõben történik. Az elsõ lépésben a különbözõ típusokat, és az azokhoz tartozó nyílvántartó objektumokat struktúráljuk. A következõ lépésben pedig, egy adott típushoz tartozó objektumokat rendszerezzük, mint például a textúrák.
+A tartalom nyilvántartás két lépcsõben történik. Az elsõ lépésben a különbözõ típusokat, és az azokhoz tartozó nyilvántartó objektumokat struktúráljuk. A következõ lépésben pedig, egy adott típushoz tartozó objektumokat rendszerezzük, mint például a textúrák.
 
 Az elsõ lépés megvalósításához kialakított interfész az \textit{i\_asset\_type\_manager}. 
 \begin{cpp}
@@ -287,13 +287,13 @@ public:
   virtual std::vector< std::string > get_types( void ) const = 0;
 };
 \end{cpp}
-A feladata egyszerû, valamilyen módon szolgáltatnia kell az összes elérhetõ típus listáját, az összes, típushoz regisztrált nyílvántartó objektumot, valamint egy konkrét típushoz tartozó nyílvántartó objektumot.
+A feladata egyszerû: valamilyen módon szolgáltatnia kell az összes elérhetõ típus listáját, az összes, típushoz regisztrált nyilvántartó objektumot, valamint egy konkrét típushoz tartozó nyilvántartó objektumot.
 
-Az interfész implementációja egy injektálható komponens, ami a függõségein keresztül éri el az egyes nyílvántartó objektumokat, és az ahhoz tartozó tartalom típusokat (\textit{asset.cpp - asset\_type\_manager}).
+Az interfész implementációja egy injektálható komponens, ami a függõségein keresztül éri el az egyes nyilvántartó objektumokat, és az ahhoz tartozó tartalom típusokat (\textit{asset.cpp - asset\_type\_manager}).
 
-\SubSection{Tartalom nyílvántartó osztály}
+\SubSection{Tartalom nyilvántartó osztály}
 
-A nyílvántartó osztály interfésze az \textit{i\_asset\_manager}, melynek funkciói egy-egy tartalom betöltésére illetve felszabadítására vonatkoznak. Az interfész alap implementációja az \textit{asset\_manager\_base}. Ez valósítja meg az interfész minden funkcióját, a \textit{get\_type} híváson kívül, ami arra szolgál, hogy az adott tartalom típus nevét, karakterlánc formátumban adja meg. Ezen kívül az alap megvalósítás bevezet egy új tisztán virtuális függvényt:
+A nyilvántartó osztály interfésze az \textit{i\_asset\_manager}, melynek funkciói egy-egy tartalom betöltésére illetve felszabadítására vonatkoznak. Az interfész alap implementációja az \textit{asset\_manager\_base}. Ez valósítja meg az interfész minden funkcióját, a \textit{get\_type} híváson kívül, ami arra szolgál, hogy az adott tartalom típus nevét, karakterlánc formátumban adja meg. Ezen kívül az alap megvalósítás bevezet egy új tisztán virtuális függvényt:
 \begin{cpp}
 virtual asset_ptr create_asset( const asset_url& url ) = 0;
 \end{cpp}
@@ -345,4 +345,4 @@ if( ccst != GL_TRUE ) {
 
 \SubSection{Grafikus vezérlõ osztály}
 
-Az \textit{ogl\_graphics/ogl\_graphics.cpp} fájlban található a grafikus rendszer központi osztályának az implementációja. Az osztály felelõssége kezelni a virtuális fagráfban található grafikus objektumokat. Ezek jelenleg a kamera és a geometriákat kirajzoló objektum (\textit{camera\_node, mesh\_renderer\_node}). A rajzolás elsõ lépése, hogy összegyûjtsük a kezelni kívánt objektumokat. Ez a fagráf bejárásával történik, mely során az egyes csúcsok "feliratkozhatnak" az aktuális feldolgozási eljárásra. Az így összegyûjtött geometriai objektumok mindegyikére megtörténik a láthatósági vizsgálat, a kapott kamerák szempontjából, az oktális fa segítségével. Majd a végsõ geometria lista megjelenítésre kerül a megfelelõ rajzolási és transzformációs paraméterek beállításával.
+Az \textit{ogl\_graphics/ogl\_graphics.cpp} fájlban található a grafikus rendszer központi osztályának az implementációja. Az osztály felelõssége kezelni a virtuális fagráfban található grafikus objektumokat. Ezek jelenleg a kamera és a geometriákat kirajzoló objektum (\textit{camera\_node, mesh\_renderer\_node}). A rajzolás elsõ lépése, hogy összegyûjtjük a kezelni kívánt objektumokat. Ez a fagráf bejárásával történik, mely során az egyes csúcsok "feliratkozhatnak" az aktuális feldolgozási eljárásra. Az így összegyûjtött geometriai objektumok mindegyikére megtörténik a láthatósági vizsgálat, a kapott kamerák szempontjából, az oktális fa segítségével. Majd a végsõ geometria lista megjelenítésre kerül a megfelelõ rajzolási és transzformációs paraméterek beállításával.

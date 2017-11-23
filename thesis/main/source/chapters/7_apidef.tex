@@ -1,15 +1,15 @@
 \Chapter{A keretrendszer használata és a szkript felület}
 \label{Chap:api}
 
-Ebben a részben találhatunk információkat azt illetõen, hogy hogyan is kezdhetünk el fejleszteni a keretrendszer segítségével és, hogy milyen funkciók vannak biztosítva a szkript környezeten keresztül.
+Ebben a részben találhatunk információkat azt illetõen, hogy hogyan is kezdhetünk el fejleszteni a keretrendszer segítségével és, hogy milyen funkciók biztosítottak a szkript környezeten keresztül.
 
 \Section{Szükséges fájlok}
 \SubSection{Alacsony szintû konfiguráció}
-A \textit{main/engine.conf} útvonalon található fájl tartalmazza a rendszer különbözõ komponenseinek paramétereit, és azok függõségeit. Itt találhatóak továbbá a nyílvántartó rendszer számára biztosított tartalom-deklarációk is.
+A \textit{main/engine.conf} útvonalon található fájl tartalmazza a rendszer különbözõ komponenseinek paramétereit, és azok függõségeit. Itt találhatóak továbbá a nyilvántartó rendszer számára biztosított tartalom-deklarációk is.
 
 Ahhoz, hogy egy tartalom, például egy textúra felhasználható legyen a rendszer számára, szerepelnie kell az adott típus felsorolásában. Tegyük fel például, hogy a \textit{grass.png} nevû textúrát szeretnénk elérhetõvé tenni.
 
-Az elsõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyílvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyílvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
+Az elsõ lépésben megkeressük a konfigurációs fájlban, a tartalom típusához tartozó nyilvántartó osztályt. Jelen esetben ez a \textit{texture\_manager} lesz, hiszen egy textúrát kívánunk deklarálni. Minden nyilvántartó osztály rendelkezik az \textit{assets} tömb attribútummal, ebbe kell elhelyeznünk a kívánt értékeket. Tehát a kívánt textúra deklarálása a következõ lesz:
 
 \begin{xml}
 <component name="texture_manager" class="texture_manager">
@@ -41,10 +41,10 @@ Az \textit{engine.log} a fájl útvonala, ahova az üzenetek kerülnek majd, ezen a 
 
 A további komponensek deklarációja és injektálása akkor lehet fontos ha a keretrendszert tovább kívánjuk fejleszteni.
 
-\SubSection{Anyag tulajdonságok deklarációja}
+\SubSection{Anyagtulajdonságok deklarációja}
 A \textit{main/materials} útvonalon található fájlban láthatjuk az úgy nevezett \textit{material} deklarációkat. Ezek olyan struktúrák, amik meghatározzák, hogy egy adott geometriai objektumot milyen grafikus "árnyékoló" programmal és milyen textúrákkal kell kirajzolni.
 
-Például ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
+Például, ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehet a tartalma a fájlnak:
 
 \begin{xml}
 <materials>
@@ -55,7 +55,7 @@ Például ha szeretnénk felhasználni az elõzõleg deklarált textúrát, akkor ez lehe
 </materials>
 \end{xml}
 
-A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyílvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgynevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
+A fájlnak mindig \textit{materials} taggal kell kezdõdnie, ezen belül kell felsorolni a különbözõ material objektumok deklarációit. Az elsõ paraméter, a \textit{name} az objektum nevét határozza meg, késõbb ezzel hivatkozhatunk majd rá. A \textit{shader} tagban meghatározott fájl, a grafikus árnyékoló program elérési útvonala. A textúrához hasonlóan ennek is deklarálva kell lennie a nyilvántartó rendszer valamely komponensében. Az utolsó sor azt határozza meg, hogy az úgynevezett \textit{albedo\_map} (az objektum alap színét ez határozza meg) textúra típushoz, az elõzõleg bevezetett fû textúrát rendeljük.
 
 \SubSection{Virtuális tér fagráf definíciók}
 A \textit{main/scenes} fájlban kell leírni a már ismertetett virtuális fagráf szerkezetét. A fájl struktúrája úgy van kialakítva, hogy elsõ lépésben a használni kívánt facsúcsokat deklaráljuk egymástól függetlenül, majd azt írjuk le, hogy egy konkrét jeleneten belül milyen kapcsolatban vannak ezek a csúcsok.
@@ -157,7 +157,7 @@ Például ha az "A" billentyû lenyomására szeretnénk reagálni:
 
 \begin{python}
 if get_key_down(keys.a):
-  print "key A was pressed"
+  print("key A was pressed")
 \end{python} 
 
 \SubSection{Fagráf manipuláció és transzformációk}
