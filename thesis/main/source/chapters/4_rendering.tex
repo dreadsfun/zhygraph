@@ -18,9 +18,9 @@ A geometriai objektumok jellemzõen csúcspontokból, és ahhoz kapcsolódó kiegészít
 Egy csúcspont a következõ információkat tartalmazza általában, melyeknek szükséges memóriát allokálni:
 
 \begin{itemize}
-\item A csúcs helyzete a három-dimenziós térben. Ez leírható egy három komponensû vektorral, melynek komponensei lebegõpontos számok. A C++ környezet támogatja a lebegõpontos számok 32 biten történõ ábrázolását a \textit{float} adattípussal \cite{cpp_fundamental_types}. Ezzel összhangban van a használt grafikus környezet, az \textit{OpenGL} méret kiosztása is \cite{ogl_fundamental_types}. Egy csúcs térbeli helyzetének leírásához szükséges tárhely tehát: $3*32=96$ bit.
-\item A csúcshoz rendelt textúra koordináta. Ez egy két-dimenziós pozíció érték, ami azt adja meg, hogy az adott csúcshoz, a textúra mely pontját kell rendelni az objektum megjelenítése során. Ez tárolható egy két komponensû, lebegõpontos szám típusú vektorban, tehát a helyigény: $2*32=64$ bit.
-\item A csúcshoz rendelt normális, binormális és tangens vektor. Ezeknek a vektoroknak az objektum megvilágítási számításaiban van szerepe. Fontos, hogy a három vektor közül egyet elégséges tárolni, hiszen a másik kettõ minden esetben számítható belõle. Azonban a valósidejû kiszámítása ezeknek a vektoroknak értékes idõt vehet el a rajzolási folyamatok közben, tehát mérlegelni kell, hogy a memória használatot vagy a számítási idõt helyezzük elõtérbe. Ebben az esetben tároljuk a vektorok mindegyikét, tehát a helyigény: $3*3*32=288$ bit.
+\item A csúcs helyzete a három-dimenziós térben. Ez leírható egy három komponensû vektorral, melynek komponensei lebegõpontos számok. A C++ környezet támogatja a lebegõpontos számok 32 biten történõ ábrázolását a \textit{float} adattípussal \cite{cpp_fundamental_types}. Ezzel összhangban van a használt grafikus környezet, az \textit{OpenGL} méret kiosztása is \cite{ogl_fundamental_types}. Egy csúcs térbeli helyzetének leírásához szükséges tárhely tehát: $3\cdot32=96$ bit.
+\item A csúcshoz rendelt textúra koordináta. Ez egy két-dimenziós pozíció érték, ami azt adja meg, hogy az adott csúcshoz, a textúra mely pontját kell rendelni az objektum megjelenítése során. Ez tárolható egy két komponensû, lebegõpontos szám típusú vektorban, tehát a helyigény: $2\cdot32=64$ bit.
+\item A csúcshoz rendelt normális, binormális és tangens vektor. Ezeknek a vektoroknak az objektum megvilágítási számításaiban van szerepe. Fontos, hogy a három vektor közül egyet elégséges tárolni, hiszen a másik kettõ minden esetben számítható belõle. Azonban a valósidejû kiszámítása ezeknek a vektoroknak értékes idõt vehet el a rajzolási folyamatok közben, tehát mérlegelni kell, hogy a memória használatot vagy a számítási idõt helyezzük elõtérbe. Ebben az esetben tároljuk a vektorok mindegyikét, tehát a helyigény: $3\cdot3\cdot32=288$ bit.
 \end{itemize}
 
 Nem a csúcspontra hanem a geometriára jellemzõ attribútum a \textit{lapok} száma. Eddig a geometriai objektum csúcspontjait definiáltuk, ezek azonban nem elégségesek a geometria rekonstruálására, hiszen a csúcspontok tetszõleges módon köthetõek össze. Szükségünk van még arra az információra, hogy mely csúcsok alkotnak egy-egy \textit{sokszöget}, illetve a számítógépi grafikában jellemzõ \textit{háromszögeket}.
@@ -41,13 +41,13 @@ Ez az információ megadható lenne a csúcspontok leírásával, azonban ez nem hatéko
 \label{fig:indexedgraph}
 \end{figure}
 
-Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk. Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F*3*32$ bit következik helyigénynek, ahhol $F$ a lapok száma.
+Az indexek memóriaigénye függ attól, hogy milyen sokszögekbõl épül fel a geometria, azonban a legtöbb esetben a grafikus alkalmazások preferált formátuma a háromszögekbõl felépített objektumok, ezért ezzel számolunk. Egy elõjel nélküli 32 bites egész szám elégséges lesz a csúcspontok indexeléséhez, amit a C++ környezetben az \textit{unsigned int}, OpenGL környezetben pedig a \textit{GLuint} biztosít \cite{cpp_fundamental_types}\cite{ogl_fundamental_types}. Így tehát a $F\cdot3\cdot32$ bit következik helyigénynek, ahhol $F$ a lapok száma.
 
-Egy geometriai objektum memóriaigénye ezek alapján tehát: $N*(96+64+288)+F*96=N*448+F*96$ bit.
+Egy geometriai objektum memóriaigénye ezek alapján tehát: $N\cdot(96+64+288)+F\cdot96=N\cdot448+F\cdot96$ bit.
 
-Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507*448+968*96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
+Az ábrán (\myref{fig:monkeyhead}) látható aránylag egyszerû objektumnak 507 csúcsa és 968 oldala van. Ha a fent leírt formátumban tároljuk a memóriában, akkor az objektum helyigénye: $507\cdot448+968\cdot96=320064$ bit, ami $320064/8=40008$ bájt azaz $40$ kilobájt.
 
-Egy bonyolultabb objektum (\myref{fig:factory}) - mely 123550 csúccsal és 237252 oldallal rendelkezik - helyigénye a következõképpen alakul: $123550*448+237252*96=$ bit, ami $78126592/8=9765824$ bájt azaz $9765,8$ kilobájt.
+Egy bonyolultabb objektum (\myref{fig:factory}) - mely 123550 csúccsal és 237252 oldallal rendelkezik - helyigénye a következõképpen alakul: $123550\cdot448+237252\cdot96=$ bit, ami $78126592/8=9765824$ bájt azaz $9765,8$ kilobájt.
 
 Az \textit{ogl\_graphics/ogl\_asset} útvonalon található az \textit{ogl\_mesh} osztály megvalósítása, aminek felelõssége a tárgyalt adatok tárolása:
 
@@ -74,7 +74,7 @@ A számolásokat háromszög alakú oldalakat feltételezve végeztük el, annak érdekéb
 \label{fig:factory}
 \end{figure}
 
-Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4*8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut.
+Jellemzõen a grafikus környezetek a textúrákat nem tömörített formában tudják feldolgozni. Ez azt jelenti, hogy minden egyes \textit{texelhez} (a textúra egy pontja) tartozó adatot el kell tudnunk tárolni. Egy általános esetben a textúrák a \textit{RGBA8} formátumban kerülnek felhasználásra. Ez azt jelenti, hogy a GPU memóriában minden texelt $4\cdot8=32$ bit ír le, ahol a három színcsatornának 8-8 bit, valamint az \textit{alpha} (átlátszóság) csatornának is 8 bit jut.
 
 Például a megvalósított textúra objektum esetén (\textit{ogl\_graphics/ogl\_asset texture} osztály), a textúra adat videómemóriába történõ feltöltése a következõképpen történik:
 
@@ -265,10 +265,10 @@ Perspektivikus projekció esetén a vetítés összetartó egyenesekkel történik. Az e
 
 \[
 \begin{bmatrix}
-\frac{2*N}{W} & 0             & 0                & 0\\
-0             & \frac{2*N}{H} & 0                & 0\\
-0             & 0             & -\frac{F+N}{F-N} & \frac{2*F*N}{F-N}\\
-0             & 0             & -1               & 0
+\frac{2\cdot N}{W} & 0             	    & 0                & 0\\
+0             	   & \frac{2\cdot N}{H} & 0                & 0\\
+0             	   & 0             	    & -\frac{F+N}{F-N} & \frac{2\cdot F\cdot N}{F-N}\\
+0             	   & 0             	    & -1               & 0
 \end{bmatrix}
 \]
 
@@ -353,11 +353,11 @@ H &= (x_{max},y_{min},z_{max})
  
  Ehhez elõször meg kell határoznunk a kamera struktúra pontjait, a kamera paraméterei alapján. A már említett \textit{camera\_node::\_update\_to\_projection\_mode} funkcióban történik a kamera alappontjainak kiszámítása is. Legyen $F_y$ a nézõpont horizontális nyílásszöge, $W_{near}, W_{far}, H_{near}, H_{far}$ rendre a közeli illetve távoli vágósík szélessége illetve magassága, valamint $R$ a vágósíkok oldalaránya. Ekkor teljesülnek a következõ összefüggések:
  \begin{alignat*}{4}
- &t := 2 * tan( F_y / 2)\\\\
- &W_{near} = t * D_{near}\\
- &W_{far} = t * D_{far}\\
- &H_{near} = W_{near} * R\\
- &H_{far} = W_{far} * R
+ &t := 2 \cdot tan( F_y / 2)\\\\
+ &W_{near} = t \cdot D_{near}\\
+ &W_{far} = t \cdot D_{far}\\
+ &H_{near} = W_{near} \cdot R\\
+ &H_{far} = W_{far} \cdot R
  \end{alignat*}
  
  Ezek alapján a struktúra pontjainak koordinátái egyértelmûen adódnak, ha a fókusz pontot tekintjük az origónak. Az utolsó lépés az oktális fával történõ "egyeztetés" elõtt, hogy transzformáljuk a pontokat a kamera aktuális helyzetének megfelelõen.

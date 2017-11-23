@@ -3,14 +3,14 @@
 
 \Section{Rendszerüzenetek}
 
+A legfontosabb formája a konfigurációs, adat vagy egyéb típusú hibák közlésének a rendszerüzenetek küldése. Egy-egy alkalmazás fejlesztése közben, ha valami a nem várt módon mûködik, mindig elsõdleges a rendszer mûködésének végigkövetése az üzenetek alapján.
+ 
 \begin{figure}[ht]
 \centering
 \epsfig{file=chapters/content/error.eps, width=15.3cm, height=13.5cm}
 \caption{Az üzenetküldõ rendszer különbözõ csatornái}
 \label{fig:errorscreen}
 \end{figure}
-
-A legfontosabb formája a konfigurációs, adat vagy egyéb típusú hibák közlésének a rendszerüzenetek küldése. Egy-egy alkalmazás fejlesztése közben, ha valami a nem várt módon mûködik, mindig elsõdleges a rendszer mûködésének végigkövetése az üzenetek alapján.
  
 A teszthez létrehozásra került egy "konzol", valamint egy speciális hiba csatorna, a tárgyalt módon a komponens konfigurációban:
 
@@ -29,23 +29,19 @@ A teszthez létrehozásra került egy "konzol", valamint egy speciális hiba csatorn
 
 A konzol csatorna már ismert, a kapott üzeneteket a standard kimenetre írja. Az új csatorna feladata pedig, hogy az \textit{error} vagy \textit{fatal} prioritású üzeneteket jelenítse meg egy felugró ablakban. Ez látható a \myref{fig:errorscreen} ábrán.
 
-Az ábrán megfigyelhetõ továbbá az üzenetek formázási módszere. Minden üzenetcsoport elõtt szerepel szögletes zárójelek között a \textit{szálazonosító} valamint az az osztály, ahonnan az üzenet származik. Annak érdekében, hogy ne váljon szükségessé újra és újra megjeleníteni a küldõ osztály és azonosító értékeket, az üzenetek csoportokba vannak osztva, és a fejléc csak akkor jelenik meg, ha az osztály vagy a szálazonosító megváltozik. Egy csoporton belül találhatóak a konkrét üzenetek, az egyes üzenetek elõtt pedig szintén szögletes zárójelben az egyes prioritásokhoz tartozó jelzések:
+Az ábrán megfigyelhetõ továbbá az üzenetek formázási módszere. Minden üzenetcsoport elõtt szerepel szögletes zárójelek között a \textit{szálazonosító} valamint az az osztály, ahonnan az üzenet származik. Annak érdekében, hogy ne váljon szükségessé újra és újra megjeleníteni a küldõ osztály és azonosító értékeket, az üzenetek csoportokba vannak osztva, és a fejléc csak akkor jelenik meg, ha az osztály vagy a szálazonosító megváltozik. Egy csoporton belül találhatóak a konkrét üzenetek, az egyes üzenetek elõtt pedig szintén szögletes zárójelben az egyes prioritásokhoz tartozó jelzések: 
 
 \begin{description}
-\item "-" debug
-\item "+" info
-\item "!" warn
-\item "!!" error
-\item "!!!" fatal
+\item "-" \textit{debug} - Fõleg a keretrendszer fejlesztõinek szóló, hibakeresési céllal kiküldött üzenetek.
+\item "+" \textit{info} - Általános információ a rendszer aktuális állapotáról, mûködési folyamatairól.
+\item "!" \textit{warn} - Figyelmeztetés potenciálisan rendellenes mûködés kapcsán.
+\item "!!" \textit{error} - Rendellenes mûködésre figyelmeztetõ üzenet, ami nem feltétlenül jelenti a rendszer leállását. Ebben az esetben már megjelenik a hiba ablak.
+\item "!!!" \textit{fatal} - Olyan rendellenes mûködésre figyelmeztetõ üzenet, ami nagy eséllyel jelenti a rendszer leállását. Ebben az esetben is megjelenik a hiba ablak.
 \end{description}
 
 A felugró ablakon található egy "OK" gomb, amivel bezárhatjuk az ablakot. Az alkalmazás futása ezután a hiba jellegétõl függõen megszakadhat vagy folytatódhat.
 
 \Section{Példa alkalmazás}
-
-A \textit{.TARGET/Debug/Win32} útvonalon elérhetõ minden szükséges fájl, egy példa alkalmazás futtatásához. A belépési pont, tehát a futtatható állomány a \textit{main.exe} fájl. A példa célja, hogy demonstrálja a keretrendszer legalapvetõbb funkcióit, tehát, hogy képes kizárólag konfigurációs fájlok alapján tetszõleges geometriai objektumokat betölteni és tetszõleges textúrával megjeleníteni, valamint szkript fájlokat betölteni és azokban egy elõre definiált funkciót meghívni, az interakció biztosításához.
-
-A keretrendszer elengedhetetlen konfigurációs fájlja, az \textit{engine.conf} megtalálható a futtatható állomány mellett. A felhasznált tartalom objektumok pedig az \textit{assets könyvtárban}, amin belül típusonként elkülönítve találhatók a szkript, xml, textúra, geometria és videóprogram fájlok.
 
 \begin{figure}[ht]
 \centering
@@ -54,48 +50,13 @@ A keretrendszer elengedhetetlen konfigurációs fájlja, az \textit{engine.conf} me
 \label{fig:testscene}
 \end{figure}
 
-A jelenet felépítésében megtalálható három geometriai alakzat, egy égboltot reprezentáló objektum, egy kamera struktúra és egy szkriptet tartalmazó csúcs. Ehhez, a szükséges konfigurációs fájl (\textit{xml/scenes.xml}) a következõképpen alakul:
+A \textit{.TARGET/Debug/Win32} útvonalon elérhetõ minden szükséges fájl, egy példa alkalmazás futtatásához. A belépési pont, tehát a futtatható állomány a \textit{main.exe} fájl. A példa célja, hogy demonstrálja a keretrendszer legalapvetõbb funkcióit, tehát, hogy képes kizárólag konfigurációs fájlok alapján tetszõleges geometriai objektumokat betölteni és tetszõleges textúrával megjeleníteni, valamint szkript fájlokat betölteni és azokban egy elõre definiált funkciót meghívni, az interakció biztosításához.
 
-\begin{xml}
-<node name="camera" class="camera_node">
-  <attribute name="projection_mode" value="perspective"/>
-  <attribute name="aspect_ratio" value="1.33333"/>
-  <attribute name="field_of_view" value="0.93333"/>
-  <attribute name="near_clip" value="0.1"/>
-  <attribute name="far_clip" value="500"/>
-</node>
+A keretrendszer elengedhetetlen konfigurációs fájlja, az \textit{engine.conf} megtalálható a futtatható állomány mellett. A felhasznált tartalom objektumok pedig az \textit{assets könyvtárban}, amin belül típusonként elkülönítve találhatók a szkript, xml, textúra, geometria és videóprogram fájlok.
 
-<node name="tent" class="mesh_renderer_node">
-  <attribute name="mesh_url" value="mesh@tent.obj"/>
-  <attribute name="materials" value="tent"/>
-</node>
+A jelenet felépítésében megtalálható három geometriai alakzat, egy égboltot reprezentáló objektum, egy kamera struktúra és egy szkriptet tartalmazó csúcs. Az ehhez szükséges konfiguráció megtalálható a már tárgyalt \textit{scenes.xml} fájlban, az \textit{xml} könyvtárban.
 
-<node name="camera_control" class="py_scene_node">
-  <attribute name="script_url" value="script@camera.py"/>
-</node>
-
-<node name="ground" class="mesh_renderer_node">
-  <attribute name="mesh_url" value="mesh@landscape.obj"/>
-  <attribute name="materials" value="ground"/>
-</node>
-
-<node name="skybox" class="mesh_renderer_node">
-  <attribute name="mesh_url" value="mesh@skybox.obj"/>
-  <attribute name="materials" value="skybox"/>
-</node>
-
-<node name="cube" class="mesh_renderer_node">
-  <attribute name="mesh_url" value="mesh@cube.obj"/>
-  <attribute name="materials" value="tent"/>
-</node>
-
-<scenes>
-  <scene name="scene1" 
-    graph="camera tent camera_control ground skybox cube"/> 
-</scenes>
-\end{xml}
-
-A hivatkozott anyagtulajdonság objektumok megtalálhatóak a \textit{xml/materials.xml} fájlban. Ezek mindegyike egy árnyékoló programot használ, ami megtalálható a \textit{shader/standardfs.glsl} fájlban.
+A hivatkozott anyagtulajdonság objektumok megtalálhatóak a \textit{xml/materials.xml} fájlban. Ezek mindegyike ugyanazon árnyékoló programot használja, ami a \textit{shader/standardfs.glsl} fájlban került megvalósításra.
 
 A kamera struktúra irányítására jött létre egy egyszerû szkript fájl, ez a \textit{script/camera.py} útvonalon található:
 

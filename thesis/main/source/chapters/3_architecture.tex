@@ -2,20 +2,13 @@
 
 \Section{Magas szintû áttekintés}
 
+A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov1} és \myref{fig:highlevelov2} ábrákon láthatjuk a rendszer komponenseinek összefoglaló diagramjait. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
+
 \begin{figure}[ht]
 \centering
 \epsfig{file=chapters/content/highlevelsystemov1.eps, width=13.65cm, height=11.1cm}
 \caption{A keretrendszer komponensei}
 \label{fig:highlevelov1}
-\end{figure}
-
-A keretrendszer hat elkülöníthetõ részbõl tevõdik össze. Ezek a központi funkciókat összefogó rendszer, a reflexiót és függõség injektálást megvalósító rendszer, az alkalmazás indító rendszer, a grafikus alrendszer, a grafikus megjelenítéshez szükséges ablakozó rendszer, valamint a többi rendszer által, a szkript felület felé szolgáltatott funkciók összessége. A \myref{fig:highlevelov1} és \myref{fig:highlevelov2} ábrákon láthatjuk a rendszer komponenseinek összefoglaló diagramjait. A továbbiakban az egyes összetevõk jellemzõit és azok felépítését részletezzük.
-
-\begin{figure}[ht]
-\centering
-\epsfig{file=chapters/content/highlevelsystemov2.eps, width=13.65cm, height=13.505cm}
-\caption{A keretrendszer komponensei}
-\label{fig:highlevelov2}
 \end{figure}
 
 \subsubsection{Fájl útvonalak}
@@ -26,6 +19,13 @@ A továbbiakban szerepelni fognak az említett koncepciókat és funkciókat megvalós
 \item Sok esetben, a C++ nyelvre jellemzõ konvenció és programtechnikai okokból egy-egy osztály vagy funkció deklarációja és definíciója két részre van osztva. A deklaráció a \textbf{.hpp}, míg a definíció a \textbf{.cpp} kiterjesztésû fájlokban található. Az említett elérési útvonalak kiterjesztés nélkül szerepelnek, ami azt jelenti, hogy mind a két fájlra vonatkozik, amennyiben a kód két részre van osztva, valamint csak a \textbf{.hpp} kiterjesztésû fájlokra, ha nincs elérhetõ forrás fájl.
 \end{itemize}
 
+\begin{figure}[ht]
+\centering
+\epsfig{file=chapters/content/highlevelsystemov2.eps, width=13.65cm, height=13.505cm}
+\caption{A keretrendszer komponensei}
+\label{fig:highlevelov2}
+\end{figure}
+
 Ezek alapján a \textit{core/multi\_thread} útvonal, fizikailag a következõ fájlokra vonatkozik:
 \begin{itemize}
 \item \textit{zhygraph/core/multi\_thread.hpp}
@@ -35,7 +35,7 @@ Mivel az alapkönyvtár nem változik, illetve az alrendszer könyvtárak elnevezése 
 
 \Section{Függõség injektálás}
 
-A \textit{dependency injection}, azaz "függõség injektálás" egy olyan program architektúra technika, ami egy rendszer, komponensekre történõ bontását és a komponensek közötti függõségek kezelését hivatott segíteni. Virtuális nyelvekben, ahol eredendõen rendelkezésre állnak a \textit{reflexió} technikái, mint a Java-ban, triviálisan megvalósítható és alkalmazható az injektálás. Más a helyzet azonban a C++ környezet esetén, hiszen nem áll rendelkezésre a reflexió és így az injektálás lehetõsége sem.
+A \textit{dependency injection}, azaz "függõség injektálás" egy olyan program architektúra technika, ami egy rendszer, komponensekre történõ bontását és a komponensek közötti függõségek kezelését hivatott segíteni. Virtuális gépen futtatott nyelvek esetében, amikor eredendõen rendelkezésre állnak a \textit{reflexió} technikái, mint a Java-ban, triviálisan megvalósítható és alkalmazható az injektálás módszere. Más a helyzet azonban a C++ környezet esetén, hiszen nem áll rendelkezésre a reflexió és így az injektálás lehetõsége sem.
 
 Injektálásnak azt a módszert nevezzük, ahogy látszólag automatikusan, transzparensen történik a komponensek közötti függõségek feloldása. Nem szükséges tehát valamilyen komponens-specifikus, explicit módon (konstruktorban átadva, funkcióval beállítva stb.) értéket adni egy-egy objektum referenciának, hanem azok egy konfiguráció alapján létrehozásra és beállításra kerülnek.
 
@@ -85,7 +85,7 @@ A módszer elõnye, hogy az így reflektált osztályokat használni tudjuk anélkül, h
 
 \SubSection{Komponensek és függõségek}
 
-Ahhoz, hogy egy osztály részt vehessen a reflexió rendszerében, illetve a függõségek kezelésében, a \textit{component} osztályból kell örökölnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, ezenkívül biztosítja, hogy kizárólag az osztályon belülrõl történhessen függõség deklaráció.
+Ahhoz, hogy egy osztály részt vehessen a reflexió rendszerében, illetve a függõségek kezelésében, a \textit{component} osztályból kell öröklõdnie (\textit{di\_rtlib/component}). Ez az osztály tárolja a függõségek referenciáit és a reflektált osztály \textit{meta-osztályát}, ezenkívül biztosítja, hogy kizárólag az osztályon belülrõl történhessen függõség deklaráció.
 
 Az osztály függõségeit a \textit{di\_rtlib/define\_dependency.hpp} fájlban található makrókkal lehet deklarálni (illetve lehetséges a makrók használata nélkül is, de jelentõsen bonyolultabbá tenné a megoldást). A technika hasonló a reflektálásnál leírthoz: egy olyan objektumot deklarálunk az osztályban, ami a konstruktorában "automatikusan" regisztrálja a megadott nevet és típust, mint az osztály egy függõségét. A késõbbiekben ezen a néven keresztül lehet majd injektálni az osztály által igényelt komponenst.
 
@@ -97,6 +97,10 @@ private:
   component_dependencies( m_managers, i_asset_manager );
 ...
 \end{cpp}
+
+Az itt látható kódrészletben a tartalom nyilvántartó rendszer egy osztályát látjuk. A \textit{component\_dependency} makró segítségével függõségként deklaráljuk az \textit{i\_logger} interfészt. Az \textit{m\_logger} azonosítóval érhetjük el a komponenst az osztályon belül, mint egy általános változó deklaráció esetében. A komponens rendszer szempontjából pedig, a \textit{logger} nevet kell majd használnunk, ami automatikusan kerül generálásra a változó névbõl (elhagyva az \textit{m\_}, tagváltozók jelölésére használt prefixet).
+
+A makró második változatában, a \textit{component\_dependencies} kifejezés hasonlóképpen deklarál függõséget egy osztály számára. A különbség az, hogy ennek segítségével egy dinamikus tömb változó kerül létrehozásra az osztályon belül, ami tetszõleges számú komponenst tárolhat a megadott típusból (jelen esetben \textit{i\_asset\_manager}).
 
 \SubSection{Attribútumok}
 
@@ -111,9 +115,11 @@ private:
 ...
 \end{cpp}
 
+A kódrészlet az üzenetküldõ rendszer "fájl-csatorna" implementációját tartalmazza. A \textit{component\_attribute} makrót használjuk egy karakterlánc (std::string) típusú attribútum deklarálására. Az attribútum azonosítója hasonlóképpen alakul a függõségek deklarálásakor látotthoz: az \textit{m\_file} néven érhetjük el a változót az osztályon belül, a \textit{file} néven pedig a komponens konfigurációból.
+
 \SubSection{Komponens konfiguráció}
 
-A rendszer különbözõ részei végül egy konfigurációs fájlban futnak össze. Jelen esetben ez az \textit{engine.conf} fájl, ami elengedhetetlen a keretrendszer futtatásához, automatikusan ezen a néven van keresve, közvetlenül a keretrendszer könyvtárában (önálló futtatás esetén, a futtatható állomány mellett).
+A rendszer különbözõ részei végül egy konfigurációs fájlban futnak össze. Jelen esetben ez az \textit{engine.conf} fájl, ami elengedhetetlen a keretrendszer futtatásához. A rendszer a saját könyvtárának gyökerében (vagy önnálló futtatás esetén a futtatható állomány mellett) keresi ezt a konfigurációs állományt.
 
 A konfigurációs fájl egy standard XML formátumú fájl, aminek a struktúráját egy \textit{XSD séma} írja le (\textit{di/di.xsd}). A gyökér elem minden esetben a \textit{DI} kifejezés, ennek közvetlen gyermekei lehetnek a \textit{plugins}, a \textit{components} és a \textit{wiring}.
 
@@ -244,7 +250,7 @@ Az alaposztály publikus interfésze az említett tagok lekérdezéséhez és/vagy beál
 
 \SubSection{Tartalom paraméterek}
 
-Egy tartalom fájl inicializálásakor a rendszer automatikusan ellenõrzi, hogy létezik-e a tartalomról adatokat szolgáltató \textit{meta-fájl}. A fájl elnevezési konvenciója az \textit{eredetinev.meta} formát követi:
+Egy tartalom fájl inicializálásakor a rendszer automatikusan ellenõrzi, hogy létezik-e a tartalomról adatokat szolgáltató \textit{meta-fájl}. A fájl elnevezési konvenciója az \textit{eredetinev.meta} formát követi. Ezek alapján a kódrészlet, ami a \textit{meta-fájl} betöltését végzi, a következõképpen alakul:
 
 \begin{cpp}
 ...
@@ -264,7 +270,7 @@ if( m_streamer->check_asset( metaurl ) ) {
 ...
 \end{cpp}
 
-Ha létezik a meta-fájl, az beolvasásra kerül, majd az adatot az \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
+Ha létezik a meta-fájl (ezt a \textit{check\_asset} hívás ellenõrzi), az beolvasásra kerül, majd az adatot az \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
 
 A lehetséges paraméterek egyediek minden tartalom típusra. A textúrákra jellemzõ paraméter például a "szûrési" technika:
 
