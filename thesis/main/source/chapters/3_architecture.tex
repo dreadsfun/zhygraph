@@ -270,7 +270,7 @@ if( m_streamer->check_asset( metaurl ) ) {
 ...
 \end{cpp}
 
-Ha létezik a meta-fájl (ezt a \textit{check\_asset} hívás ellenõrzi), az beolvasásra kerül, majd az adatot az \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva.
+Ha létezik a meta-fájl (ezt a \textit{check\_asset} hívás ellenõrzi), az beolvasásra kerül, majd az adatot az \textit{asset\_params} osztály kapja meg. Az osztály egyetlen feladata, hogy név-érték párokra bontsa le a fájlban megadott paramétereket. A fájl struktúrája, ezen feladat támogatására, a lehetõ legegyszerûbb módon van kialakítva: minden sorban egy névnek és egy értéknek kell szerepelnie, egyenlõség (=) jellel elválasztva, ahogyan az \textit{INI} fájlok esetében szokásos \cite{inifile}.
 
 A lehetséges paraméterek egyediek minden tartalom típusra. A textúrákra jellemzõ paraméter például a "szûrési" technika:
 
